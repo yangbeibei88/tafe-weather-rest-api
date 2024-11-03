@@ -1,7 +1,7 @@
+// @deno-types="npm:@types/express"
 import express, { Express, Request, Response, NextFunction } from "express";
 
-const app: Express = express();
-const PORT = Number(Deno.env.get("PORT")) || 3000;
+export const app: Express = express();
 
 const reqLogger = (req: Request, _res: Response, next: NextFunction) => {
   console.info(`${req.method} request to ${req.url} by ${req.hostname}`);
@@ -12,10 +12,6 @@ app.use(reqLogger);
 
 app.get("/api/v1", (_req: Request, res: Response) => {
   res.status(200).json({ msg: "Welcome to TAFE Weather REST API v1" });
-});
-
-app.listen(PORT, () => {
-  console.log(`Listening on ${PORT}`);
 });
 
 // export function add(a: number, b: number): number {
