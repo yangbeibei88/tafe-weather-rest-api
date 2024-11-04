@@ -8,7 +8,7 @@ interface User {
   lastName: string;
   emailAddress: string;
   phone?: string;
-  role: "teacher" | "student" | "admin";
+  role: "teacher" | "student" | "admin" | "sensor";
   status: "active" | "inactive";
   createdAt?: Date;
   updatedAt?: Date;
