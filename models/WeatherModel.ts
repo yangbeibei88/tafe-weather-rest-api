@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { GeoJSONGeometryType, CoordinatesType } from "../utils/utilTypes.ts";
+import { database } from "../config/db.ts";
 
 export interface Weather<T extends GeoJSONGeometryType> {
   _id?: ObjectId;
@@ -22,6 +23,26 @@ export interface Weather<T extends GeoJSONGeometryType> {
 }
 
 type WeatherWithoutId<T extends GeoJSONGeometryType> = Omit<Weather<T>, "_id">;
+
+// create `weathers` collection
+
+database.createCollection("weathers", {
+  timeseries: {
+    timeField: "createdAt",
+    metaField: "deviceName",
+    granularity: "minutes",
+  },
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      title: "weather object validation",
+      required: ["deviceName"],
+      properties: {},
+    },
+  },
+});
+
+const weatherColl = database.collection<Weather<"Point">>("weathers");
 
 // const point: Weather<"Point"> = {
 //   deviceName: "xyz",

@@ -5,13 +5,15 @@ const dbName = Deno.env.get("MONGO_DBNAME");
 console.log(uri);
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
+export const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
   },
 });
+
+export const database = client.db(dbName);
 
 export const connectDB = async () => {
   try {
