@@ -1,11 +1,12 @@
 import { ObjectId } from "mongodb";
 import { Weather } from "./WeatherModel.ts";
+import { GeoJSONGeometryType } from "../utils/utilTypes.ts";
 
-interface Log {
-  _id: ObjectId;
-  deletedAt: Date;
-  deletedBy: ObjectId;
-  weatherReading: Weather;
+interface Log<T extends GeoJSONGeometryType> {
+  _id?: ObjectId;
+  deletedAt?: Date;
+  deletedBy?: ObjectId;
+  weatherReading: Weather<T>;
 }
 
-type LogWithoutId = Omit<Log, "_id">;
+type LogWithoutId<T extends GeoJSONGeometryType> = Omit<Log<T>, "_id">;
