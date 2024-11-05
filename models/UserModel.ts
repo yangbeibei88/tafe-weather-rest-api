@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 
 interface User {
-  _id: ObjectId;
+  _id?: ObjectId;
   username: string;
   password: string;
   firstName: string;

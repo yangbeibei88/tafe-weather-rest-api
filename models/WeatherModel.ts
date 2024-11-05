@@ -23,20 +23,18 @@ export interface Weather<T extends GeoJSONGeometryType> {
 
 type WeatherWithoutId<T extends GeoJSONGeometryType> = Omit<Weather<T>, "_id">;
 
-const point: Weather<"Point"> = {
-  deviceName: "xyz",
-  precipitation: 100,
-  temperature: 50,
-  atmosphericPressure: 100,
-  maxWindSpeed: 100,
-  solarRadiation: 100,
-  vaporPressure: 100,
-  humidity: 100,
-  windDirection: 100,
-  geoLocation: {
-    type: "Point",
-    coordinates: [100, 100],
-  },
-};
-
-console.log(point);
+// const point: Weather<"Point"> = {
+//   deviceName: "xyz",
+//   precipitation: 100,
+//   temperature: 50,
+//   atmosphericPressure: 100,
+//   maxWindSpeed: 100,
+//   solarRadiation: 100,
+//   vaporPressure: 100,
+//   humidity: 100,
+//   windDirection: 100,
+//   geoLocation: {
+//     type: "Point",
+//     coordinates: [100, 100],
+//   },
+// };
