@@ -1,4 +1,38 @@
+/**
+ * https://www.mongodb.com/docs/manual/reference/operator/query/type/#std-label-document-type-available-types
+ */
+type MongoBSONAlias =
+  | "double"
+  | "string"
+  | "int"
+  | "array"
+  | "object"
+  | "binData"
+  | "objectId"
+  | "bool"
+  | "date"
+  | "timestamp"
+  | "null"
+  | "regex"
+  | "javascript"
+  | "long"
+  | "decimal"
+  | "minKey"
+  | "maxKey";
+
+/**
+ * https://www.mongodb.com/docs/manual/reference/operator/query/jsonSchema/#mongodb-query-op.-jsonSchema
+ */
+type StandardType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "array"
+  | "object"
+  | "null";
+
 type Coordinate = [longitude: number, latitude: number];
+
 export type GeoJSONGeometryType =
   | "Point"
   | "LineString"
@@ -29,14 +63,14 @@ export interface GeoLocation<T extends GeoJSONGeometryType> {
 /**
  * MongoDB JSON Schema, from MongoDB's $jsonSchema documenation, the schema is a subset of JSON Schema (draft4 standard)
  * https://www.mongodb.com/docs/manual/reference/operator/query/jsonSchema/#mongodb-query-op.-jsonSchema
- * I don't understand why MongoDB doesn't have the schema interface:(
+ *
  */
 export interface MongoJSONSchema {
   additionalItems?: boolean | MongoJSONSchema;
   additionalProperties?: boolean | MongoJSONSchema;
   allOf?: MongoJSONSchema[];
   anyOf?: MongoJSONSchema[];
-  bsonType?: string | string[];
+  bsonType?: MongoBSONAlias | MongoBSONAlias[];
   dependencies?: { [key: string]: MongoJSONSchema | string[] };
   description?: string;
   // deno-lint-ignore no-explicit-any
@@ -62,6 +96,6 @@ export interface MongoJSONSchema {
   };
   required?: string[];
   title?: string;
-  type?: string | string[];
+  type?: StandardType | StandardType[];
   uniqueItems?: boolean;
 }

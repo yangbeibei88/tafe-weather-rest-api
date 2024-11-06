@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { MongoJSONSchema } from "../utils/utilTypes.ts";
 
 type Role = "teacher" | "student" | "admin" | "sensor";
 
@@ -18,3 +19,7 @@ interface User {
 }
 
 type UserWithoutId = Omit<User, "_id">;
+
+const userSchema: MongoJSONSchema = {
+  bsonType: "object",
+};
