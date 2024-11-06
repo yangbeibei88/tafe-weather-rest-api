@@ -1,5 +1,7 @@
 import { ObjectId } from "mongodb";
 
+type Role = "teacher" | "student" | "admin" | "sensor";
+
 interface User {
   _id?: ObjectId;
   username: string;
@@ -8,7 +10,7 @@ interface User {
   lastName: string;
   emailAddress: string;
   phone?: string;
-  role: "teacher" | "student" | "admin" | "sensor";
+  role: Role[];
   status: "active" | "inactive";
   createdAt?: Date;
   updatedAt?: Date;

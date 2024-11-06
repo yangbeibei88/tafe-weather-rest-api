@@ -1,8 +1,8 @@
 import { ObjectId } from "mongodb";
-import { GeoJSONGeometryType, CoordinatesType } from "../utils/utilTypes.ts";
+import { GeoJSONGeometryType, GeoLocation } from "../utils/utilTypes.ts";
 import { database } from "../config/db.ts";
 
-export interface Weather<T extends GeoJSONGeometryType> {
+export interface Weather {
   _id?: ObjectId;
   deviceName: string;
   precipitation: number;
@@ -16,13 +16,10 @@ export interface Weather<T extends GeoJSONGeometryType> {
   createdAt?: Date;
   updatedAt?: Date;
   updatedBy?: ObjectId;
-  geoLocation: {
-    type: T;
-    coordinates: CoordinatesType<T>;
-  };
+  geoLocation: GeoLocation<GeoJSONGeometryType>;
 }
 
-type WeatherWithoutId<T extends GeoJSONGeometryType> = Omit<Weather<T>, "_id">;
+type WeatherWithoutId = Omit<Weather, "_id">;
 
 // create `weathers` collection
 
@@ -42,7 +39,7 @@ database.createCollection("weathers", {
   },
 });
 
-const weatherColl = database.collection<Weather<"Point">>("weathers");
+const weatherColl = database.collection<Weather>("weathers");
 
 // const point: Weather<"Point"> = {
 //   deviceName: "xyz",
