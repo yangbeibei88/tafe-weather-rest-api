@@ -1,4 +1,5 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { Db, MongoClient, ServerApiVersion } from "mongodb";
+import { createWeathersCollection } from "../models/WeatherModel.ts";
 
 const uri = Deno.env.get("MONGO_URI")!;
 const dbName = Deno.env.get("MONGO_DBNAME");
@@ -13,7 +14,7 @@ export const client = new MongoClient(uri, {
   },
 });
 
-export const database = client.db(dbName);
+const database = client.db(dbName);
 
 export const connectDB = async () => {
   try {
@@ -23,6 +24,9 @@ export const connectDB = async () => {
     // send a ping to confirm a successful connection
     await client.db(dbName).command({ ping: 1 });
     console.log("DB connected!");
+
+    // create collections
+    await initDB(database);
   } catch (error) {
     console.error(error);
   } finally {
@@ -31,4 +35,9 @@ export const connectDB = async () => {
     // The client will close if finish/error
     await client.close();
   }
+};
+
+// create collections if not exist
+const initDB = async (database: Db) => {
+  await Promise.all([createWeathersCollection(database)]);
 };

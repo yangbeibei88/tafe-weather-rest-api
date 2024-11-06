@@ -31,7 +31,7 @@ export interface GeoLocation<T extends GeoJSONGeometryType> {
  * https://www.mongodb.com/docs/manual/reference/operator/query/jsonSchema/#mongodb-query-op.-jsonSchema
  * I don't understand why MongoDB doesn't have the schema interface:(
  */
-interface MongoJSONSchema {
+export interface MongoJSONSchema {
   additionalItems?: boolean | MongoJSONSchema;
   additionalProperties?: boolean | MongoJSONSchema;
   allOf?: MongoJSONSchema[];
