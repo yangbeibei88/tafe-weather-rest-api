@@ -53,7 +53,7 @@ const coordinateSchema: MongoJSONSchema = {
   description: "An array of two numbers representing [longitude, latitude]",
 };
 
-const weatherSchema: MongoJSONSchema = {
+export const weatherSchema: MongoJSONSchema = {
   bsonType: "object",
   title: "weather object validation",
   required: [
@@ -248,7 +248,7 @@ export const createWeathersCollection = async (database: Db) => {
   } catch (error) {
     if (
       error instanceof MongoServerError &&
-      error.codeName === "NamespaceExits"
+      error.codeName === "NamespaceExists"
     ) {
       console.log("Collection already exists");
       return;
