@@ -1,4 +1,18 @@
 {
   "deno.enable": true,
-  "deno.lint": true
+  "deno.lint": true,
+  "eslint.probe": [
+    "astro",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "html",
+    "mdx",
+    "vue",
+    "markdown",
+    "json",
+    "jsonc",
+    "mongodb"
+  ]
 }

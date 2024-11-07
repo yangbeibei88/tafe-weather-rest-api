@@ -112,6 +112,7 @@ export const createUsersCollection = async (database: Db) => {
         $jsonSchema: userSchema,
       },
       validationLevel: "strict",
+      validationAction: "error",
     });
     console.log("Users collection created successfully.");
   } catch (error) {

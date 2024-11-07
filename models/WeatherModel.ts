@@ -206,6 +206,7 @@ export const createWeathersCollection = async (database: Db) => {
         $jsonSchema: weatherSchema,
       },
       validationLevel: "strict",
+      validationAction: "error",
     });
     console.log("Weather collection created successfully.");
   } catch (error) {
