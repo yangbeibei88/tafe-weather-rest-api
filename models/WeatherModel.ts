@@ -7,6 +7,7 @@ import {
 import {
   GeoJSONGeometryType,
   GeoLocation,
+  MongoDBRef,
   MongoJSONSchema,
 } from "../utils/utilTypes.ts";
 
@@ -22,8 +23,9 @@ export interface Weather {
   humidity: number;
   windDirection: number;
   createdAt?: Date;
-  updatedAt?: Date;
-  updatedBy?: ObjectId;
+  createdBy?: MongoDBRef;
+  lastModifiedAt?: Date;
+  lastModifiedBy?: MongoDBRef;
   geoLocation?: GeoLocation<GeoJSONGeometryType>;
 }
 
@@ -108,17 +110,51 @@ const weatherSchema: MongoJSONSchema = {
       bsonType: "date",
       description: "The current timestamp when the document is created.",
     },
-    updatedAt: {
+    createdBy: {
+      bsonType: "object",
+      required: ["$ref", "$id"],
+      properties: {
+        $ref: {
+          bsonType: "string",
+          enum: ["users"],
+          description: "The collection the DBRef points to",
+        },
+        $id: {
+          bsonType: "objectId",
+          description: "The ObjectId of the referenced document",
+        },
+        $db: {
+          bsonType: "string",
+          enum: ["tafe-weather-api"],
+          description: "database name where the referenced document resides",
+        },
+      },
+      description: "DBRef for the user who created the document",
+    },
+    lastModifiedAt: {
       bsonType: "date",
       description: "The current timestamp when the document is updated",
     },
-    createdBy: {
-      bsonType: "objectId",
-      description: "The user id which the document is created by",
-    },
-    updateBy: {
-      bsonType: "objectId",
-      description: "The user id which the document is updated by",
+    lastModifiedBy: {
+      bsonType: "object",
+      required: ["$ref", "$id"],
+      properties: {
+        $ref: {
+          bsonType: "string",
+          enum: ["users"],
+          description: "The collection the DBRef points to",
+        },
+        $id: {
+          bsonType: "objectId",
+          description: "The ObjectId of the referenced document",
+        },
+        $db: {
+          bsonType: "string",
+          enum: ["tafe-weather-api"],
+          description: "database name where the referenced document resides",
+        },
+      },
+      description: "DBRef for the user who last modified the document",
     },
     geoLocation: {
       bsonType: "object",

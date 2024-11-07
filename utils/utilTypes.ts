@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 /**
  * https://www.mongodb.com/docs/manual/reference/operator/query/type/#std-label-document-type-available-types
  */
@@ -98,4 +100,13 @@ export interface MongoJSONSchema {
   title?: string;
   type?: StandardType | StandardType[];
   uniqueItems?: boolean;
+}
+
+/**
+ * https://www.mongodb.com/docs/manual/reference/database-references/#dbrefs
+ */
+export interface MongoDBRef {
+  $ref: string;
+  $id: ObjectId;
+  $db?: string;
 }
