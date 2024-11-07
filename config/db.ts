@@ -1,4 +1,4 @@
-import { Db, MongoClient, ServerApiVersion } from "mongodb";
+import { MongoClient, MongoClientOptions, ServerApiVersion } from "mongodb";
 import { createWeathersCollection } from "../models/WeatherModel.ts";
 
 const uri = Deno.env.get("MONGO_URI")!;
@@ -12,7 +12,7 @@ export const client = new MongoClient(uri, {
     strict: true,
     deprecationErrors: true,
   },
-});
+} as MongoClientOptions);
 
 export const database = client.db(dbName);
 
