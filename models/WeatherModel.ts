@@ -128,7 +128,7 @@ const weatherSchema: MongoJSONSchema = {
         // Point
         {
           properties: {
-            type: { enum: ["Point"] },
+            type: { enum: ["Point"], type: "string" },
             coordinates: coordinateSchema,
           },
           additionalItems: false,
@@ -136,7 +136,7 @@ const weatherSchema: MongoJSONSchema = {
         // LineString or MultiPoint
         {
           properties: {
-            type: { enum: ["LineString", "MultiPoint"] },
+            type: { enum: ["LineString", "MultiPoint"], type: "string" },
             coordinates: {
               bsonType: "array",
               minItems: 1,
@@ -150,7 +150,7 @@ const weatherSchema: MongoJSONSchema = {
         // Polygon or MultiLineString
         {
           properties: {
-            type: { enum: ["Polygon", "MultiLineString"] },
+            type: { enum: ["Polygon", "MultiLineString"], type: "string" },
             coordinates: {
               bsonType: "array",
               minItems: 1,
@@ -168,7 +168,7 @@ const weatherSchema: MongoJSONSchema = {
         // MultiPolygon
         {
           properties: {
-            type: { enum: ["MultiPolygon"] },
+            type: { enum: ["MultiPolygon"], type: "string" },
             coordinates: {
               bsonType: "array",
               minItems: 1,
@@ -216,7 +216,7 @@ export const createWeathersCollection = async (database: Db) => {
       console.log("Collection already exists");
       return;
     } else {
-      console.error("Error creating collection: ", error);
+      console.error("Error creating weathers collection: ", error);
     }
   }
 };

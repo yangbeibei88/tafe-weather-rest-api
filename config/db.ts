@@ -14,7 +14,7 @@ export const client = new MongoClient(uri, {
   },
 });
 
-const database = client.db(dbName);
+export const database = client.db(dbName);
 
 export const connectDB = async () => {
   try {
@@ -26,7 +26,7 @@ export const connectDB = async () => {
     console.log("DB connected!");
 
     // create collections
-    await initDB(database);
+    // await initDB(database);
   } catch (error) {
     console.error(error);
   } finally {
@@ -38,6 +38,6 @@ export const connectDB = async () => {
 };
 
 // create collections if not exist
-const initDB = async (database: Db) => {
-  await Promise.all([createWeathersCollection(database)]);
-};
+// const initDB = async (database: Db) => {
+//   await Promise.all([createWeathersCollection(database)]);
+// };

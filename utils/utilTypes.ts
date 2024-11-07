@@ -89,7 +89,7 @@ export interface MongoJSONSchema {
   multipleOf?: number;
   not?: MongoJSONSchema;
   oneOf?: MongoJSONSchema[];
-  pattern?: RegExp;
+  pattern?: string;
   patternProperties?: { [key: string]: MongoJSONSchema };
   properties?: {
     [key: string]: MongoJSONSchema;
