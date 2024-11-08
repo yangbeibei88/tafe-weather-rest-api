@@ -1,11 +1,10 @@
-import { Db, MongoServerError, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { MongoJSONSchema } from "../utils/utilTypes.ts";
-import { database } from "../config/db.ts";
 
 type Role = "teacher" | "student" | "admin" | "sensor";
 
 export interface User {
-  _id?: ObjectId;
+  _id: ObjectId;
   username: string;
   password: string;
   firstName: string;
@@ -21,10 +20,11 @@ export interface User {
 
 type UserWithoutId = Omit<User, "_id">;
 
-const userSchema: MongoJSONSchema = {
+export const userSchema: MongoJSONSchema = {
   bsonType: "object",
   title: "user object validation",
   required: [
+    "_id",
     "username",
     "password",
     "firstName",
@@ -35,6 +35,9 @@ const userSchema: MongoJSONSchema = {
     "status",
   ],
   properties: {
+    _id: {
+      bsonType: "objectId",
+    },
     username: {
       bsonType: "string",
       minLength: 3,
@@ -90,15 +93,15 @@ const userSchema: MongoJSONSchema = {
       description: 'Status must be either "active" or "inactive".',
     },
     createdAt: {
-      bsonType: "date",
+      bsonType: ["date", "null"],
       description: "Date when the user was created.",
     },
     updatedAt: {
-      bsonType: "date",
+      bsonType: ["date", "null"],
       description: "Date when the user was last updated.",
     },
     lastLoggedInAt: {
-      bsonType: "date",
+      bsonType: ["date", "null"],
       description: "Date when the user last logged in.",
     },
   },

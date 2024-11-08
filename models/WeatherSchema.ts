@@ -1,9 +1,4 @@
-import {
-  Db,
-  MongoServerError,
-  ObjectId,
-  TimeSeriesCollectionOptions,
-} from "mongodb";
+import { ObjectId } from "mongodb";
 import {
   GeoJSONGeometryType,
   GeoLocation,
@@ -12,7 +7,7 @@ import {
 } from "../utils/utilTypes.ts";
 
 export interface Weather {
-  _id?: ObjectId;
+  _id: ObjectId;
   deviceName: string;
   precipitation: number;
   temperature: number;
@@ -26,7 +21,7 @@ export interface Weather {
   createdBy?: MongoDBRef;
   lastModifiedAt?: Date;
   lastModifiedBy?: MongoDBRef;
-  geoLocation?: GeoLocation<GeoJSONGeometryType>;
+  geoLocation: GeoLocation<GeoJSONGeometryType>;
 }
 
 type WeatherWithoutId = Omit<Weather, "_id">;
@@ -57,6 +52,7 @@ export const weatherSchema: MongoJSONSchema = {
   bsonType: "object",
   title: "weather object validation",
   required: [
+    "_id",
     "deviceName",
     "precipitation",
     "temperature",
@@ -68,6 +64,9 @@ export const weatherSchema: MongoJSONSchema = {
     "windDirection",
   ],
   properties: {
+    _id: {
+      bsonType: "objectId",
+    },
     deviceName: {
       bsonType: "string",
       minLength: 1,
@@ -107,11 +106,11 @@ export const weatherSchema: MongoJSONSchema = {
       description: "Must be a number, unit: degree",
     },
     createdAt: {
-      bsonType: "date",
+      bsonType: ["date", "null"],
       description: "The current timestamp when the document is created.",
     },
     createdBy: {
-      bsonType: "object",
+      bsonType: ["object", "null"],
       required: ["$ref", "$id"],
       properties: {
         $ref: {
@@ -132,11 +131,11 @@ export const weatherSchema: MongoJSONSchema = {
       description: "DBRef for the user who created the document",
     },
     lastModifiedAt: {
-      bsonType: "date",
+      bsonType: ["date", "null"],
       description: "The current timestamp when the document is updated",
     },
     lastModifiedBy: {
-      bsonType: "object",
+      bsonType: ["object", "null"],
       required: ["$ref", "$id"],
       properties: {
         $ref: {
@@ -259,7 +258,7 @@ export const weatherSchema: MongoJSONSchema = {
 //   }
 // };
 
-// const weatherColl = database.collection<Weather>("weathers");
+// const weathersColl = database.collection<Weather>("weathers");
 
 // const point: Weather<"Point"> = {
 //   deviceName: "xyz",

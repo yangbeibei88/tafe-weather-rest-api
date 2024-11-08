@@ -25,7 +25,9 @@ const coordinateSchema = {
 };
 
 // Create weathers collections with validator
-db.createCollection("weathers", {
+// db.createCollection("weathers", {
+db.runCommand({
+  collMod: "weathers",
   // timeseries: {
   //   timeField: "createdAt",
   //   metaField: "deviceName",
@@ -36,6 +38,7 @@ db.createCollection("weathers", {
       bsonType: "object",
       title: "weather object validation",
       required: [
+        "_id",
         "deviceName",
         "precipitation",
         "temperature",
@@ -47,6 +50,9 @@ db.createCollection("weathers", {
         "windDirection",
       ],
       properties: {
+        _id: {
+          bsonType: "objectId",
+        },
         deviceName: {
           bsonType: "string",
           minLength: 1,
@@ -86,11 +92,11 @@ db.createCollection("weathers", {
           description: "Must be a number, unit: degree",
         },
         createdAt: {
-          bsonType: "date",
+          bsonType: ["date", "null"],
           description: "The current timestamp when the document is created.",
         },
         createdBy: {
-          bsonType: "object",
+          bsonType: ["object", "null"],
           required: ["$ref", "$id"],
           properties: {
             $ref: {
@@ -112,11 +118,11 @@ db.createCollection("weathers", {
           description: "DBRef for the user who created the document",
         },
         lastModifiedAt: {
-          bsonType: "date",
+          bsonType: ["date", "null"],
           description: "The current timestamp when the document is updated",
         },
         lastModifiedBy: {
-          bsonType: "object",
+          bsonType: ["object", "null"],
           required: ["$ref", "$id"],
           properties: {
             $ref: {
@@ -207,6 +213,7 @@ db.createCollection("weathers", {
           ],
         },
       },
+      additionalProperties: false,
     },
   },
   validationLevel: "strict",

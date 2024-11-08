@@ -1,22 +1,17 @@
-import { Db, MongoServerError, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { Weather, weatherSchema } from "./WeatherSchema.ts";
-import {
-  GeoJSONGeometryType,
-  MongoDBRef,
-  MongoJSONSchema,
-} from "../utils/utilTypes.ts";
-import { database } from "../config/db.ts";
+import { MongoDBRef, MongoJSONSchema } from "../utils/utilTypes.ts";
 
-interface Log<T extends GeoJSONGeometryType> {
+export interface Log {
   _id?: ObjectId;
   deletedAt?: Date;
   deletedBy?: MongoDBRef;
   weatherReading: Weather;
 }
 
-type LogWithoutId<T extends GeoJSONGeometryType> = Omit<Log<T>, "_id">;
+type LogWithoutId = Omit<Log, "_id">;
 
-const logSchema: MongoJSONSchema = {
+export const logSchema: MongoJSONSchema = {
   bsonType: "object",
   title: "log object validation",
   required: ["weatherReading"],

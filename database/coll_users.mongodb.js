@@ -9,6 +9,7 @@ db.createCollection("users", {
       bsonType: "object",
       title: "user object validation",
       required: [
+        "_id",
         "username",
         "password",
         "firstName",
@@ -19,6 +20,9 @@ db.createCollection("users", {
         "status",
       ],
       properties: {
+        _id: {
+          bsonType: "objectId",
+        },
         username: {
           bsonType: "string",
           minLength: 3,
@@ -74,15 +78,15 @@ db.createCollection("users", {
           description: 'Status must be either "active" or "inactive".',
         },
         createdAt: {
-          bsonType: "date",
+          bsonType: ["date", "null"],
           description: "Date when the user was created.",
         },
         updatedAt: {
-          bsonType: "date",
+          bsonType: ["date", "null"],
           description: "Date when the user was last updated.",
         },
         lastLoggedInAt: {
-          bsonType: "date",
+          bsonType: ["date", "null"],
           description: "Date when the user last logged in.",
         },
       },
