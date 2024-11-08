@@ -4,7 +4,7 @@ import { database } from "../config/db.ts";
 
 type Role = "teacher" | "student" | "admin" | "sensor";
 
-interface User {
+export interface User {
   _id?: ObjectId;
   username: string;
   password: string;

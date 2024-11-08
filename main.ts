@@ -1,6 +1,9 @@
 // @deno-types="npm:@types/express"
 import express, { Express, Request, Response, NextFunction } from "express";
 import { weatherRouter } from "./routes/weatherRoutes.ts";
+import { authRouter } from "./routes/authRoutes.ts";
+import { userRouter } from "./routes/userRoutes.ts";
+import { logRouter } from "./routes/logRoutes.ts";
 
 export const app: Express = express();
 
@@ -16,7 +19,10 @@ app.get("/api/v1", (_req: Request, res: Response) => {
   res.status(200).json({ msg: "Welcome to TAFE Weather REST API v1" });
 });
 
+app.use("/api/v1/login", authRouter);
+app.use("/api/v1/users", userRouter);
 app.use("/api/v1/weathers", weatherRouter);
+app.use("/api/v1/logs", logRouter);
 
 // export function add(a: number, b: number): number {
 //   return a + b;

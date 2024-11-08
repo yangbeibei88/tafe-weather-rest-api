@@ -1,7 +1,7 @@
 // @deno-types="npm:@types/express"
-import express from "express";
+import { Router } from "express";
 
-export const weatherRouter = express.Router();
+export const weatherRouter = Router();
 
 // Get all weathers
 weatherRouter.get("/");
