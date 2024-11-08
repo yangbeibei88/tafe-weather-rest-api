@@ -227,36 +227,37 @@ export const weatherSchema: MongoJSONSchema = {
   },
 };
 
-const timeSeriesOptions: TimeSeriesCollectionOptions = {
-  timeField: "createdAt",
-  metaField: "deviceName",
-  granularity: "minutes",
-};
+// DON'T USE TIMESERIES!
+// const timeSeriesOptions: TimeSeriesCollectionOptions = {
+//   timeField: "createdAt",
+//   metaField: "deviceName",
+//   granularity: "minutes",
+// };
 
-// Create the timeseries collection with the validator
-export const createWeathersCollection = async (database: Db) => {
-  try {
-    await database.createCollection("weathers", {
-      timeseries: timeSeriesOptions,
-      validator: {
-        $jsonSchema: weatherSchema,
-      },
-      validationLevel: "strict",
-      validationAction: "error",
-    });
-    console.log("Weather collection created successfully.");
-  } catch (error) {
-    if (
-      error instanceof MongoServerError &&
-      error.codeName === "NamespaceExists"
-    ) {
-      console.log("Collection already exists");
-      return;
-    } else {
-      console.error("Error creating weathers collection: ", error);
-    }
-  }
-};
+// // Create the timeseries collection with the validator
+// export const createWeathersCollection = async (database: Db) => {
+//   try {
+//     await database.createCollection("weathers", {
+//       timeseries: timeSeriesOptions,
+//       validator: {
+//         $jsonSchema: weatherSchema,
+//       },
+//       validationLevel: "strict",
+//       validationAction: "error",
+//     });
+//     console.log("Weather collection created successfully.");
+//   } catch (error) {
+//     if (
+//       error instanceof MongoServerError &&
+//       error.codeName === "NamespaceExists"
+//     ) {
+//       console.log("Collection already exists");
+//       return;
+//     } else {
+//       console.error("Error creating weathers collection: ", error);
+//     }
+//   }
+// };
 
 // const weatherColl = database.collection<Weather>("weathers");
 

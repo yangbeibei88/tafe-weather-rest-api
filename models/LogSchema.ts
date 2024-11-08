@@ -1,5 +1,5 @@
 import { Db, MongoServerError, ObjectId } from "mongodb";
-import { Weather, weatherSchema } from "./WeatherModel.ts";
+import { Weather, weatherSchema } from "./WeatherSchema.ts";
 import {
   GeoJSONGeometryType,
   MongoDBRef,
@@ -50,24 +50,24 @@ const logSchema: MongoJSONSchema = {
   },
 };
 
-const createLogsCollection = async (database: Db) => {
-  try {
-    await database.createCollection("logs", {
-      validator: {
-        $jsonSchema: logSchema,
-      },
-      validationLevel: "strict",
-      validationAction: "error",
-    });
-  } catch (error) {
-    if (
-      error instanceof MongoServerError &&
-      error.codeName === "NamespaceExists"
-    ) {
-      console.log("Collection already exists");
-      return;
-    } else {
-      console.error("Error creating log collection: ", error);
-    }
-  }
-};
+// const createLogsCollection = async (database: Db) => {
+//   try {
+//     await database.createCollection("logs", {
+//       validator: {
+//         $jsonSchema: logSchema,
+//       },
+//       validationLevel: "strict",
+//       validationAction: "error",
+//     });
+//   } catch (error) {
+//     if (
+//       error instanceof MongoServerError &&
+//       error.codeName === "NamespaceExists"
+//     ) {
+//       console.log("Collection already exists");
+//       return;
+//     } else {
+//       console.error("Error creating log collection: ", error);
+//     }
+//   }
+// };

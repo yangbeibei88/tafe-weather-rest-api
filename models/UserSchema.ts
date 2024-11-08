@@ -105,27 +105,27 @@ const userSchema: MongoJSONSchema = {
   additionalProperties: false,
 };
 
-export const createUsersCollection = async (database: Db) => {
-  try {
-    await database.createCollection("users", {
-      validator: {
-        $jsonSchema: userSchema,
-      },
-      validationLevel: "strict",
-      validationAction: "error",
-    });
-    console.log("Users collection created successfully.");
-  } catch (error) {
-    if (
-      error instanceof MongoServerError &&
-      error.codeName === "NamespaceExits"
-    ) {
-      console.log("Collection already exists");
-      return;
-    } else {
-      console.error("Error creating users collection: ", error);
-    }
-  }
-};
+// export const createUsersCollection = async (database: Db) => {
+//   try {
+//     await database.createCollection("users", {
+//       validator: {
+//         $jsonSchema: userSchema,
+//       },
+//       validationLevel: "strict",
+//       validationAction: "error",
+//     });
+//     console.log("Users collection created successfully.");
+//   } catch (error) {
+//     if (
+//       error instanceof MongoServerError &&
+//       error.codeName === "NamespaceExists"
+//     ) {
+//       console.log("Collection already exists");
+//       return;
+//     } else {
+//       console.error("Error creating users collection: ", error);
+//     }
+//   }
+// };
 
-const userColl = database.collection<User>("users");
+// const userColl = database.collection<User>("users");
