@@ -1,5 +1,4 @@
 import { MongoClient, MongoClientOptions, ServerApiVersion } from "mongodb";
-import { createWeathersCollection } from "../models/WeatherModel.ts";
 
 const uri = Deno.env.get("MONGO_URI")!;
 const dbName = Deno.env.get("MONGO_DBNAME");
@@ -36,8 +35,3 @@ export const connectDB = async () => {
     await client.close();
   }
 };
-
-// create collections if not exist
-// const initDB = async (database: Db) => {
-//   await Promise.all([createWeathersCollection(database)]);
-// };

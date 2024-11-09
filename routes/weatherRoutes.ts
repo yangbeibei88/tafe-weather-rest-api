@@ -1,5 +1,6 @@
 // @deno-types="npm:@types/express"
 import { Router } from "express";
+import { createWeatherAction } from "../controllers/weatherController.ts";
 
 export const weatherRouter = Router();
 
@@ -7,7 +8,7 @@ export const weatherRouter = Router();
 weatherRouter.get("/");
 
 // Create one or more new weather readings
-weatherRouter.post("/");
+weatherRouter.post("/", createWeatherAction);
 
 // Update one or more new weather readings
 weatherRouter.put("/");
