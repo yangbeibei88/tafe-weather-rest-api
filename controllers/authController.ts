@@ -1,4 +1,4 @@
-import { asyncHandler } from "../middlewares/asyncHandler.ts";
+import asyncHandler from "express-async-handler";
 import { User } from "../models/UserSchema.ts";
 
 // authenticate login

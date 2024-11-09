@@ -12,32 +12,26 @@ type Location = "body" | "cookies" | "headers" | "params" | "query";
 
 // calling validationResult(req) will include the results for this validation
 
-const validate = (validations: ContextRunner[]) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    for (const validation of validations) {
-      const result = await validation.run(req);
-      if (!result.isEmpty()) {
-        return res.status(400).json({ errors: result.array() });
-      }
+// const validateBody = (validation: ContextRunner[]) => {
+//   return async (req: Request, res: Response, next: NextFunction) => {};
+// };
+
+export const validateParams = asynHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    for (const paramKey in req.params) {
+      await param(paramKey).notEmpty().escape().run(req);
     }
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.json({ errors: errors.array() });
+      return;
+    }
+
     next();
-  };
-};
-
-export const validateParams = asynHandler(async (req, res, next) => {
-  for (const paramKey in req.params) {
-    await param(paramKey).notEmpty().escape().run(req);
   }
-
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    res.json({ errors: errors.array() });
-    return;
-  }
-
-  next();
-});
+);
 
 // const validateParams = (req: Request, res: Response, next: NextFunction) => {
 //   const paramKeys = Object.keys(req.params);

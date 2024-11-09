@@ -6,7 +6,7 @@
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
     "@types/bcryptjs": "npm:@types/bcryptjs@^2.4.6",
-    "@types/express": "npm:@types/express@^5.0.0",
+    "@types/express": "npm:@types/express@4.17.20",
     "@types/jsonwebtoken": "npm:@types/jsonwebtoken@^9.0.7",
     "@types/node": "npm:@types/node@^22.8.7",
     "bcryptjs": "npm:bcryptjs@^2.4.3",
