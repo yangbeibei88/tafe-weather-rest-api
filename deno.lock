@@ -9,6 +9,7 @@
     "npm:@types/jsonwebtoken@^9.0.7": "9.0.7",
     "npm:@types/node@^22.8.7": "22.8.7",
     "npm:bcryptjs@^2.4.3": "2.4.3",
+    "npm:express-async-handler@^1.2.0": "1.2.0",
     "npm:express-validator@^7.2.0": "7.2.0",
     "npm:express@^4.21.1": "4.21.1",
     "npm:jsonwebtoken@^9.0.2": "9.0.2",
@@ -233,6 +234,9 @@
     },
     "etag@1.8.1": {
       "integrity": "sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg=="
+    },
+    "express-async-handler@1.2.0": {
+      "integrity": "sha512-rCSVtPXRmQSW8rmik/AIb2P0op6l7r1fMW538yyvTMltCO4xQEWMmobfrIxN2V1/mVrgxB8Az3reYF6yUZw37w=="
     },
     "express-validator@7.2.0": {
       "integrity": "sha512-I2ByKD8panjtr8Y05l21Wph9xk7kk64UMyvJCl/fFM/3CTJq8isXYPLeKW/aZBCdb/LYNv63PwhY8khw8VWocA==",
@@ -617,6 +621,7 @@
       "npm:@types/jsonwebtoken@^9.0.7",
       "npm:@types/node@^22.8.7",
       "npm:bcryptjs@^2.4.3",
+      "npm:express-async-handler@^1.2.0",
       "npm:express-validator@^7.2.0",
       "npm:express@^4.21.1",
       "npm:jsonwebtoken@^9.0.2",

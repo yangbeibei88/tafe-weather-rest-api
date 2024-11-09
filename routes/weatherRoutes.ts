@@ -1,6 +1,9 @@
 // @deno-types="npm:@types/express"
 import { Router } from "express";
-import { createWeatherAction } from "../controllers/weatherController.ts";
+import {
+  createWeatherAction,
+  showWeatherAction,
+} from "../controllers/weatherController.ts";
 
 export const weatherRouter = Router();
 
@@ -18,11 +21,11 @@ weatherRouter.delete("/");
 
 // TODO: UPLOAD WEATHER DATA THROUGH FILES (JSON, CSV)
 
-// Get a single weatherReading
-weatherRouter.get("/:weatherReadingId");
+// Get a single weather reading
+weatherRouter.get("/:id", showWeatherAction);
 
 // update one
-weatherRouter.put("/:weatherReadingId");
+weatherRouter.put("/:id");
 
 // delete one or more weather readings
-weatherRouter.delete("/:weatherReadingId");
+weatherRouter.delete("/:id");
