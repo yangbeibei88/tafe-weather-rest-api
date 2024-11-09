@@ -4,37 +4,22 @@ import { getWeather } from "../models/WeatherModel.ts";
 import { ObjectId } from "mongodb";
 import { Weather } from "../models/WeatherSchema.ts";
 
-export const showWeatherAction = asyncHandler(
-  async (req, res, _next): Promise<void> => {
-    // 1) VALIDATE & sanitize req.params
-    await param("id").notEmpty().escape().run(req);
+export const showWeatherAction = asyncHandler(async (req, res, _next) => {
+  // if param id is valid, call findOne
+  const weather = await getWeather(req.params.id);
 
-    // extract validation errors
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        errors: errors.array(),
-      });
-      return;
-    }
-
-    // 2) if param id is valid, call findOne
-    const weather = await getWeather(req.params.id);
-
-    if (!weather) {
-      res.status(404).json({
-        msg: "Not Found",
-      });
-      return;
-    }
-
-    res.status(200).json({
-      success: true,
-      data: weather,
+  if (!weather) {
+    res.status(404).json({
+      msg: "Not Found",
     });
+    return;
   }
-);
+
+  res.status(200).json({
+    success: true,
+    data: weather,
+  });
+});
 
 export const validateWeatherInput = asyncHandler(async (req, res, next) => {
   if (req.params.id) {

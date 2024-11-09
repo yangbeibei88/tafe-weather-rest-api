@@ -4,6 +4,7 @@ import {
   createWeatherAction,
   showWeatherAction,
 } from "../controllers/weatherController.ts";
+import { validateParams } from "../middlewares/validation.ts";
 
 export const weatherRouter = Router();
 
@@ -22,7 +23,7 @@ weatherRouter.delete("/");
 // TODO: UPLOAD WEATHER DATA THROUGH FILES (JSON, CSV)
 
 // Get a single weather reading
-weatherRouter.get("/:id", showWeatherAction);
+weatherRouter.get("/:id", validateParams, showWeatherAction);
 
 // update one
 weatherRouter.put("/:id");
