@@ -12,9 +12,19 @@ type Location = "body" | "cookies" | "headers" | "params" | "query";
 
 // calling validationResult(req) will include the results for this validation
 
-// const validateBody = (validation: ContextRunner[]) => {
-//   return async (req: Request, res: Response, next: NextFunction) => {};
-// };
+export const validateBody = (validations: ContextRunner[]) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    for (const validation of validations) {
+      await validation.run(req);
+    }
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  };
+};
 
 export const validateParams = asynHandler(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
