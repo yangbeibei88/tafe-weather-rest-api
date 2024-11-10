@@ -2,7 +2,6 @@ import { ObjectId } from "mongodb";
 import {
   GeoJSONGeometryType,
   GeoLocation,
-  MongoDBRef,
   MongoJSONSchema,
 } from "../utils/utilTypes.ts";
 
@@ -18,9 +17,9 @@ export interface Weather {
   humidity: number;
   windDirection: number;
   createdAt?: Date;
-  createdBy?: MongoDBRef;
+  createdBy?: ObjectId;
   lastModifiedAt?: Date;
-  lastModifiedBy?: MongoDBRef;
+  lastModifiedBy?: ObjectId;
   geoLocation: GeoLocation<GeoJSONGeometryType>;
 }
 
@@ -110,50 +109,16 @@ export const weatherSchema: MongoJSONSchema = {
       description: "The current timestamp when the document is created.",
     },
     createdBy: {
-      bsonType: ["object", "null"],
-      required: ["$ref", "$id"],
-      properties: {
-        $ref: {
-          bsonType: "string",
-          enum: ["users"],
-          description: "The collection the DBRef points to",
-        },
-        $id: {
-          bsonType: "objectId",
-          description: "The ObjectId of the referenced document",
-        },
-        $db: {
-          bsonType: "string",
-          enum: ["tafe-weather-api"],
-          description: "database name where the referenced document resides",
-        },
-      },
-      description: "DBRef for the user who created the document",
+      bsonType: ["objectId", "null"],
+      description: "User objectId refer to who created the document",
     },
     lastModifiedAt: {
       bsonType: ["date", "null"],
       description: "The current timestamp when the document is updated",
     },
     lastModifiedBy: {
-      bsonType: ["object", "null"],
-      required: ["$ref", "$id"],
-      properties: {
-        $ref: {
-          bsonType: "string",
-          enum: ["users"],
-          description: "The collection the DBRef points to",
-        },
-        $id: {
-          bsonType: "objectId",
-          description: "The ObjectId of the referenced document",
-        },
-        $db: {
-          bsonType: "string",
-          enum: ["tafe-weather-api"],
-          description: "database name where the referenced document resides",
-        },
-      },
-      description: "DBRef for the user who last modified the document",
+      bsonType: ["objectId", "null"],
+      description: "User objectId refer to who last modified the document",
     },
     geoLocation: {
       bsonType: "object",
@@ -275,3 +240,25 @@ export const weatherSchema: MongoJSONSchema = {
 //     coordinates: [100, 100],
 //   },
 // };
+
+/**
+ * Raw sample data
+ */
+// {
+//   "Device Name": "Woodford_Sensor",
+//   "Precipitation mm/h": 0.085,
+//   "Time": {
+//     "$date": {
+//       "$numberLong": "1620359044000"
+//     }
+//   },
+//   "Latitude": 152.77891,
+//   "Longitude": -26.95064,
+//   "Temperature (°C)": 22.74,
+//   "Atmospheric Pressure (kPa)": 128.02,
+//   "Max Wind Speed (m/s)": 4.94,
+//   "Solar Radiation (W/m2)": 113.21,
+//   "Vapor Pressure (kPa)": 1.73,
+//   "Humidity (%)": 73.84,
+//   "Wind Direction (°)": 155.6
+// }

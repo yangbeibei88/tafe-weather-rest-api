@@ -96,52 +96,16 @@ db.runCommand({
           description: "The current timestamp when the document is created.",
         },
         createdBy: {
-          bsonType: ["object", "null"],
-          required: ["$ref", "$id"],
-          properties: {
-            $ref: {
-              bsonType: "string",
-              enum: ["users"],
-              description: "The collection the DBRef points to",
-            },
-            $id: {
-              bsonType: "objectId",
-              description: "The ObjectId of the referenced document",
-            },
-            $db: {
-              bsonType: "string",
-              enum: ["tafe-weather-api"],
-              description:
-                "database name where the referenced document resides",
-            },
-          },
-          description: "DBRef for the user who created the document",
+          bsonType: ["objectId", "null"],
+          description: "User objectId refer to who created the document",
         },
         lastModifiedAt: {
           bsonType: ["date", "null"],
           description: "The current timestamp when the document is updated",
         },
         lastModifiedBy: {
-          bsonType: ["object", "null"],
-          required: ["$ref", "$id"],
-          properties: {
-            $ref: {
-              bsonType: "string",
-              enum: ["users"],
-              description: "The collection the DBRef points to",
-            },
-            $id: {
-              bsonType: "objectId",
-              description: "The ObjectId of the referenced document",
-            },
-            $db: {
-              bsonType: "string",
-              enum: ["tafe-weather-api"],
-              description:
-                "database name where the referenced document resides",
-            },
-          },
-          description: "DBRef for the user who last modified the document",
+          bsonType: ["objectId", "null"],
+          description: "User objectId refer to who last modified the document",
         },
         geoLocation: {
           bsonType: "object",

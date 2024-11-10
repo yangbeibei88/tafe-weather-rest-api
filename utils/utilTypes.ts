@@ -33,6 +33,9 @@ type StandardType =
   | "object"
   | "null";
 
+/**
+ * https://www.mongodb.com/docs/manual/geospatial-queries/
+ */
 type Coordinate = [longitude: number, latitude: number];
 
 export type GeoJSONGeometryType =

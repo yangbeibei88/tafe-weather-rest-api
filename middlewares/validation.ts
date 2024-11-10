@@ -98,6 +98,8 @@ export const validateNumber = (
   return chain;
 };
 
+export const validateGeoJSON = () => {};
+
 // const validateParams = (req: Request, res: Response, next: NextFunction) => {
 //   const paramKeys = Object.keys(req.params);
 

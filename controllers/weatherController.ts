@@ -1,7 +1,6 @@
 // @deno-types="npm:@types/express"
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import { body, param, validationResult } from "express-validator";
 import { getWeather, insertWeather } from "../models/WeatherModel.ts";
 import { Weather } from "../models/WeatherSchema.ts";
 import {
@@ -39,6 +38,8 @@ export const validateWeatherInput = validateBody([
   validateNumber("vaporPressure", "float"),
   validateNumber("humidity", "float"),
   validateNumber("windDirection", "float"),
+  validateNumber("longitude", "float", -180, 180),
+  validateNumber("latitude", "float", -90, 90),
 ]);
 
 export const createWeatherAction = asyncHandler(async (req, res, next) => {
