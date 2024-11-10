@@ -1,4 +1,4 @@
-// @deno-types="npm:@types/express"
+// @deno-types="npm:@types/express@4.17.20"
 import { Request, Response, NextFunction } from "express";
 import asynHandler from "express-async-handler";
 import {
@@ -6,6 +6,8 @@ import {
   param,
   validationResult,
   Result,
+  body,
+  ValidationChain,
 } from "express-validator";
 
 type Location = "body" | "cookies" | "headers" | "params" | "query";
@@ -26,8 +28,8 @@ export const validateBody = (validations: ContextRunner[]) => {
   };
 };
 
-export const validateParams = asynHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const validateParams = () => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     for (const paramKey in req.params) {
       await param(paramKey).notEmpty().escape().run(req);
     }
@@ -40,8 +42,30 @@ export const validateParams = asynHandler(
     }
 
     next();
+  };
+};
+
+export const validateText = (
+  name: string,
+  min: number = 0,
+  max: number = 254,
+  required: boolean = true
+): ValidationChain => {
+  let chain: ValidationChain;
+
+  if (required) {
+    chain = body(name).isString().trim();
+  } else {
+    chain = body(name).optional().isString().trim();
   }
-);
+
+  chain = chain
+    .isLength({ min, max })
+    .escape()
+    .withMessage(`${name} must be a string, ${min} - ${max} characters.`);
+
+  return chain;
+};
 
 // const validateParams = (req: Request, res: Response, next: NextFunction) => {
 //   const paramKeys = Object.keys(req.params);

@@ -1,4 +1,4 @@
-// @deno-types="npm:@types/express"
+// @deno-types="npm:@types/express@4.17.21"
 import express, { Express, Request, Response, NextFunction } from "express";
 import { weatherRouter } from "./routes/weatherRoutes.ts";
 import { authRouter } from "./routes/authRoutes.ts";

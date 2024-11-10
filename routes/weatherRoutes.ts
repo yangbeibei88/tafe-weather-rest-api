@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   createWeatherAction,
   showWeatherAction,
+  validateWeatherInput,
 } from "../controllers/weatherController.ts";
 import { validateParams } from "../middlewares/validation.ts";
 
@@ -12,7 +13,7 @@ export const weatherRouter = Router();
 weatherRouter.get("/");
 
 // Create one or more new weather readings
-weatherRouter.post("/", createWeatherAction);
+weatherRouter.post("/", validateWeatherInput, createWeatherAction);
 
 // Update one or more new weather readings
 weatherRouter.put("/");
@@ -23,7 +24,7 @@ weatherRouter.delete("/");
 // TODO: UPLOAD WEATHER DATA THROUGH FILES (JSON, CSV)
 
 // Get a single weather reading
-weatherRouter.get("/:id", validateParams, showWeatherAction);
+weatherRouter.get("/:id", validateParams(), showWeatherAction);
 
 // update one
 weatherRouter.put("/:id");

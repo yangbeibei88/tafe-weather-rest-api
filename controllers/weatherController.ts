@@ -1,10 +1,10 @@
 // @deno-types="npm:@types/express"
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import { param, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 import { getWeather, insertWeather } from "../models/WeatherModel.ts";
-import { ObjectId } from "mongodb";
 import { Weather } from "../models/WeatherSchema.ts";
+import { validateBody, validateText } from "../middlewares/validation.ts";
 
 export const showWeatherAction = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -25,11 +25,9 @@ export const showWeatherAction = asyncHandler(
   }
 );
 
-export const validateWeatherInput = asyncHandler(async (req, res, next) => {
-  if (req.params.id) {
-    const existingWeatherData = await getWeather(req.params.id);
-  }
-});
+export const validateWeatherInput = validateBody([
+  validateText("deviceName", 1, 50, true),
+]);
 
 export const createWeatherAction = asyncHandler(async (req, res, next) => {
   // 1) validate & sanitise data
