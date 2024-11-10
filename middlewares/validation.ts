@@ -51,18 +51,49 @@ export const validateText = (
   max: number = 254,
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain;
+  let chain: ValidationChain = body(name);
 
-  if (required) {
-    chain = body(name).isString().trim();
-  } else {
-    chain = body(name).optional().isString().trim();
+  if (required === false) {
+    chain = chain.optional({ values: "falsy" });
   }
 
   chain = chain
+    .isString()
+    .trim()
     .isLength({ min, max })
     .escape()
     .withMessage(`${name} must be a string, ${min} - ${max} characters.`);
+
+  return chain;
+};
+
+export const validateNumber = (
+  name: string,
+  type: "int" | "float",
+  min?: number,
+  max?: number,
+  required: boolean = true
+): ValidationChain => {
+  let chain: ValidationChain = body(name);
+
+  if (required === false) {
+    chain = chain.optional({ values: "null" });
+  }
+
+  switch (type) {
+    case "int":
+      chain = chain
+        .toInt()
+        .isInt({ min, max })
+        .withMessage(`${name} must be an integer between ${min} and ${max}`);
+      break;
+    case "float":
+      chain = chain
+        .toFloat()
+        .isFloat({ min, max })
+        .withMessage(`${name} must be a float between ${min} and ${max}`);
+      break;
+  }
 
   return chain;
 };

@@ -4,7 +4,11 @@ import asyncHandler from "express-async-handler";
 import { body, param, validationResult } from "express-validator";
 import { getWeather, insertWeather } from "../models/WeatherModel.ts";
 import { Weather } from "../models/WeatherSchema.ts";
-import { validateBody, validateText } from "../middlewares/validation.ts";
+import {
+  validateBody,
+  validateNumber,
+  validateText,
+} from "../middlewares/validation.ts";
 
 export const showWeatherAction = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -27,6 +31,14 @@ export const showWeatherAction = asyncHandler(
 
 export const validateWeatherInput = validateBody([
   validateText("deviceName", 1, 50, true),
+  validateNumber("precipitation", "float"),
+  validateNumber("temperature", "float"),
+  validateNumber("atmosphericPressure", "float"),
+  validateNumber("maxWindSpeed", "float"),
+  validateNumber("solarRadiation", "float"),
+  validateNumber("vaporPressure", "float"),
+  validateNumber("humidity", "float"),
+  validateNumber("windDirection", "float"),
 ]);
 
 export const createWeatherAction = asyncHandler(async (req, res, next) => {
