@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   createWeatherAction,
   showWeatherAction,
+  updateWeatherAction,
   validateWeatherInput,
 } from "../controllers/weatherController.ts";
 import { validateParams } from "../middlewares/validation.ts";
@@ -27,7 +28,12 @@ weatherRouter.delete("/");
 weatherRouter.get("/:id", validateParams(), showWeatherAction);
 
 // update one
-weatherRouter.put("/:id");
+weatherRouter.put(
+  "/:id",
+  validateParams(),
+  validateWeatherInput,
+  updateWeatherAction
+);
 
 // delete one or more weather readings
 weatherRouter.delete("/:id");

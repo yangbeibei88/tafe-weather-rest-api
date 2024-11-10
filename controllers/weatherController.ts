@@ -1,14 +1,18 @@
 // @deno-types="npm:@types/express@4.17.21"
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import { getWeather, insertWeather } from "../models/WeatherModel.ts";
+import { OptionalId, ObjectId } from "mongodb";
+import {
+  getWeather,
+  insertWeather,
+  updateWeather,
+} from "../models/WeatherModel.ts";
 import { Weather } from "../models/WeatherSchema.ts";
 import {
   validateBody,
   validateNumber,
   validateText,
 } from "../middlewares/validation.ts";
-import { OptionalId } from "mongodb";
 
 export const showWeatherAction = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -60,11 +64,39 @@ export const createWeatherAction = asyncHandler(
         coordinates: [req.body.longitude, req.body.latitude],
       },
     };
-    const weather = await insertWeather(inputData);
+    const newWeather = await insertWeather(inputData);
 
     res.status(201).json({
       success: true,
-      data: weather,
+      data: newWeather,
+    });
+  }
+);
+
+export const updateWeatherAction = asyncHandler(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const inputData: Weather = {
+      _id: new ObjectId(req.params.id),
+      deviceName: req.body.deviceName,
+      precipitation: req.body.precipitation,
+      temperature: req.body.temperature,
+      atmosphericPressure: req.body.atmosphericPressure,
+      maxWindSpeed: req.body.maxWindSpeed,
+      solarRadiation: req.body.solarRadiation,
+      vaporPressure: req.body.vaporPressure,
+      humidity: req.body.humidity,
+      windDirection: req.body.windDirection,
+      geoLocation: {
+        type: "Point",
+        coordinates: [req.body.longitude, req.body.latitude],
+      },
+    };
+
+    const updatedWeather = await updateWeather(inputData);
+
+    res.status(200).json({
+      success: true,
+      data: updatedWeather,
     });
   }
 );
