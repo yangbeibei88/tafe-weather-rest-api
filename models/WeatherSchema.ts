@@ -23,6 +23,17 @@ export interface Weather {
   geoLocation: GeoLocation<GeoJSONGeometryType>;
 }
 
+type AppWeather = Omit<
+  Weather,
+  "_id" | "createdBy" | "lastModifiedBy" | "geoLocation"
+> & {
+  _id: string;
+  createdBy: string;
+  lastModifiedBy: string;
+  longitude: number;
+  latitude: number;
+};
+
 type WeatherWithoutId = Omit<Weather, "_id">;
 
 const coordinateSchema: MongoJSONSchema = {
@@ -225,7 +236,7 @@ export const weatherSchema: MongoJSONSchema = {
 
 // const weathersColl = database.collection<Weather>("weathers");
 
-// const point: Weather<"Point"> = {
+// const point: Weather = {
 //   deviceName: "xyz",
 //   precipitation: 100,
 //   temperature: 50,

@@ -1,4 +1,4 @@
-// @deno-types="npm:@types/express"
+// @deno-types="npm:@types/express@4.17.21"
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
 import { getWeather, insertWeather } from "../models/WeatherModel.ts";
@@ -8,6 +8,7 @@ import {
   validateNumber,
   validateText,
 } from "../middlewares/validation.ts";
+import { OptionalId } from "mongodb";
 
 export const showWeatherAction = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -42,9 +43,28 @@ export const validateWeatherInput = validateBody([
   validateNumber("latitude", "float", -90, 90),
 ]);
 
-export const createWeatherAction = asyncHandler(async (req, res, next) => {
-  // 1) validate & sanitise data
-  // 2) insert data
-  // const insertedData = await insertWeather()
-  // 3) return json message
-});
+export const createWeatherAction = asyncHandler(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const inputData: OptionalId<Weather> = {
+      deviceName: req.body.deviceName,
+      precipitation: req.body.precipitation,
+      temperature: req.body.temperature,
+      atmosphericPressure: req.body.atmosphericPressure,
+      maxWindSpeed: req.body.maxWindSpeed,
+      solarRadiation: req.body.solarRadiation,
+      vaporPressure: req.body.vaporPressure,
+      humidity: req.body.humidity,
+      windDirection: req.body.windDirection,
+      geoLocation: {
+        type: "Point",
+        coordinates: [req.body.longitude, req.body.latitude],
+      },
+    };
+    const weather = await insertWeather(inputData);
+
+    res.status(201).json({
+      success: true,
+      data: weather,
+    });
+  }
+);

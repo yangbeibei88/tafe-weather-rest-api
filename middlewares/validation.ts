@@ -1,4 +1,4 @@
-// @deno-types="npm:@types/express@4.17.20"
+// @deno-types="npm:@types/express@4.17.21"
 import { Request, Response, NextFunction } from "express";
 import asynHandler from "express-async-handler";
 import {
