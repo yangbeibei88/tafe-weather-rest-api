@@ -23,14 +23,15 @@ const reqLogger: RequestHandler = (req, _res, next) => {
 app.use(reqLogger);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // ROUTES
 app.get("/api/v1", (_req: Request, res: Response) => {
   res.status(200).json({ msg: "Welcome to TAFE Weather REST API v1" });
 });
 
-app.use("/api/v1/login", authRouter);
-app.use("/api/v1/users", userRouter);
+// app.use("/api/v1/login", authRouter);
+// app.use("/api/v1/users", userRouter);
 app.use("/api/v1/weathers", weatherRouter);
 app.use("/api/v1/logs", logRouter);
 

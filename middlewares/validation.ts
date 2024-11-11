@@ -21,7 +21,8 @@ export const validateBody = (validations: ContextRunner[]) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      res.json({ errors: errors.array() });
+      return;
     }
     next();
   };
@@ -69,8 +70,8 @@ export const validateText = (
 export const validateNumber = (
   name: string,
   type: "int" | "float",
-  min?: number,
-  max?: number,
+  min: number = -Infinity,
+  max: number = +Infinity,
   required: boolean = true
 ): ValidationChain => {
   let chain: ValidationChain = body(name);
@@ -96,8 +97,6 @@ export const validateNumber = (
 
   return chain;
 };
-
-export const validateGeoJSON = () => {};
 
 // const validateParams = (req: Request, res: Response, next: NextFunction) => {
 //   const paramKeys = Object.keys(req.params);

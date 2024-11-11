@@ -273,3 +273,17 @@ export const weatherSchema: MongoJSONSchema = {
 //   "Humidity (%)": 73.84,
 //   "Wind Direction (°)": 155.6
 // }
+
+// {
+//   "deviceName": "Woodford_Sensor",
+//   "precipitation": 0.085,
+//   "temperature": 23.85,
+//   "atmosphericPressure": 128.01,
+//   "maxWindSpeed": 5.17,
+//   "solarRadiation": 531.86,
+//   "vaporPressure": 1.77,
+//   "humidity": 71.23,
+//   "windDirection": 149.28,
+//   "longitude": 152.77891,
+//   "latitude": -26.95064
+// }

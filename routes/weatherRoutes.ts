@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   createWeatherAction,
   deleteWeatherAction,
+  listWeathers,
   showWeatherAction,
   updateWeatherAction,
   validateWeatherInput,
@@ -12,7 +13,7 @@ import { validateParams } from "../middlewares/validation.ts";
 export const weatherRouter = Router();
 
 // Get all weathers
-weatherRouter.get("/");
+weatherRouter.get("/", listWeathers);
 
 // Create one or more new weather readings
 weatherRouter.post("/", validateWeatherInput, createWeatherAction);

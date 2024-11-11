@@ -20,9 +20,17 @@ import {
   validateNumber,
   validateText,
 } from "../middlewares/validation.ts";
+import { getAllWeathers } from "../models/WeatherModel.ts";
 
 export const listWeathers = asyncHandlerT(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {}
+  async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const weathers = await getAllWeathers();
+
+    res.status(200).json({
+      success: true,
+      data: weathers,
+    });
+  }
 );
 
 // export const showWeatherAction = asyncHandler(
@@ -65,7 +73,7 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
 
 export const validateWeatherInput = validateBody([
   validateText("deviceName", 1, 50, true),
-  validateNumber("precipitation", "float"),
+  validateNumber("precipitation", "float", -100, 100),
   validateNumber("temperature", "float"),
   validateNumber("atmosphericPressure", "float"),
   validateNumber("maxWindSpeed", "float"),
@@ -81,7 +89,7 @@ export const createWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction) => {
     const inputData: OptionalId<Weather> = {
       deviceName: req.body.deviceName,
-      precipitation: req.body.precipitation,
+      precipitation: req.body["precipitation"],
       temperature: req.body.temperature,
       atmosphericPressure: req.body.atmosphericPressure,
       maxWindSpeed: req.body.maxWindSpeed,
