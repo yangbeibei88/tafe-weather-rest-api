@@ -1,6 +1,12 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
-import { Request, Response, NextFunction } from "express-serve-static-core";
+import {
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express-serve-static-core";
 import asyncHandler from "express-async-handler";
+import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { OptionalId } from "mongodb";
 import {
   deleteWeather,
@@ -15,11 +21,30 @@ import {
   validateText,
 } from "../middlewares/validation.ts";
 
-export const listWeathers = asyncHandler(
+export const listWeathers = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {}
 );
 
-export const showWeatherAction = asyncHandler(
+// export const showWeatherAction = asyncHandler(
+//   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+//     // if param id is valid, call findOne
+//     const weather = await getWeather(req.params.id);
+
+//     if (!weather) {
+//       res.status(404).json({
+//         msg: "Not Found",
+//       });
+//       return;
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       data: weather,
+//     });
+//   }
+// );
+
+export const showWeatherAction: RequestHandler = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     // if param id is valid, call findOne
     const weather = await getWeather(req.params.id);
@@ -36,7 +61,7 @@ export const showWeatherAction = asyncHandler(
       data: weather,
     });
   }
-);
+) as RequestHandler;
 
 export const validateWeatherInput = validateBody([
   validateText("deviceName", 1, 50, true),
@@ -52,8 +77,8 @@ export const validateWeatherInput = validateBody([
   validateNumber("latitude", "float", -90, 90),
 ]);
 
-export const createWeatherAction = asyncHandler(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+export const createWeatherAction = asyncHandlerT(
+  async (req: Request, res: Response, _next: NextFunction) => {
     const inputData: OptionalId<Weather> = {
       deviceName: req.body.deviceName,
       precipitation: req.body.precipitation,
@@ -78,7 +103,7 @@ export const createWeatherAction = asyncHandler(
   }
 );
 
-export const updateWeatherAction = asyncHandler(
+export const updateWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const inputData: OptionalId<Weather> = {
       deviceName: req.body.deviceName,
@@ -105,7 +130,7 @@ export const updateWeatherAction = asyncHandler(
   }
 );
 
-export const deleteWeatherAction = asyncHandler(
+export const deleteWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const deletedWeather = await deleteWeather(req.params.id);
 

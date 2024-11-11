@@ -1,6 +1,5 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
 import { Request, Response, NextFunction } from "express-serve-static-core";
-import asynHandler from "express-async-handler";
 import {
   ContextRunner,
   param,
