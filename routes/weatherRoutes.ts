@@ -2,6 +2,7 @@
 import { Router } from "express";
 import {
   createWeatherAction,
+  deleteWeatherAction,
   showWeatherAction,
   updateWeatherAction,
   validateWeatherInput,
@@ -36,4 +37,4 @@ weatherRouter.put(
 );
 
 // delete one or more weather readings
-weatherRouter.delete("/:id");
+weatherRouter.delete("/:id", validateParams(), deleteWeatherAction);
