@@ -1,5 +1,13 @@
+// @deno-types="npm:@types/express-serve-static-core@4.19.5"
+import {
+  Express,
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express-serve-static-core";
 // @deno-types="npm:@types/express@4.17.21"
-import express, { Express, Request, Response, NextFunction } from "express";
+import express from "express";
 import { weatherRouter } from "./routes/weatherRoutes.ts";
 import { authRouter } from "./routes/authRoutes.ts";
 import { userRouter } from "./routes/userRoutes.ts";
@@ -7,12 +15,14 @@ import { logRouter } from "./routes/logRoutes.ts";
 
 export const app: Express = express();
 
-const reqLogger = (req: Request, _res: Response, next: NextFunction) => {
+const reqLogger: RequestHandler = (req, _res, next) => {
   console.info(`${req.method} request to ${req.url} by ${req.hostname}`);
-  next();
+  (next as NextFunction)();
 };
 
 app.use(reqLogger);
+
+app.use(express.json());
 
 // ROUTES
 app.get("/api/v1", (_req: Request, res: Response) => {

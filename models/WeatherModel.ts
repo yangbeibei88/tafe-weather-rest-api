@@ -4,6 +4,22 @@ import { Weather } from "./WeatherSchema.ts";
 
 const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
+export const getAllWeathers = async () => {
+  try {
+    await client.connect();
+    // TODO: ADD limit, sort, skip, pagination, page later on
+    const cursor = weathersColl.find<Weather>(
+      {},
+      { sort: { createdAt: -1 }, limit: 10 }
+    );
+    return cursor;
+  } catch (error) {
+    console.log(error);
+  } finally {
+    await client.close();
+  }
+};
+
 export const getWeather = async (id: string) => {
   try {
     await client.connect();

@@ -1,5 +1,5 @@
-// @deno-types="npm:@types/express@4.17.21"
-import { Request, Response, NextFunction } from "express";
+// @deno-types="npm:@types/express-serve-static-core@4.19.5"
+import { Request, Response, NextFunction } from "express-serve-static-core";
 import asyncHandler from "express-async-handler";
 import { OptionalId } from "mongodb";
 import {
@@ -14,6 +14,10 @@ import {
   validateNumber,
   validateText,
 } from "../middlewares/validation.ts";
+
+export const listWeathers = asyncHandler(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {}
+);
 
 export const showWeatherAction = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
