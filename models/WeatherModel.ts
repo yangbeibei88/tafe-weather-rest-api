@@ -31,11 +31,14 @@ export const insertWeather = async (weather: OptionalId<Weather>) => {
   }
 };
 
-export const updateWeather = async (weather: Weather) => {
+export const updateWeather = async (
+  id: string,
+  weather: OptionalId<Weather>
+) => {
   try {
     await client.connect();
     const result = await weathersColl.findOneAndUpdate(
-      { _id: weather._id },
+      { _id: new ObjectId(id) },
       { $set: weather, $currentDate: { lastModifiedAt: true } },
       { upsert: true }
     );

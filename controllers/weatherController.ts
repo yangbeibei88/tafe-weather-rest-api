@@ -1,7 +1,7 @@
 // @deno-types="npm:@types/express@4.17.21"
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import { OptionalId, ObjectId } from "mongodb";
+import { OptionalId } from "mongodb";
 import {
   deleteWeather,
   getWeather,
@@ -76,8 +76,7 @@ export const createWeatherAction = asyncHandler(
 
 export const updateWeatherAction = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const inputData: Weather = {
-      _id: new ObjectId(req.params.id),
+    const inputData: OptionalId<Weather> = {
       deviceName: req.body.deviceName,
       precipitation: req.body.precipitation,
       temperature: req.body.temperature,
@@ -93,7 +92,7 @@ export const updateWeatherAction = asyncHandler(
       },
     };
 
-    const updatedWeather = await updateWeather(inputData);
+    const updatedWeather = await updateWeather(req.params.id, inputData);
 
     res.status(200).json({
       success: true,
