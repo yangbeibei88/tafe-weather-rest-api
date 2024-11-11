@@ -7,7 +7,9 @@ const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 export const getWeather = async (id: string) => {
   try {
     await client.connect();
-    const result = await weathersColl.findOne(new ObjectId(id));
+    const result = await weathersColl.findOne<Weather>({
+      _id: new ObjectId(id),
+    });
     return result;
   } catch (error) {
     console.log(error);
