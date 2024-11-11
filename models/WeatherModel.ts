@@ -46,3 +46,18 @@ export const updateWeather = async (weather: Weather) => {
     await client.close();
   }
 };
+
+export const deleteWeather = async (id: string) => {
+  try {
+    await client.connect();
+    const result = await weathersColl.findOneAndDelete({
+      _id: new ObjectId(id),
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+  } finally {
+    await client.close();
+  }
+};

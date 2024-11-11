@@ -2,6 +2,22 @@ const database = "tafe-weather-api";
 use(database);
 db; // "tafe-weather-api"
 
+db.weathers.insertOne({
+  deviceName: "Woodford_Sensor",
+  precipitation: 0.085,
+  temperature: 22.74,
+  atmosphericPressure: 128.02,
+  maxWindSpeed: 4.49,
+  solarRadiation: 113.21,
+  vaporPressure: 1.73,
+  humidity: 73.84,
+  windDirection: 155.6,
+  geoLocation: {
+    type: "Point",
+    coordinates: [152.77891, -26.95064],
+  },
+});
+
 const coordinateSchema = {
   bsonType: "array",
   minItems: 2,
