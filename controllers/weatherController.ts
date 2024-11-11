@@ -129,6 +129,8 @@ export const updateWeatherAction = asyncHandlerT(
       },
     };
 
+    console.log(inputData);
+
     const updatedWeather = await updateWeather(req.params.id, inputData);
 
     res.status(200).json({

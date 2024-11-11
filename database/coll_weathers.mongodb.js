@@ -2,35 +2,19 @@ const database = "tafe-weather-api";
 use(database);
 db; // "tafe-weather-api"
 
-db.weathers.insertOne({
-  deviceName: "Woodford_Sensor",
-  precipitation: 0.085,
-  temperature: 22.74,
-  atmosphericPressure: 128.02,
-  maxWindSpeed: 4.49,
-  solarRadiation: 113.21,
-  vaporPressure: 1.73,
-  humidity: 73.84,
-  windDirection: 155.6,
-  geoLocation: {
-    type: "Point",
-    coordinates: [152.77891, -26.95064],
-  },
-});
-
 const coordinateSchema = {
   bsonType: "array",
   minItems: 2,
   maxItems: 2,
   items: [
     {
-      bsonType: "double",
+      bsonType: ["double", "int"],
       minimum: -180,
       maximum: 180,
       description: "Longitude must be between -180 and 180 degrees",
     },
     {
-      bsonType: "double",
+      bsonType: ["double", "int"],
       minimum: -90,
       maximum: 90,
       description: "Latitude must be between -90 and 90 degrees",
@@ -76,35 +60,35 @@ db.runCommand({
           description: "Must be a string and is required, 1-50 characters",
         },
         precipitation: {
-          bsonType: "double",
+          bsonType: ["double", "int"],
           description: "Must be a number, unit: mm/h",
         },
         temperature: {
-          bsonType: "double",
+          bsonType: ["double", "int"],
           description: "Must be a number, unit: celsius degree",
         },
         atmosphericPressure: {
-          bsonType: "double",
+          bsonType: ["double", "int"],
           description: "Must be a number, unit: kpa",
         },
         maxWindSpeed: {
-          bsonType: "double",
+          bsonType: ["double", "int"],
           description: "Must be a number, unit: m/s",
         },
         solarRadiation: {
-          bsonType: "double",
+          bsonType: ["double", "int"],
           description: "Must be a number, unit: w/m2",
         },
         vaporPressure: {
-          bsonType: "double",
+          bsonType: ["double", "int"],
           description: "Must be a number, unit: kpa",
         },
         humidity: {
-          bsonType: "double",
+          bsonType: ["double", "int"],
           description: "Must be a number, unit: %",
         },
         windDirection: {
-          bsonType: "double",
+          bsonType: ["double", "int"],
           description: "Must be a number, unit: degree",
         },
         createdAt: {
@@ -198,4 +182,20 @@ db.runCommand({
   },
   validationLevel: "strict",
   validationAction: "error",
+});
+
+db.weathers.insertOne({
+  deviceName: "Woodford_Sensor",
+  precipitation: 0.085,
+  temperature: 22.74,
+  atmosphericPressure: 128.02,
+  maxWindSpeed: 4.49,
+  solarRadiation: 113.21,
+  vaporPressure: 1.73,
+  humidity: 73.84,
+  windDirection: 155.6,
+  geoLocation: {
+    type: "Point",
+    coordinates: [152.77891, -26.95064],
+  },
 });

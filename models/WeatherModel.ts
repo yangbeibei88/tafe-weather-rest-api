@@ -1,4 +1,4 @@
-import { OptionalId, ObjectId } from "mongodb";
+import { OptionalId, ObjectId, MongoServerError } from "mongodb";
 import { client, database } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
 
@@ -57,12 +57,15 @@ export const updateWeather = async (
     await client.connect();
     const result = await weathersColl.findOneAndUpdate(
       { _id: new ObjectId(id) },
-      { $set: weather, $currentDate: { lastModifiedAt: true } },
+      // { $set: weather, $currentDate: { lastModifiedAt: true } },
+      { $set: { ...weather, lastModifiedAt: new Date() } },
       { upsert: true }
     );
     return result;
   } catch (error) {
-    console.log(error);
+    if (error instanceof MongoServerError) {
+      console.error("Document validation error:", error.errInfo?.details);
+    }
   } finally {
     await client.close();
   }
