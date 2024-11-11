@@ -50,7 +50,7 @@ export const updateWeather = async (weather: Weather) => {
 export const deleteWeather = async (id: string) => {
   try {
     await client.connect();
-    const result = await weathersColl.findOneAndDelete({
+    const result = await weathersColl.deleteOne({
       _id: new ObjectId(id),
     });
 

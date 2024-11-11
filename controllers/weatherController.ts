@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
 import { OptionalId, ObjectId } from "mongodb";
 import {
+  deleteWeather,
   getWeather,
   insertWeather,
   updateWeather,
@@ -97,6 +98,26 @@ export const updateWeatherAction = asyncHandler(
     res.status(200).json({
       success: true,
       data: updatedWeather,
+    });
+  }
+);
+
+export const deleteWeatherAction = asyncHandler(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const deletedWeather = await deleteWeather(req.params.id);
+
+    if (!deletedWeather?.deletedCount) {
+      res.status(404).json({
+        msg: "No documents matched the query. Deleted 0 documents.",
+      });
+
+      return;
+    }
+
+    res.status(204).json({
+      success: true,
+      msg: "Successfully deleted one document.",
+      deletedWeather,
     });
   }
 );
