@@ -37,4 +37,10 @@ app.all("*", (req: Request, res: Response, _next: NextFunction) => {
     success: false,
     message: `${req.originalUrl} NOT FOUND.`,
   });
+  // const err = new Error(`${req.originalUrl} NOT FOUND.`);
+});
+
+// error handling middleware
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  res.status(500).send({ errors: "Something went wrong..." });
 });
