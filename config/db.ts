@@ -2,6 +2,8 @@ import {
   Collection,
   MongoClient,
   MongoClientOptions,
+  MongoNetworkError,
+  MongoServerError,
   OptionalId,
   ServerApiVersion,
 } from "mongodb";
@@ -11,7 +13,9 @@ import { Log } from "../models/LogSchema.ts";
 
 const uri = Deno.env.get("MONGO_URI")!;
 const dbName = Deno.env.get("MONGO_DBNAME");
-console.log(uri);
+const maxRetries = Number(Deno.env.get("DB_MAX_RETRIES"));
+const retryDelayMs = Number(Deno.env.get("DB_RETRY_DELAY_MS"));
+// console.log(uri);
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 export const mongoClient = new MongoClient(uri, {
@@ -28,42 +32,47 @@ let weathersColl: Collection<OptionalId<Weather>>;
 let usersColl: Collection<OptionalId<User>>;
 let logsColl: Collection<OptionalId<Log>>;
 
-try {
-  // await database connection
-  await mongoClient.connect();
-  console.log(`'${dbName}' MongoDB database connected successfully 🚀`);
+async function connectWithRetry(retries = maxRetries): Promise<void> {
+  while (retries > 0) {
+    try {
+      // await database connection
+      await mongoClient.connect();
+      console.log(`'${dbName}' MongoDB database connected successfully 🚀`);
 
-  // set up collections only if the connection was successful
-  weathersColl = database.collection<OptionalId<Weather>>("weathers");
-  usersColl = database.collection<OptionalId<User>>("users");
-  logsColl = database.collection<OptionalId<Log>>("logs");
-} catch (error) {
-  console.error("MongoDB connection error:", error);
+      // set up collections only if the connection was successful
+      weathersColl = database.collection<OptionalId<Weather>>("weathers");
+      usersColl = database.collection<OptionalId<User>>("users");
+      logsColl = database.collection<OptionalId<Log>>("logs");
+
+      // Exit the loop on successful connection
+      return;
+    } catch (error) {
+      if (
+        error instanceof MongoNetworkError ||
+        (error instanceof MongoServerError &&
+          error.hasErrorLabel("RetryableWriteError"))
+      ) {
+        console.warn(
+          `MongoDB connection error: ${error.message}. Retries left: ${
+            retries - 1
+          }`
+        );
+        retries -= 1;
+
+        if (retries > 0)
+          await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      } else {
+        console.error("MongoDB unrecoverable error: ", error);
+        // exit for non-recoverable errors
+        Deno.exit(1);
+      }
+    }
+  }
+  console.error("MongoDb connection failed after maximum retries.");
+  // exit if retries exhausted
   Deno.exit(1);
 }
 
+await connectWithRetry();
+
 export { weathersColl, usersColl, logsColl };
-
-// export { weathersColl };
-// export const connectDB = async () => {
-//   try {
-//     // connect the client to the server
-//     await client.connect();
-
-//     // send a ping to confirm a successful connection
-//     await client.db(dbName).command({ ping: 1 });
-//     console.log("DB connected!");
-
-//     // create collections
-//     // await initDB(database);
-//   } catch (error) {
-//     console.error(error);
-//   }
-
-//   // finally {
-//   //   // Because Node.js driver auto calls MongoClient.connect() when perform CRUD
-//   //   // when the API initially connect the MongoDB, explicitly verify if the connection is resolved
-//   //   // The client will close if finish/error
-//   //   await client.close();
-//   // }
-// };
