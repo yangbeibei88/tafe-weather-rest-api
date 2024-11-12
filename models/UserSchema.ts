@@ -42,12 +42,12 @@ export const userSchema: MongoJSONSchema = {
       bsonType: "string",
       minLength: 3,
       maxLength: 50,
-      description: "Must be a string and required, 1-50 characters",
+      description: "Must be a string and required, 3-50 characters",
     },
     password: {
       bsonType: "string",
       maxLength: 255,
-      description: "Must be a string and required, 8-50 characters",
+      description: "Must be a string and required, max 255 characters",
     },
     firstName: {
       bsonType: "string",
@@ -84,6 +84,7 @@ export const userSchema: MongoJSONSchema = {
         description:
           'Each role must be one of "teacher", "student", "admin", or "sensor".',
       },
+      additionalItems: false,
       description:
         'Exaustive combination of array of user roles ["teacher", "student", "admin", "sensor"]',
     },
