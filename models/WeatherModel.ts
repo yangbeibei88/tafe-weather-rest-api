@@ -1,12 +1,12 @@
 import { OptionalId, ObjectId, MongoServerError } from "mongodb";
-import { client, database } from "../config/db.ts";
+import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
 
-const weathersColl = database.collection<OptionalId<Weather>>("weathers");
+// const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
+// deno-lint-ignore require-await
 export const getAllWeathers = async () => {
   try {
-    await client.connect();
     // TODO: ADD limit, sort, skip, pagination, page later on
     const cursor = weathersColl.find<Weather>(
       {},
@@ -15,28 +15,23 @@ export const getAllWeathers = async () => {
     return cursor;
   } catch (error) {
     console.log(error);
-  } finally {
-    await client.close();
+    throw error;
   }
 };
 
 export const getWeather = async (id: string) => {
   try {
-    await client.connect();
     const result = await weathersColl.findOne<Weather>({
       _id: new ObjectId(id),
     });
     return result;
   } catch (error) {
     console.log(error);
-  } finally {
-    await client.close();
   }
 };
 
 export const insertWeather = async (weather: OptionalId<Weather>) => {
   try {
-    await client.connect();
     const result = await weathersColl.insertOne({
       ...weather,
       createdAt: new Date(),
@@ -44,8 +39,6 @@ export const insertWeather = async (weather: OptionalId<Weather>) => {
     return { id: result.insertedId, ...result };
   } catch (error) {
     console.log(error);
-  } finally {
-    await client.close();
   }
 };
 
@@ -54,7 +47,6 @@ export const updateWeather = async (
   weather: OptionalId<Weather>
 ) => {
   try {
-    await client.connect();
     const result = await weathersColl.findOneAndUpdate(
       { _id: new ObjectId(id) },
       // { $set: weather, $currentDate: { lastModifiedAt: true } },
@@ -66,14 +58,11 @@ export const updateWeather = async (
     if (error instanceof MongoServerError) {
       console.error("Document validation error:", error.errInfo?.details);
     }
-  } finally {
-    await client.close();
   }
 };
 
 export const deleteWeather = async (id: string) => {
   try {
-    await client.connect();
     const result = await weathersColl.deleteOne({
       _id: new ObjectId(id),
     });
@@ -81,7 +70,5 @@ export const deleteWeather = async (id: string) => {
     return result;
   } catch (error) {
     console.log(error);
-  } finally {
-    await client.close();
   }
 };
