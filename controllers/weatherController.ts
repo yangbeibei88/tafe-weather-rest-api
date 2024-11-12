@@ -28,7 +28,7 @@ export const listWeathers = asyncHandlerT(
 
     res.status(200).json({
       success: true,
-      data: weathers?.toArray(),
+      data: weathers,
     });
   }
 );

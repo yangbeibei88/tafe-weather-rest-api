@@ -4,15 +4,17 @@ import { Weather } from "./WeatherSchema.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
-// deno-lint-ignore require-await
 export const getAllWeathers = async () => {
   try {
     // TODO: ADD limit, sort, skip, pagination, page later on
     const cursor = weathersColl.find<Weather>(
       {},
       { sort: { createdAt: -1 }, limit: 10 }
+      // { limit: 10 }
     );
-    return cursor;
+
+    const results = await cursor.toArray();
+    return results;
   } catch (error) {
     console.log(error);
     throw error;
