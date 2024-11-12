@@ -8,6 +8,7 @@ import {
 } from "express-serve-static-core";
 // @deno-types="npm:@types/express@4.17.21"
 import express from "express";
+import { logger } from "./middlewares/logger.ts";
 import { weatherRouter } from "./routes/weatherRoutes.ts";
 import { authRouter } from "./routes/authRoutes.ts";
 import { userRouter } from "./routes/userRoutes.ts";
@@ -15,12 +16,12 @@ import { logRouter } from "./routes/logRoutes.ts";
 
 export const app: Express = express();
 
-const reqLogger: RequestHandler = (req, _res, next) => {
-  console.info(`${req.method} request to ${req.url} by ${req.hostname}`);
-  (next as NextFunction)();
-};
+// const reqLogger: RequestHandler = (req, _res, next) => {
+//   console.info(`${req.method} ${req.url}`);
+//   (next as NextFunction)();
+// };
 
-app.use(reqLogger);
+app.use(logger);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
