@@ -5,6 +5,7 @@ import {
   Response,
   NextFunction,
   RequestHandler,
+  ErrorRequestHandler,
 } from "express-serve-static-core";
 // @deno-types="npm:@types/express@4.17.21"
 import express from "express";
