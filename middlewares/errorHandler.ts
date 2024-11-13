@@ -31,9 +31,9 @@ export const errorHandler: ErrorRequestHandler = (
       );
     }
     return res.status(statusCode).json({
-      status: statusCode,
-      detail: errors,
-      instance: req.originalUrl,
+      statusCode,
+      errors,
+      path: req.originalUrl,
     });
   }
 

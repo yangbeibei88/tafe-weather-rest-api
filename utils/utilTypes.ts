@@ -130,66 +130,98 @@ export type HTTPSuccessStatusCode =
   (typeof HTTPSuccessStatus)[keyof typeof HTTPSuccessStatus];
 
 export const HTTPRedirectStatus = {
-  MultipleChoices: 300,
-  MovedPermanently: 301,
-  Found: 302,
-  SeeOthers: 303,
-  NotModified: 304,
-  UseProxy: 305,
-  Unused: 306,
+  MultipleChoices: { code: 300, title: "Multiple Choices" },
+  MovedPermanently: { code: 301, title: "MovedPermanently" },
+  Found: { code: 302, title: "Found" },
+  SeeOthers: { code: 303, title: "See Others" },
+  NotModified: { code: 304, title: "Not Modified" },
+  UseProxy: { code: 305, title: "Use Proxy" },
+  Unused: { code: 306, title: "Unused" },
 } as const;
 
 export type HTTPRedirectStatusCode =
-  (typeof HTTPRedirectStatus)[keyof typeof HTTPRedirectStatus];
+  (typeof HTTPRedirectStatus)[keyof typeof HTTPRedirectStatus]["code"];
 
 export const HTTPClientErrorStatus = {
-  BadRequest: 400,
-  Unauthorized: 401,
-  PaymentRequired: 402,
-  Forbidden: 403,
-  NotFound: 404,
-  MethodNotAllowed: 405,
-  NotAcceptable: 406,
-  ProxyAuthenticationRequired: 407,
-  RequestTimeout: 408,
-  Conflict: 409,
-  Gone: 410,
-  LengthRequired: 411,
-  PreconditionFailed: 412,
-  ContentTooLarge: 413,
-  URITooLong: 414,
-  UnsupportedMediaType: 415,
-  RangeNotSatisfiable: 416,
-  ExpectationFailed: 417,
-  IMATeapot: 418,
-  MisdirectedRequest: 421,
-  UnprocessableEntity: 422,
-  Locked: 423,
-  FailedDependency: 424,
-  TooEarly: 425,
-  UpgradeRequired: 426,
-  PreconditionRequired: 427,
-  TooManyRequests: 429,
-  RequestHeaderFieldsTooLarge: 431,
-  UnavailableForLegalReasons: 451,
+  BadRequest: { code: 400, title: "Bad Request" },
+  Unauthorized: { code: 401, title: "Unauthorized" },
+  PaymentRequired: { code: 402, title: "Payment Required" },
+  Forbidden: { code: 403, title: "Forbidden" },
+  NotFound: { code: 404, title: "Not Found" },
+  MethodNotAllowed: { code: 405, title: "Method Not Allowed" },
+  NotAcceptable: { code: 406, title: "Not Acceptable" },
+  ProxyAuthenticationRequired: {
+    code: 407,
+    title: "Proxy Authentication Required",
+  },
+  RequestTimeout: {
+    code: 408,
+    title: "Request Timeout",
+  },
+  Conflict: {
+    code: 409,
+    title: "Conflict",
+  },
+  Gone: { code: 410, title: "Gone" },
+  LengthRequired: { code: 411, title: "Length Required" },
+  PreconditionFailed: { code: 412, title: "Precondition Failed" },
+  ContentTooLarge: { code: 413, title: "Content Too Large" },
+  URITooLong: { code: 414, title: "URI Too Long" },
+  UnsupportedMediaType: { code: 415, title: "Unsupported Media Type" },
+  RangeNotSatisfiable: { code: 416, title: "Range Not Satisfiable" },
+  ExpectationFailed: { code: 417, title: "Expectation Failed" },
+  IMATeapot: { code: 418, title: "I'm a teapot" },
+  MisdirectedRequest: { code: 421, title: "Misdirected Request" },
+  UnprocessableEntity: { code: 422, title: "Unprocessable Entity" },
+  Locked: { code: 423, title: "Locked" },
+  FailedDependency: { code: 424, title: "Failed Dependency" },
+  TooEarly: { code: 425, title: "Too Early" },
+  UpgradeRequired: { code: 426, title: "Upgrade Required" },
+  PreconditionRequired: { code: 427, title: "Precondition Required" },
+  TooManyRequests: { code: 429, title: "Too Many Requests" },
+  RequestHeaderFieldsTooLarge: {
+    code: 431,
+    title: "Request Header Fields Too Large",
+  },
+  UnavailableForLegalReasons: {
+    code: 451,
+    title: "Unavailable For Legal Reasons",
+  },
 } as const;
 
 export type HTTPClientErrorStatusCode =
-  (typeof HTTPClientErrorStatus)[keyof typeof HTTPClientErrorStatus];
+  (typeof HTTPClientErrorStatus)[keyof typeof HTTPClientErrorStatus]["code"];
+
+export type HTTPClientErrorTitle<T> = Extract<
+  (typeof HTTPClientErrorStatus)[keyof typeof HTTPClientErrorStatus],
+  { code: T }
+>["title"];
+
+let clientErrorTitle: HTTPClientErrorTitle<400>;
 
 export const HTTPServerErrorStatus = {
-  InternalServerError: 500,
-  NotImplemented: 501,
-  BadGateway: 502,
-  ServiceUnavailable: 503,
-  GatewayTiemout: 504,
-  HTTPVersionNotSupported: 505,
-  VariantAlsoNegotiates: 506,
-  InsufficientStorage: 507,
-  LoopDetected: 508,
-  NotExtended: 510,
-  NetworkAuthenticationRequired: 511,
+  InternalServerError: { code: 500, title: "Internal Server Error" },
+  NotImplemented: { code: 501, title: "Not Implemented" },
+  BadGateway: { code: 502, title: "Bad Gateway" },
+  ServiceUnavailable: { code: 503, title: "Service Unavailable" },
+  GatewayTiemout: { code: 504, title: "Gateway Tiemout" },
+  HTTPVersionNotSupported: { code: 505, title: "HTTP Version Not Supported" },
+  VariantAlsoNegotiates: { code: 506, title: "Variant Also Negotiates" },
+  InsufficientStorage: { code: 507, title: "Insufficient Storage" },
+  LoopDetected: { code: 508, title: "Loop Detected" },
+  NotExtended: { code: 510, title: "Not Extended" },
+  NetworkAuthenticationRequired: {
+    code: 511,
+    title: "Network Authentication Required",
+  },
 } as const;
 
 export type HTTPServerErrorStatusCode =
-  (typeof HTTPServerErrorStatus)[keyof typeof HTTPServerErrorStatus];
+  (typeof HTTPServerErrorStatus)[keyof typeof HTTPServerErrorStatus]["code"];
+
+export type HTTPServerErrorTitle<T> = Extract<
+  (typeof HTTPServerErrorStatus)[keyof typeof HTTPServerErrorStatus],
+  { code: T }
+>["title"];
+
+let errorTitle: HTTPServerErrorTitle<500>;

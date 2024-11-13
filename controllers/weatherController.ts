@@ -21,6 +21,7 @@ import {
   validateText,
 } from "../middlewares/validation.ts";
 import { getAllWeathers } from "../models/WeatherModel.ts";
+import { ClientError } from "../errors/ClientError.ts";
 
 export const listWeathers = asyncHandlerT(
   async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -61,7 +62,7 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
       // res.status(404).json({
       //   msg: "Not Found",
       // });
-      next();
+      next(new ClientError({ code: 404 }));
       return;
     }
 
