@@ -5,11 +5,41 @@ import {
   NextFunction,
   ErrorRequestHandler,
 } from "express-serve-static-core";
-const errorHandler: ErrorRequestHandler = (
+
+import { BaseError } from "../errors/BaseError.ts";
+
+export const errorHandler: ErrorRequestHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
-  // TODO: error handling logic
+  if (err instanceof BaseError) {
+    const { statusCode, errors, logging } = err;
+
+    if (logging === true) {
+      console.error(
+        JSON.stringify(
+          {
+            code: err.statusCode,
+            errors: err.errors,
+            stack: err.stack,
+          },
+          null,
+          2
+        )
+      );
+    }
+    return res.status(statusCode).json({
+      status: statusCode,
+      detail: errors,
+      instance: req.originalUrl,
+    });
+  }
+
+  // // unhandled errors
+  // console.error(JSON.stringify(err, null, 2));
+  // return res.status(400).send({
+  //   errors: [{ message: "Something went wrong." }],
+  // });
 };

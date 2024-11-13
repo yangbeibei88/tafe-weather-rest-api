@@ -4,8 +4,6 @@ import {
   Request,
   Response,
   NextFunction,
-  RequestHandler,
-  ErrorRequestHandler,
 } from "express-serve-static-core";
 // @deno-types="npm:@types/express@4.17.21"
 import express from "express";
@@ -14,6 +12,8 @@ import { weatherRouter } from "./routes/weatherRoutes.ts";
 import { authRouter } from "./routes/authRoutes.ts";
 import { userRouter } from "./routes/userRoutes.ts";
 import { logRouter } from "./routes/logRoutes.ts";
+import { errorHandler } from "./middlewares/errorHandler.ts";
+import { ClientError } from "./errors/ClientError.ts";
 
 export const app: Express = express();
 
@@ -32,16 +32,10 @@ app.get("/api/v1", (_req: Request, res: Response) => {
 app.use("/api/v1/weathers", weatherRouter);
 app.use("/api/v1/logs", logRouter);
 
-// HANDLE UNHANDLED ROUTES
-app.all("*", (req: Request, res: Response, _next: NextFunction) => {
-  res.status(404).json({
-    success: false,
-    message: `${req.originalUrl} NOT FOUND.`,
-  });
-  // const err = new Error(`${req.originalUrl} NOT FOUND.`);
-});
-
 // error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  res.status(500).send({ errors: "Something went wrong..." });
-});
+app.use(errorHandler);
+
+// HANDLE UNHANDLED ROUTES
+app.all("*", (_req: Request, _res: Response, next: NextFunction) =>
+  next(new ClientError({ code: 400 }))
+);
