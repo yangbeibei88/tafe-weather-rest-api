@@ -11,11 +11,10 @@ db.runCommand({
       title: "user object validation",
       required: [
         "_id",
-        "username",
+        "emailAddress",
         "password",
         "firstName",
         "lastName",
-        "emailAddress",
         "phone",
         "role",
         "status",
@@ -24,11 +23,12 @@ db.runCommand({
         _id: {
           bsonType: "objectId",
         },
-        username: {
+        emailAddress: {
           bsonType: "string",
-          minLength: 3,
-          maxLength: 50,
-          description: "Must be a string and required, 3-50 characters",
+          minLength: 5,
+          maxLength: 200,
+          pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+          description: "Must be a string and required, 5-200 characters",
         },
         password: {
           bsonType: "string",
@@ -46,13 +46,6 @@ db.runCommand({
           minLength: 2,
           maxLength: 50,
           description: "Must be a string and required, 2-50 characters",
-        },
-        emailAddress: {
-          bsonType: "string",
-          minLength: 5,
-          maxLength: 200,
-          pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
-          description: "Must be a string and required, 5-200 characters",
         },
         phone: {
           bsonType: "string",
@@ -98,3 +91,5 @@ db.runCommand({
   validationLevel: "strict",
   validationAction: "error",
 });
+
+db.users.createIndex({ emailAddress: 1 }, { unique: true });

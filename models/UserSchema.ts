@@ -5,11 +5,10 @@ type Role = "teacher" | "student" | "admin" | "sensor";
 
 export interface User {
   _id: ObjectId;
-  username: string;
+  emailAddress: string;
   password: string;
   firstName: string;
   lastName: string;
-  emailAddress: string;
   phone: string;
   role: Role[];
   status: "active" | "inactive";
@@ -25,11 +24,10 @@ export const userSchema: MongoJSONSchema = {
   title: "user object validation",
   required: [
     "_id",
-    "username",
+    "emailAddress",
     "password",
     "firstName",
     "lastName",
-    "emailAddress",
     "phone",
     "role",
     "status",
@@ -38,11 +36,12 @@ export const userSchema: MongoJSONSchema = {
     _id: {
       bsonType: "objectId",
     },
-    username: {
+    emailAddress: {
       bsonType: "string",
-      minLength: 3,
-      maxLength: 50,
-      description: "Must be a string and required, 3-50 characters",
+      minLength: 5,
+      maxLength: 200,
+      pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      description: "Must be a string and required, 5-200 characters",
     },
     password: {
       bsonType: "string",
@@ -60,13 +59,6 @@ export const userSchema: MongoJSONSchema = {
       minLength: 2,
       maxLength: 50,
       description: "Must be a string and required, 2-50 characters",
-    },
-    emailAddress: {
-      bsonType: "string",
-      minLength: 5,
-      maxLength: 200,
-      pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
-      description: "Must be a string and required, 5-200 characters",
     },
     phone: {
       bsonType: "string",
