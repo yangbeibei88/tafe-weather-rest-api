@@ -1,9 +1,14 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
-import { Request, Response, NextFunction } from "express-serve-static-core";
+import {
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express-serve-static-core";
 import { IncomingMessage } from "node:http";
 import { Buffer } from "node:buffer";
 
-export function logger(req: Request, res: Response, next: NextFunction) {
+export function logger(req: Request, res: Response, next: NextFunction): void {
   const start = Date.now();
 
   const orginalSend = res.send;
@@ -15,10 +20,14 @@ export function logger(req: Request, res: Response, next: NextFunction) {
     const contentLength = body ? Buffer.byteLength(body) : 0;
 
     const log = [
-      req.ip || req.socket?.remoteAddress || "-",
+      req.ip ||
+        (req as unknown as IncomingMessage).socket?.remoteAddress ||
+        "-",
       "-",
       new Date().toISOString(),
-      `${req.method} ${req.originalUrl} HTTP/${req.httpVersion || 1.1}`,
+      `${req.method} ${req.originalUrl} HTTP/${
+        (req as unknown as IncomingMessage).httpVersion || 1.1
+      }`,
       res.statusCode,
       `${contentLength} bytes`,
       req.get("Referrer") ? `"${req.get("Referrer")}"` : "-",

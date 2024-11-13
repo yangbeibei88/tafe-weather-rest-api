@@ -9,13 +9,14 @@ import {
   ValidationChain,
 } from "express-validator";
 import { ClientError } from "../errors/ClientError.ts";
+import { RequestHandler } from "express-serve-static-core";
 
 type Location = "body" | "cookies" | "headers" | "params" | "query";
 
 // calling validationResult(req) will include the results for this validation
 
-export const validateBody = (validations: ContextRunner[]) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+export const validateBody = (validations: ContextRunner[]): RequestHandler => {
+  return (async (req: Request, _res: Response, next: NextFunction) => {
     for (const validation of validations) {
       await validation.run(req);
     }
@@ -33,11 +34,11 @@ export const validateBody = (validations: ContextRunner[]) => {
       return;
     }
     next();
-  };
+  }) as RequestHandler;
 };
 
-export const validateParams = () => {
-  return async (req: Request, _res: Response, next: NextFunction) => {
+export const validateParams = (): RequestHandler => {
+  return (async (req: Request, _res: Response, next: NextFunction) => {
     for (const paramKey in req.params) {
       await param(paramKey).notEmpty().escape().run(req);
     }
@@ -51,7 +52,7 @@ export const validateParams = () => {
     }
 
     next();
-  };
+  }) as RequestHandler;
 };
 
 export const validateText = (
