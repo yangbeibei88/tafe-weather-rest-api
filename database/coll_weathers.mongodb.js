@@ -48,6 +48,7 @@ db.runCommand({
         "vaporPressure",
         "humidity",
         "windDirection",
+        "geoLocation",
       ],
       properties: {
         _id: {
@@ -199,3 +200,5 @@ db.weathers.insertOne({
     coordinates: [152.77891, -26.95064],
   },
 });
+
+db.weathers.createIndex({ geoLocation: "2dsphere" });
