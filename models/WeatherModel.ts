@@ -38,7 +38,7 @@ export const insertWeather = async (weather: OptionalId<Weather>) => {
       ...weather,
       createdAt: new Date(),
     });
-    return { id: result.insertedId, ...result };
+    return { id: result.insertedId, ...weather };
   } catch (error) {
     console.log(error);
   }
