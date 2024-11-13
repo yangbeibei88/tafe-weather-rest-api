@@ -20,7 +20,10 @@ export const getAllUsers = async () => {
 
 export const getUser = async (id: string) => {
   try {
-    const result = await usersColl.findOne<User>({ _id: new ObjectId(id) });
+    const result = await usersColl.findOne<User>(
+      { _id: new ObjectId(id) },
+      { projection: { password: 0 } }
+    );
     return result;
   } catch (error) {
     console.log(error);

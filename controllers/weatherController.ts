@@ -9,6 +9,7 @@ import asyncHandler from "express-async-handler";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { OptionalId } from "mongodb";
 import {
+  getAllWeathers,
   deleteWeather,
   getWeather,
   insertWeather,
@@ -20,7 +21,6 @@ import {
   validateNumber,
   validateText,
 } from "../middlewares/validation.ts";
-import { getAllWeathers } from "../models/WeatherModel.ts";
 import { ClientError } from "../errors/ClientError.ts";
 
 export const listWeathers = asyncHandlerT(
