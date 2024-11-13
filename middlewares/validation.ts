@@ -8,6 +8,7 @@ import {
   body,
   ValidationChain,
 } from "express-validator";
+import { ClientError } from "../errors/ClientError.ts";
 
 type Location = "body" | "cookies" | "headers" | "params" | "query";
 
@@ -21,7 +22,14 @@ export const validateBody = (validations: ContextRunner[]) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      res.json({ errors: errors.array() });
+      next(
+        new ClientError({
+          code: 400,
+          message: "Validation Error",
+          context: { ...errors.array() },
+        })
+      );
+      // res.json({ errors: errors.array() });
       return;
     }
     next();
@@ -29,7 +37,7 @@ export const validateBody = (validations: ContextRunner[]) => {
 };
 
 export const validateParams = () => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     for (const paramKey in req.params) {
       await param(paramKey).notEmpty().escape().run(req);
     }
@@ -37,7 +45,8 @@ export const validateParams = () => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      res.json({ errors: errors.array() });
+      next(new ClientError({ code: 404, context: { ...errors.array() } }));
+      // res.json({ errors: errors.array() });
       return;
     }
 

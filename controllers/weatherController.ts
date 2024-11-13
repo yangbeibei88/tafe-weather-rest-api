@@ -59,9 +59,6 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
     const weather = await getWeather(req.params.id);
 
     if (!weather) {
-      // res.status(404).json({
-      //   msg: "Not Found",
-      // });
       next(new ClientError({ code: 404 }));
       return;
     }
@@ -143,13 +140,16 @@ export const updateWeatherAction = asyncHandlerT(
 );
 
 export const deleteWeatherAction = asyncHandlerT(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const deletedWeather = await deleteWeather(req.params.id);
 
     if (!deletedWeather?.deletedCount) {
-      res.status(404).json({
-        msg: "No documents matched the query. Deleted 0 documents.",
-      });
+      next(
+        new ClientError({
+          code: 404,
+          message: "No documents matched the query. Deleted 0 documents.",
+        })
+      );
 
       return;
     }

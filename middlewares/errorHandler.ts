@@ -15,15 +15,15 @@ export const errorHandler: ErrorRequestHandler = (
   _next: NextFunction
 ) => {
   if (err instanceof BaseError) {
-    const { statusCode, errors, logging } = err;
+    const { statusCode, errors, stack } = err;
 
-    if (logging === true) {
+    if (Deno.env.get("DENO_ENV") === "development") {
       console.error(
         JSON.stringify(
           {
-            code: err.statusCode,
-            errors: err.errors,
-            stack: err.stack,
+            code: statusCode,
+            errors: errors,
+            stack: stack,
           },
           null,
           2
