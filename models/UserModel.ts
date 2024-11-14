@@ -52,9 +52,12 @@ export const insertUser = async (user: OptionalId<User>) => {
   }
 };
 
-export const updateUser = async (id: string, user: OptionalId<User>) => {
+export const updateUser = async (
+  id: string,
+  user: Omit<OptionalId<User>, "password">
+) => {
   try {
-    const result = await usersColl.findOneAndUpdate(
+    const result = await usersColl.updateOne(
       { _id: new ObjectId(id) },
       { $set: { ...user } }
     );

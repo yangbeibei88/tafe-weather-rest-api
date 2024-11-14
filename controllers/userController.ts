@@ -24,6 +24,7 @@ import {
   getAllUsers,
   getUser,
   insertUser,
+  updateUser,
 } from "../models/UserModel.ts";
 
 export const listUsersAction = asyncHandlerT(
@@ -86,5 +87,21 @@ export const createUserAction = asyncHandlerT(
 );
 
 export const updateUserAction = asyncHandlerT(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {}
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const inputData: Omit<OptionalId<User>, "password"> = {
+      emailAddress: req.body.emailAddress,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      phone: req.body.phone,
+      role: req.body.role,
+      status: req.body.status,
+    };
+
+    const updatedUser = await updateUser(req.params.id, inputData);
+
+    res.status(200).json({
+      success: true,
+      data: updatedUser,
+    });
+  }
 );
