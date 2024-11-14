@@ -1,10 +1,5 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
-import {
-  Request,
-  Response,
-  NextFunction,
-  RequestHandler,
-} from "express-serve-static-core";
+import { Request, Response, NextFunction } from "express-serve-static-core";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { OptionalId } from "mongodb";
 import { User, roles, userStatus } from "../models/UserSchema.ts";
@@ -12,7 +7,6 @@ import {
   compareStrings,
   validateBody,
   validateEmail,
-  validateNumber,
   validatePassword,
   validatePhoneNumber,
   validateSelect,
@@ -88,6 +82,15 @@ export const createUserAction = asyncHandlerT(
 
 export const updateUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const id: string = req.params.id;
+
+    const user = await getUser(id);
+
+    if (!user) {
+      next(new ClientError({ code: 404 }));
+      return;
+    }
+
     const inputData: Omit<OptionalId<User>, "password"> = {
       emailAddress: req.body.emailAddress,
       firstName: req.body.firstName,
@@ -97,7 +100,7 @@ export const updateUserAction = asyncHandlerT(
       status: req.body.status,
     };
 
-    const updatedUser = await updateUser(req.params.id, inputData);
+    const updatedUser = await updateUser(id, inputData);
 
     res.status(200).json({
       success: true,
