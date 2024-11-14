@@ -12,6 +12,7 @@ import {
   validateBody,
   validateEmail,
   validateNumber,
+  validatePassword,
   validatePhoneNumber,
   validateText,
 } from "../middlewares/validation.ts";
@@ -55,6 +56,7 @@ export const validateUserInput = validateBody([
   validateText("lastName", 2, 50),
   validateEmail("emailAddress", true, findUserByEmail, true),
   validatePhoneNumber("phone"),
+  validatePassword("password", 8, 50),
 ]);
 
 export const createUserAction = asyncHandlerT(

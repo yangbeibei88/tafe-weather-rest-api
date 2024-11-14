@@ -166,6 +166,38 @@ export const validateEmail = (
   return chain;
 };
 
+export const validatePassword = (
+  name: string,
+  min: number = 8,
+  max: number = 50,
+  required: boolean = true
+): ValidationChain => {
+  let chain: ValidationChain = body(name);
+
+  if (required === false) {
+    chain = chain.optional({ values: "falsy" });
+  }
+
+  chain = chain.trim().custom((v) => {
+    const isValid =
+      v.length >= min &&
+      v.length <= max &&
+      /[A-Z]/.test(v) &&
+      /[a-z]/.test(v) &&
+      /[0-9]/.test(v) &&
+      /[\W_]/.test(v);
+
+    if (!isValid) {
+      throw new Error(
+        `Invalid password. Password must be at least ${min} characters, at most ${max} characters, containing uppercase(s),lowercase(s), number(s), and special character(s).`
+      );
+    }
+    return true;
+  });
+
+  return chain;
+};
+
 // const validateParams = (req: Request, res: Response, next: NextFunction) => {
 //   const paramKeys = Object.keys(req.params);
 
