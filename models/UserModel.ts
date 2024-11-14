@@ -18,6 +18,16 @@ export const getAllUsers = async () => {
   }
 };
 
+export const findUserByEmail = async (email: string) => {
+  try {
+    const cursor = usersColl.find<User>({ emailAddress: email });
+    const results = await cursor.toArray();
+    return results;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const getUser = async (id: string) => {
   try {
     const result = await usersColl.findOne<User>(

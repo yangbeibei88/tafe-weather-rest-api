@@ -10,12 +10,18 @@ import { OptionalId } from "mongodb";
 import { User } from "../models/UserSchema.ts";
 import {
   validateBody,
+  validateEmail,
   validateNumber,
   validatePhoneNumber,
   validateText,
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
-import { getAllUsers, getUser, insertUser } from "../models/UserModel.ts";
+import {
+  findUserByEmail,
+  getAllUsers,
+  getUser,
+  insertUser,
+} from "../models/UserModel.ts";
 
 export const listUsersAction = asyncHandlerT(
   async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -47,6 +53,7 @@ export const showUserAction = asyncHandlerT(
 export const validateUserInput = validateBody([
   validateText("firstName", 2, 50),
   validateText("lastName", 2, 50),
+  validateEmail("emailAddress", true, findUserByEmail, true),
   validatePhoneNumber("phone"),
 ]);
 
