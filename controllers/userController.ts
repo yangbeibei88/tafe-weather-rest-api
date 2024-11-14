@@ -11,10 +11,11 @@ import { User } from "../models/UserSchema.ts";
 import {
   validateBody,
   validateNumber,
+  validatePhoneNumber,
   validateText,
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
-import { getAllUsers, getUser } from "../models/UserModel.ts";
+import { getAllUsers, getUser, insertUser } from "../models/UserModel.ts";
 
 export const listUsersAction = asyncHandlerT(
   async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -43,8 +44,14 @@ export const showUserAction = asyncHandlerT(
   }
 );
 
+export const validateUserInput = validateBody([
+  validateText("firstName", 2, 50),
+  validateText("lastName", 2, 50),
+  validatePhoneNumber("phone"),
+]);
+
 export const createUserAction = asyncHandlerT(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const inputData: OptionalId<User> = {
       emailAddress: req.body.emailAddress,
       password: req.body.password,
@@ -54,5 +61,16 @@ export const createUserAction = asyncHandlerT(
       role: req.body.role,
       status: req.body.status,
     };
+
+    const newUser = await insertUser(inputData);
+
+    res.status(201).json({
+      success: true,
+      data: newUser,
+    });
   }
+);
+
+export const updateUserAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {}
 );

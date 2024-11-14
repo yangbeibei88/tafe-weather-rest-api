@@ -7,8 +7,8 @@ import {
   RequestHandler,
 } from "express-serve-static-core";
 // @deno-types="npm:@types/express@4.17.21"
-// import express, { Express, Request, Response, NextFunction } from "express";
 import express from "express";
+// import express, { Express, Request, Response, NextFunction } from "express";
 import { logger } from "./middlewares/logger.ts";
 import { weatherRouter } from "./routes/weatherRoutes.ts";
 import { authRouter } from "./routes/authRoutes.ts";
@@ -21,8 +21,8 @@ export const app: Express = express();
 
 app.use(logger as RequestHandler);
 
-app.use(express.json() as RequestHandler);
-app.use(express.urlencoded({ extended: false }) as RequestHandler);
+app.use(express.json() as unknown as RequestHandler);
+app.use(express.urlencoded({ extended: false }) as unknown as RequestHandler);
 
 // ROUTES
 app.get("/api/v1", (_req: Request, res: Response) => {

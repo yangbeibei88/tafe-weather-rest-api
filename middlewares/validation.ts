@@ -1,5 +1,10 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
-import { Request, Response, NextFunction } from "express-serve-static-core";
+import {
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express-serve-static-core";
 import {
   ContextRunner,
   param,
@@ -9,7 +14,6 @@ import {
   ValidationChain,
 } from "express-validator";
 import { ClientError } from "../errors/ClientError.ts";
-import { RequestHandler } from "express-serve-static-core";
 
 type Location = "body" | "cookies" | "headers" | "params" | "query";
 
@@ -104,6 +108,26 @@ export const validateNumber = (
         .withMessage(`${name} must be a float between ${min} and ${max}`);
       break;
   }
+
+  return chain;
+};
+
+export const validatePhoneNumber = (
+  name: string,
+  required: boolean = true
+): ValidationChain => {
+  let chain: ValidationChain = body(name);
+
+  if (required === false) {
+    chain = chain.optional({ values: "falsy" });
+  }
+
+  chain = chain
+    .trim()
+    .matches(/^0[2-478]\\d{8}$/)
+    .withMessage(
+      `${name} must be 10 digits without spaces and special characters.`
+    );
 
   return chain;
 };
