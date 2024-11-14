@@ -215,6 +215,48 @@ export const compareStrings = (
   return chain;
 };
 
+export const validateSelect = (
+  name: string,
+  options: readonly string[],
+  required: boolean = true
+): ValidationChain => {
+  let chain: ValidationChain = body(name);
+
+  if (required === false) {
+    chain.optional({ values: "null" });
+  }
+
+  // The input could be text input (string), single select (string)
+  chain = chain
+    .customSanitizer((v) => {
+      // if the field is a text input or single select, then req.body will return a string
+      if (typeof v === "string" && v.trim().length > 0) {
+        return v
+          .trim()
+          .toLowerCase()
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => options.includes(item));
+      }
+
+      // if the field is multiple select, then req.body will return an array
+      if (Array.isArray(v) && v.length > 0) {
+        const values = v
+          .map((item) => item.trim().toLowerCase())
+          .filter((item) => options.includes(item));
+
+        return Array.from(new Set(values));
+      }
+
+      // all other cases, return empty array
+      return [];
+    })
+    .custom((v) => v.length > 0)
+    .withMessage("The selected/entered values are invalid.");
+
+  return chain;
+};
+
 // const validateParams = (req: Request, res: Response, next: NextFunction) => {
 //   const paramKeys = Object.keys(req.params);
 

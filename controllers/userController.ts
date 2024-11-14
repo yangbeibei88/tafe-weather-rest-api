@@ -7,7 +7,7 @@ import {
 } from "express-serve-static-core";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { OptionalId } from "mongodb";
-import { User } from "../models/UserSchema.ts";
+import { User, roles, userStatus } from "../models/UserSchema.ts";
 import {
   compareStrings,
   validateBody,
@@ -15,6 +15,7 @@ import {
   validateNumber,
   validatePassword,
   validatePhoneNumber,
+  validateSelect,
   validateText,
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
@@ -59,6 +60,8 @@ export const validateUserInput = validateBody([
   validatePhoneNumber("phone"),
   validatePassword("password", 8, 50),
   compareStrings("passwords", "password", "confirmPassword"),
+  validateSelect("role", roles, true),
+  validateSelect("status", userStatus, true),
 ]);
 
 export const createUserAction = asyncHandlerT(

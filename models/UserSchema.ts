@@ -1,7 +1,13 @@
 import { ObjectId } from "mongodb";
 import { MongoJSONSchema } from "../utils/utilTypes.ts";
 
-type Role = "teacher" | "student" | "admin" | "sensor";
+export const roles = ["teacher", "student", "admin", "sensor"] as const;
+
+export const userStatus = ["active", "inactive"] as const;
+
+export type Role = (typeof roles)[number];
+
+export type UserStatus = (typeof userStatus)[number];
 
 export interface User {
   _id: ObjectId;
@@ -11,7 +17,7 @@ export interface User {
   lastName: string;
   phone: string;
   role: Role[];
-  status: "active" | "inactive";
+  status: UserStatus;
   createdAt?: Date;
   updatedAt?: Date;
   lastLoggedInAt?: Date;
