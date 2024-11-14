@@ -198,6 +198,23 @@ export const validatePassword = (
   return chain;
 };
 
+export const compareStrings = (
+  plurals: string,
+  str1Name: string,
+  str2Name: string
+): ValidationChain => {
+  let chain: ValidationChain = body(str2Name);
+
+  chain = chain.trim().custom((v, { req }) => {
+    if (v !== req.body(str1Name)) {
+      throw new Error(`${plurals} do not match.`);
+    }
+    return true;
+  });
+
+  return chain;
+};
+
 // const validateParams = (req: Request, res: Response, next: NextFunction) => {
 //   const paramKeys = Object.keys(req.params);
 

@@ -9,6 +9,7 @@ import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { OptionalId } from "mongodb";
 import { User } from "../models/UserSchema.ts";
 import {
+  compareStrings,
   validateBody,
   validateEmail,
   validateNumber,
@@ -57,6 +58,7 @@ export const validateUserInput = validateBody([
   validateEmail("emailAddress", true, findUserByEmail, true),
   validatePhoneNumber("phone"),
   validatePassword("password", 8, 50),
+  compareStrings("passwords", "password", "confirmPassword"),
 ]);
 
 export const createUserAction = asyncHandlerT(
