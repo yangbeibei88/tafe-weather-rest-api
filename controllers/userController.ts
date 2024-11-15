@@ -14,6 +14,7 @@ import {
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
 import {
+  deleteUser,
   findUserByEmail,
   getAllUsers,
   getUser,
@@ -105,6 +106,28 @@ export const updateUserAction = asyncHandlerT(
     res.status(200).json({
       success: true,
       data: updatedUser,
+    });
+  }
+);
+
+export const deleteUserAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const deletedUser = await deleteUser(req.params.id);
+
+    if (!deletedUser?.deletedCount) {
+      next(
+        new ClientError({
+          code: 404,
+          message: "No documents matched the query. Deleted 0 documents.",
+        })
+      );
+      return;
+    }
+
+    res.status(204).json({
+      success: true,
+      msg: "Successfully deleted one document.",
+      deleteUser,
     });
   }
 );
