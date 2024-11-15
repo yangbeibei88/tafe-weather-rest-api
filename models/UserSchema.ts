@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { MongoJSONSchema } from "../utils/utilTypes.ts";
+import { RequiredKeys } from "../utils/helpers.ts";
 
 export const roles = ["teacher", "student", "admin", "sensor"] as const;
 
@@ -24,6 +25,8 @@ export interface User {
 }
 
 type UserWithoutId = Omit<User, "_id">;
+type UserWithoutIdFields = keyof UserWithoutId;
+type RequiredUser = Pick<UserWithoutId, RequiredKeys<UserWithoutId>>;
 
 export const userSchema: MongoJSONSchema = {
   bsonType: "object",

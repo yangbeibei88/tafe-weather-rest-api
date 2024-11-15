@@ -59,6 +59,16 @@ export const validateParams = (): RequestHandler => {
   }) as RequestHandler;
 };
 
+export const validateBodyFactory =
+  (resourceValidations: Record<string, ContextRunner>) =>
+  (fields: string[]): RequestHandler =>
+    validateBody(
+      fields.flatMap((field) => {
+        const validation = resourceValidations[field];
+        return validation ? [validation] : [];
+      })
+    );
+
 export const validateText = (
   name: string,
   min: number = 0,

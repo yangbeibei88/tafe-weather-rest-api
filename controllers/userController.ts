@@ -21,6 +21,21 @@ import {
   insertUser,
   updateUser,
 } from "../models/UserModel.ts";
+import { ContextRunner } from "express-validator";
+
+const userValidations: Record<string, ContextRunner> = {};
+
+export const validateUserInput = () =>
+  validateBody([
+    validateText("firstName", 2, 50),
+    validateText("lastName", 2, 50),
+    validateEmail("emailAddress", true, findUserByEmail, true),
+    validatePhoneNumber("phone"),
+    validatePassword("password", 8, 50),
+    compareStrings("passwords", "password", "confirmPassword"),
+    validateSelect("role", roles, true),
+    validateSelect("status", userStatus, true),
+  ]);
 
 export const listUsersAction = asyncHandlerT(
   async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -48,17 +63,6 @@ export const showUserAction = asyncHandlerT(
     });
   }
 );
-
-export const validateUserInput = validateBody([
-  validateText("firstName", 2, 50),
-  validateText("lastName", 2, 50),
-  validateEmail("emailAddress", true, findUserByEmail, true),
-  validatePhoneNumber("phone"),
-  validatePassword("password", 8, 50),
-  compareStrings("passwords", "password", "confirmPassword"),
-  validateSelect("role", roles, true),
-  validateSelect("status", userStatus, true),
-]);
 
 export const createUserAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
