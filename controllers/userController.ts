@@ -2,6 +2,8 @@
 import { Request, Response, NextFunction } from "express-serve-static-core";
 import { OptionalId } from "mongodb";
 import { ContextRunner } from "express-validator";
+// @deno-types="@types/bcryptjs"
+import bcrypt from "bcryptjs";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { RequiredUser, User, roles, userStatus } from "../models/UserSchema.ts";
 import {
@@ -32,9 +34,9 @@ const userValidations: Record<
   lastName: validateText("lastName", 2, 50),
   emailAddress: validateEmail("emailAddress", true, findUserByEmail, true),
   phone: validatePhoneNumber("phone"),
-  password: validatePassword("password", 8, 50),
   role: validateSelect("role", roles, true),
   status: validateSelect("status", userStatus, true),
+  password: validatePassword("password", 8, 50),
   confirmPassword: compareStrings("passwords", "password", "confirmPassword"),
 };
 
@@ -55,14 +57,7 @@ export const validateNewUserInputs = () =>
   ]);
 
 export const validateUpdateUserInputs = () =>
-  validateUserInputs([
-    "firstName",
-    "lastName",
-    "emailAddress",
-    "phone",
-    "role",
-    "status",
-  ]);
+  validateUserInputs(["firstName", "lastName", "phone", "role", "status"]);
 
 export const listUsersAction = asyncHandlerT(
   async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -93,9 +88,12 @@ export const showUserAction = asyncHandlerT(
 
 export const createUserAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    // hash password
+    const hashedPassword = await bcrypt.hash(req.body.password, 12);
+
     const inputData: OptionalId<User> = {
       emailAddress: req.body.emailAddress,
-      password: req.body.password,
+      password: hashedPassword,
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       phone: req.body.phone,

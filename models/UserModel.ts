@@ -46,7 +46,9 @@ export const insertUser = async (user: OptionalId<User>) => {
       ...user,
       createdAt: new Date(),
     });
-    return { id: result.insertedId, ...user };
+
+    const newUser: Omit<OptionalId<User>, "password"> = user;
+    return { _id: result.insertedId, ...newUser };
   } catch (error) {
     console.log(error);
   }
