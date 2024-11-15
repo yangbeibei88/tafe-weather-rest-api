@@ -6,7 +6,8 @@ import {
   listUsersAction,
   showUserAction,
   updateUserAction,
-  validateUserInput,
+  validateNewUserInputs,
+  validateUpdateUserInputs,
 } from "../controllers/userController.ts";
 import { validateParams } from "../middlewares/validation.ts";
 
@@ -19,12 +20,17 @@ userRouter.get("/", listUsersAction);
 userRouter.get("/:id", validateParams(), showUserAction);
 
 // Create one new user
-userRouter.post("/", validateUserInput(), createUserAction);
+userRouter.post("/", validateNewUserInputs(), createUserAction);
 
 // Create many users
 
 // Update one user
-userRouter.put("/:id", validateParams(), validateUserInput(), updateUserAction);
+userRouter.put(
+  "/:id",
+  validateParams(),
+  validateUpdateUserInputs(),
+  updateUserAction
+);
 
 // Update many users
 

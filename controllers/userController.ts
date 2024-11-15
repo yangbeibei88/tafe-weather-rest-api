@@ -1,11 +1,12 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
 import { Request, Response, NextFunction } from "express-serve-static-core";
-import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { OptionalId } from "mongodb";
-import { User, roles, userStatus } from "../models/UserSchema.ts";
+import { ContextRunner } from "express-validator";
+import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
+import { RequiredUser, User, roles, userStatus } from "../models/UserSchema.ts";
 import {
   compareStrings,
-  validateBody,
+  validateBodyFactory,
   validateEmail,
   validatePassword,
   validatePhoneNumber,
@@ -21,20 +22,46 @@ import {
   insertUser,
   updateUser,
 } from "../models/UserModel.ts";
-import { ContextRunner } from "express-validator";
 
-const userValidations: Record<string, ContextRunner> = {};
+// Define the validation rules for user-related fields
+const userValidations: Record<
+  keyof RequiredUser | "confirmPassword",
+  ContextRunner
+> = {
+  firstName: validateText("firstName", 2, 50),
+  lastName: validateText("lastName", 2, 50),
+  emailAddress: validateEmail("emailAddress", true, findUserByEmail, true),
+  phone: validatePhoneNumber("phone"),
+  password: validatePassword("password", 8, 50),
+  role: validateSelect("role", roles, true),
+  status: validateSelect("status", userStatus, true),
+  confirmPassword: compareStrings("passwords", "password", "confirmPassword"),
+};
 
-export const validateUserInput = () =>
-  validateBody([
-    validateText("firstName", 2, 50),
-    validateText("lastName", 2, 50),
-    validateEmail("emailAddress", true, findUserByEmail, true),
-    validatePhoneNumber("phone"),
-    validatePassword("password", 8, 50),
-    compareStrings("passwords", "password", "confirmPassword"),
-    validateSelect("role", roles, true),
-    validateSelect("status", userStatus, true),
+const validateUserInputs = (
+  fields: (keyof RequiredUser | "confirmPassword")[]
+) => validateBodyFactory(userValidations)(fields);
+
+export const validateNewUserInputs = () =>
+  validateUserInputs([
+    "firstName",
+    "lastName",
+    "emailAddress",
+    "phone",
+    "password",
+    "confirmPassword",
+    "role",
+    "status",
+  ]);
+
+export const validateUpdateUserInputs = () =>
+  validateUserInputs([
+    "firstName",
+    "lastName",
+    "emailAddress",
+    "phone",
+    "role",
+    "status",
   ]);
 
 export const listUsersAction = asyncHandlerT(
@@ -87,15 +114,6 @@ export const createUserAction = asyncHandlerT(
 
 export const updateUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const id: string = req.params.id;
-
-    const user = await getUser(id);
-
-    if (!user) {
-      next(new ClientError({ code: 404 }));
-      return;
-    }
-
     const inputData: Omit<OptionalId<User>, "password"> = {
       emailAddress: req.body.emailAddress,
       firstName: req.body.firstName,
@@ -105,24 +123,29 @@ export const updateUserAction = asyncHandlerT(
       status: req.body.status,
     };
 
-    const updatedUser = await updateUser(id, inputData);
+    const result = await updateUser(req.params.id, inputData);
+
+    if (!result?.matchedCount) {
+      next(new ClientError({ code: 404, message: "The user not found." }));
+      return;
+    }
 
     res.status(200).json({
       success: true,
-      data: updatedUser,
+      result,
     });
   }
 );
 
 export const deleteUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const deletedUser = await deleteUser(req.params.id);
+    const result = await deleteUser(req.params.id);
 
-    if (!deletedUser?.deletedCount) {
+    if (!result?.deletedCount) {
       next(
         new ClientError({
           code: 404,
-          message: "No documents matched the query. Deleted 0 documents.",
+          message: "The user not found.",
         })
       );
       return;
@@ -131,7 +154,7 @@ export const deleteUserAction = asyncHandlerT(
     res.status(204).json({
       success: true,
       msg: "Successfully deleted one document.",
-      deleteUser,
+      result,
     });
   }
 );

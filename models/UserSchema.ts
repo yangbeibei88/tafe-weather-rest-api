@@ -25,8 +25,8 @@ export interface User {
 }
 
 type UserWithoutId = Omit<User, "_id">;
-type UserWithoutIdFields = keyof UserWithoutId;
-type RequiredUser = Pick<UserWithoutId, RequiredKeys<UserWithoutId>>;
+export type UserWithoutIdkeys = keyof UserWithoutId;
+export type RequiredUser = Pick<UserWithoutId, RequiredKeys<UserWithoutId>>;
 
 export const userSchema: MongoJSONSchema = {
   bsonType: "object",
