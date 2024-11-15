@@ -134,7 +134,7 @@ export const validatePhoneNumber = (
 
   chain = chain
     .trim()
-    .matches(/^0[2-478]\\d{8}$/)
+    .matches(/^0[2-478]\d{8}$/)
     .withMessage(
       `${name} must be 10 digits without spaces and special characters.`
     );
@@ -216,7 +216,7 @@ export const compareStrings = (
   let chain: ValidationChain = body(str2Name);
 
   chain = chain.trim().custom((v, { req }) => {
-    if (v !== req.body(str1Name)) {
+    if (v !== req.body[str1Name]) {
       throw new Error(`${plurals} do not match.`);
     }
     return true;
@@ -228,6 +228,7 @@ export const compareStrings = (
 export const validateSelect = (
   name: string,
   options: readonly string[],
+  storeType: "string" | "array",
   required: boolean = true
 ): ValidationChain => {
   let chain: ValidationChain = body(name);
@@ -239,27 +240,28 @@ export const validateSelect = (
   // The input could be text input (string), single select (string)
   chain = chain
     .customSanitizer((v) => {
-      // if the field is a text input or single select, then req.body will return a string
+      let result: string[];
       if (typeof v === "string" && v.trim().length > 0) {
-        return v
+        // if the field is a text input or single select, convert the req.body to array
+        result = v
           .trim()
           .toLowerCase()
           .split(",")
           .map((item) => item.trim())
           .filter((item) => options.includes(item));
-      }
-
-      // if the field is multiple select, then req.body will return an array
-      if (Array.isArray(v) && v.length > 0) {
+        // return storeType === "string" ? result.join(",") : result;
+      } else if (Array.isArray(v) && v.length > 0) {
+        // if the field is multiple select, then req.body will return an array
         const values = v
           .map((item) => item.trim().toLowerCase())
           .filter((item) => options.includes(item));
 
-        return Array.from(new Set(values));
+        result = Array.from(new Set(values));
+      } else {
+        // all other cases, return empty array
+        result = [];
       }
-
-      // all other cases, return empty array
-      return [];
+      return storeType === "string" ? result.join(",") : result;
     })
     .custom((v) => v.length > 0)
     .withMessage("The selected/entered values are invalid.");

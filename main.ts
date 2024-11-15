@@ -30,8 +30,8 @@ app.get("/api/v1", (_req: Request, res: Response) => {
 });
 
 // app.use("/api/v1/login", authRouter);
-app.use("/api/v1/users", userRouter);
 app.use("/api/v1/weathers", weatherRouter);
+app.use("/api/v1/users", userRouter);
 app.use("/api/v1/logs", logRouter);
 
 // error handling middleware

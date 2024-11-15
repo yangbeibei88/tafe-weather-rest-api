@@ -16,11 +16,11 @@ export const userRouter = Router();
 // Get all users
 userRouter.get("/", listUsersAction);
 
-// Get one user
-userRouter.get("/:id", validateParams(), showUserAction);
-
 // Create one new user
 userRouter.post("/", validateNewUserInputs(), createUserAction);
+
+// Get one user
+userRouter.get("/:id", validateParams(), showUserAction);
 
 // Create many users
 

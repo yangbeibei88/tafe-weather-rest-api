@@ -34,8 +34,8 @@ const userValidations: Record<
   lastName: validateText("lastName", 2, 50),
   emailAddress: validateEmail("emailAddress", true, findUserByEmail, true),
   phone: validatePhoneNumber("phone"),
-  role: validateSelect("role", roles, true),
-  status: validateSelect("status", userStatus, true),
+  role: validateSelect("role", roles, "array"),
+  status: validateSelect("status", userStatus, "string"),
   password: validatePassword("password", 8, 50),
   confirmPassword: compareStrings("passwords", "password", "confirmPassword"),
 };
@@ -50,10 +50,10 @@ export const validateNewUserInputs = () =>
     "lastName",
     "emailAddress",
     "phone",
-    "password",
-    "confirmPassword",
     "role",
     "status",
+    "password",
+    "confirmPassword",
   ]);
 
 export const validateUpdateUserInputs = () =>
@@ -100,6 +100,8 @@ export const createUserAction = asyncHandlerT(
       role: req.body.role,
       status: req.body.status,
     };
+
+    console.log(inputData);
 
     const newUser = await insertUser(inputData);
 

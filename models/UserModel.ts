@@ -40,15 +40,17 @@ export const getUser = async (id: string) => {
   }
 };
 
-export const insertUser = async (user: OptionalId<User>) => {
+export const insertUser = async (
+  user: OptionalId<User>
+): Promise<Omit<OptionalId<User>, "password"> | undefined> => {
   try {
     const result = await usersColl.insertOne({
       ...user,
       createdAt: new Date(),
     });
 
-    const newUser: Omit<OptionalId<User>, "password"> = user;
-    return { _id: result.insertedId, ...newUser };
+    const { password, ...userWithoutPassword } = user;
+    return { _id: result.insertedId, ...userWithoutPassword };
   } catch (error) {
     console.log(error);
   }
