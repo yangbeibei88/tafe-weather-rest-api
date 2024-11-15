@@ -134,3 +134,15 @@ export const userSchema: MongoJSONSchema = {
 // };
 
 // const userColl = database.collection<User>("users");
+
+// sample user:
+// {
+//   "firstName": "test3",
+//   "lastName": "test",
+//   "emailAddress": "test3@test.io",
+//   "phone": "0400123120",
+//   "role": "student",
+//   "status": "active",
+//   "password": "********",
+//   "confirmPassword": "********"
+// }

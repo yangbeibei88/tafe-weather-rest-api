@@ -24,6 +24,7 @@ import {
   insertUser,
   updateUser,
 } from "../models/UserModel.ts";
+import { signToken } from "../middlewares/jwtHandler.ts";
 
 // Define the validation rules for user-related fields
 const userValidations: Record<
@@ -105,8 +106,11 @@ export const createUserAction = asyncHandlerT(
 
     const newUser = await insertUser(inputData);
 
+    const token = signToken({ id: newUser?._id });
+
     res.status(201).json({
       success: true,
+      token,
       data: newUser,
     });
   }

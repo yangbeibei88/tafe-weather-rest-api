@@ -49,6 +49,7 @@ export const insertUser = async (
       createdAt: new Date(),
     });
 
+    // deno-lint-ignore no-unused-vars
     const { password, ...userWithoutPassword } = user;
     return { _id: result.insertedId, ...userWithoutPassword };
   } catch (error) {
