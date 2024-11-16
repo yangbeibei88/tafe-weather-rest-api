@@ -12,7 +12,6 @@
     "@types/node": "npm:@types/node@^22.8.7",
     "bcryptjs": "npm:bcryptjs@^2.4.3",
     "express": "npm:express@^4.21.1",
-    "express-async-handler": "npm:express-async-handler@^1.2.0",
     "express-serve-static-core": "npm:express-serve-static-core@^0.1.1",
     "express-validator": "npm:express-validator@^7.2.0",
     "jsonwebtoken": "npm:jsonwebtoken@^9.0.2",

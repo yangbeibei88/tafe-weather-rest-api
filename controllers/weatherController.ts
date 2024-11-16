@@ -5,7 +5,6 @@ import {
   NextFunction,
   RequestHandler,
 } from "express-serve-static-core";
-import asyncHandler from "express-async-handler";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { OptionalId } from "mongodb";
 import {
