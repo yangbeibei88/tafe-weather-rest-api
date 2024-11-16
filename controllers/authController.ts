@@ -12,7 +12,7 @@ import {
   validateEmail,
   validatePassword,
 } from "../middlewares/validation.ts";
-import { findUserByEmail, getUser } from "../models/UserModel.ts";
+import { findUserByEmail, findUserById } from "../models/UserModel.ts";
 import { ClientError } from "../errors/ClientError.ts";
 import { decodeJwt, signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
@@ -100,17 +100,22 @@ export const protect = asyncHandlerT(
       );
     }
 
-    // 3) check if user still exists
     const decoded = await decodeJwt(
       token,
       Deno.env.get("JWT_SECRET") as jwt.Secret
     );
 
     console.log(decoded);
-    console.log(typeof decoded.role, typeof decoded.status);
+
+    // 3) check if user still exists
+    const currentUser = await findUserById(decoded._id);
+    if (!currentUser) {
+      return next(
+        new ClientError({ code: 401, message: "The user no longer exists." })
+      );
+    }
 
     // 4) check if user changed password after the token was issued
-    // const currentUser = await getUser(decoded._id);
 
     next();
   }

@@ -30,7 +30,7 @@ export const findUserByEmail = async (email: string) => {
   }
 };
 
-export const getUser = async (id: string) => {
+export const findUserById = async (id: string) => {
   try {
     const result = await usersColl.findOne<User>(
       { _id: new ObjectId(id) },

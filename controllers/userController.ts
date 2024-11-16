@@ -20,7 +20,7 @@ import {
   deleteUser,
   findUserByEmail,
   getAllUsers,
-  getUser,
+  findUserById,
   insertUser,
   updateUser,
 } from "../models/UserModel.ts";
@@ -74,7 +74,7 @@ export const listUsersAction = asyncHandlerT(
 
 export const showUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const user = await getUser(req.params.id);
+    const user = await findUserById(req.params.id);
 
     if (!user) {
       next(new ClientError({ code: 404 }));
