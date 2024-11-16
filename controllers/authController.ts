@@ -15,6 +15,7 @@ import {
 import { findUserByEmail, getUser } from "../models/UserModel.ts";
 import { ClientError } from "../errors/ClientError.ts";
 import { decodeJwt, signToken } from "../middlewares/jwtHandler.ts";
+import { JwtPayloadT } from "../utils/utilTypes.ts";
 
 const loginValidations: Record<
   keyof Pick<User, "emailAddress" | "password">,
@@ -61,7 +62,14 @@ export const authLoginAction = asyncHandlerT(
     }
 
     // IF LOGIN CREDENTIALS CORRECT, SEND TOKEN TO THE CLIENT
-    const token = signToken({ id: user[0]._id, email: user[0].emailAddress });
+    const token = signToken<
+      JwtPayloadT<Pick<User, "_id" | "emailAddress" | "role" | "status">>
+    >({
+      _id: user[0]._id.toString(),
+      emailAddress: user[0].emailAddress,
+      role: user[0].role.toString(),
+      status: user[0].status,
+    });
 
     res.status(200).json({
       success: true,
