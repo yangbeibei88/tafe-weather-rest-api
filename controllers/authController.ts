@@ -3,6 +3,8 @@ import { Request, Response, NextFunction } from "express-serve-static-core";
 import { ContextRunner } from "express-validator";
 // @deno-types="@types/bcryptjs"
 import bcrypt from "bcryptjs";
+// @deno-types="@types/jsonwebtoken"
+import jwt from "jsonwebtoken";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { User } from "../models/UserSchema.ts";
 import {
@@ -10,9 +12,9 @@ import {
   validateEmail,
   validatePassword,
 } from "../middlewares/validation.ts";
-import { findUserByEmail } from "../models/UserModel.ts";
+import { findUserByEmail, getUser } from "../models/UserModel.ts";
 import { ClientError } from "../errors/ClientError.ts";
-import { signToken } from "../middlewares/jwtHandler.ts";
+import { decodeJwt, signToken } from "../middlewares/jwtHandler.ts";
 
 const loginValidations: Record<
   keyof Pick<User, "emailAddress" | "password">,
@@ -74,4 +76,34 @@ export const authLoginAction = asyncHandlerT(
 // // Restrict permission
 // const restrictTo = asyncHandlerT(async (req, res, next) => {});
 
-// const protect = asyncHandlerT(async (req, res, next) => {});
+export const protect = asyncHandlerT(
+  async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    let token: string | undefined;
+
+    // 1) check if token exists
+    if (req.headers?.authorization.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    // 2) verify token
+    if (!token || token === "") {
+      return next(
+        new ClientError({ code: 401, message: "Please login to get access." })
+      );
+    }
+
+    // 3) check if user still exists
+    const decoded = await decodeJwt(
+      token,
+      Deno.env.get("JWT_SECRET") as jwt.Secret
+    );
+
+    console.log(decoded);
+    console.log(typeof decoded.role, typeof decoded.status);
+
+    // 4) check if user changed password after the token was issued
+    // const currentUser = await getUser(decoded._id);
+
+    next();
+  }
+);

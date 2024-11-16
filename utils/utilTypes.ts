@@ -225,3 +225,7 @@ export type HTTPServerErrorTitle<T> = Extract<
 >["title"];
 
 let errorTitle: HTTPServerErrorTitle<500>;
+
+export type JwtPayloadT<T> = {
+  [K in keyof T]: string;
+};

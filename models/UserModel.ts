@@ -44,18 +44,27 @@ export const getUser = async (id: string) => {
 
 export const insertUser = async (
   user: OptionalId<User>
-): Promise<Omit<OptionalId<User>, "password"> | undefined> => {
+): Promise<Omit<User, "password">> => {
   try {
     const result = await usersColl.insertOne({
       ...user,
       createdAt: new Date(),
     });
 
+    // if (!result.insertedId) {
+    //   throw new Error("User insert failed.");
+    // }
+
+    // // const insertedId = result.insertedId;
+
+    // console.log(typeof result.insertedId);
     // deno-lint-ignore no-unused-vars
     const { password, ...userWithoutPassword } = user;
+
     return { _id: result.insertedId, ...userWithoutPassword };
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 

@@ -9,11 +9,12 @@ import {
   validateWeatherInput,
 } from "../controllers/weatherController.ts";
 import { validateParams } from "../middlewares/validation.ts";
+import { protect } from "../controllers/authController.ts";
 
 export const weatherRouter = Router();
 
 // Get all weathers
-weatherRouter.get("/", listWeathers);
+weatherRouter.get("/", protect, listWeathers);
 
 // Create one or more new weather readings
 weatherRouter.post("/", validateWeatherInput, createWeatherAction);

@@ -25,6 +25,7 @@ import {
   updateUser,
 } from "../models/UserModel.ts";
 import { signToken } from "../middlewares/jwtHandler.ts";
+import { JwtPayloadT } from "../utils/utilTypes.ts";
 
 // Define the validation rules for user-related fields
 const userValidations: Record<
@@ -88,7 +89,7 @@ export const showUserAction = asyncHandlerT(
 );
 
 export const createUserAction = asyncHandlerT(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // hash password
     const hashedPassword = await bcrypt.hash(req.body.password, 12);
 
@@ -106,7 +107,24 @@ export const createUserAction = asyncHandlerT(
 
     const newUser = await insertUser(inputData);
 
-    const token = signToken({ id: newUser?._id, email: newUser?.emailAddress });
+    if (!newUser._id) {
+      return next(new ClientError({ code: 400 }));
+    }
+    console.log(typeof newUser._id);
+
+    // Pick<OptionalId<User>, "emailAddress" | "role" | "status"> & {
+    //   _id: string;
+    // }
+
+    // To compare if each field in decoded payload is deeply equal to stringified fields in the database, so when signing the token, stringify each field.
+    const token = signToken<
+      JwtPayloadT<Pick<User, "_id" | "emailAddress" | "role" | "status">>
+    >({
+      _id: newUser._id.toString(),
+      emailAddress: newUser.emailAddress,
+      role: newUser.role.toString(),
+      status: newUser.status,
+    });
 
     res.status(201).json({
       success: true,
