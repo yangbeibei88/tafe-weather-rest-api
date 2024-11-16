@@ -106,7 +106,7 @@ export const createUserAction = asyncHandlerT(
 
     const newUser = await insertUser(inputData);
 
-    const token = signToken({ id: newUser?._id });
+    const token = signToken({ id: newUser?._id, email: newUser?.emailAddress });
 
     res.status(201).json({
       success: true,
