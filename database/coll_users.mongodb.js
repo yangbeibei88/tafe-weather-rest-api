@@ -80,6 +80,10 @@ db.runCommand({
           bsonType: ["date", "null"],
           description: "Date when the user was last updated.",
         },
+        passwordChangedAt: {
+          bsonType: ["date", "null"],
+          description: "Date when the user's password was last updated.",
+        },
         lastLoggedInAt: {
           bsonType: ["date", "null"],
           description: "Date when the user last logged in.",

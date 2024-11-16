@@ -21,6 +21,7 @@ export interface User {
   status: UserStatus;
   createdAt?: Date;
   updatedAt?: Date;
+  passwordChangedAt?: Date;
   lastLoggedInAt?: Date;
 }
 
@@ -101,6 +102,10 @@ export const userSchema: MongoJSONSchema = {
     updatedAt: {
       bsonType: ["date", "null"],
       description: "Date when the user was last updated.",
+    },
+    passwordChangedAt: {
+      bsonType: ["date", "null"],
+      description: "Date when the user's password was last updated.",
     },
     lastLoggedInAt: {
       bsonType: ["date", "null"],
