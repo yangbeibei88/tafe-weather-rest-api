@@ -8,7 +8,7 @@ export const getAllUsers = async () => {
   try {
     const cursor = usersColl.find<User>(
       {},
-      { sort: { createdAt: -1 }, limit: 10 }
+      { projection: { password: 0 }, sort: { createdAt: -1 }, limit: 10 }
     );
     const results = await cursor.toArray();
     return results;

@@ -25,11 +25,11 @@ app.use(express.json() as unknown as RequestHandler);
 app.use(express.urlencoded({ extended: false }) as unknown as RequestHandler);
 
 // ROUTES
-app.get("/api/v1", (_req: Request, res: Response) => {
-  res.status(200).json({ msg: "Welcome to TAFE Weather REST API v1" });
-});
+// app.get("/api/v1", (_req: Request, res: Response) => {
+//   res.status(200).json({ msg: "Welcome to TAFE Weather REST API v1" });
+// });
 
-// app.use("/api/v1/login", authRouter);
+app.use("/api/v1", authRouter);
 app.use("/api/v1/weathers", weatherRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/logs", logRouter);

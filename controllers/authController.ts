@@ -25,8 +25,15 @@ const loginValidations: Record<
 export const validateLoginInputs = () =>
   validateBodyFactory(loginValidations)(["emailAddress", "password"]);
 
+// greetings
+export const greetingAction = (_req: Request, res: Response) => {
+  res.status(200).json({
+    message: "Welcome to TAFE Weather REST API v1! Please login to continue.",
+  });
+};
+
 // authenticate login
-const authenticateLoginAction = asyncHandlerT(
+export const authLoginAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // 1) CHECK if username is in `users` collection and status is active
     const user = await findUserByEmail(req.body.emailAddress);
@@ -42,6 +49,8 @@ const authenticateLoginAction = asyncHandlerT(
       req.body.password,
       userPassword
     );
+
+    console.log(verifyPasswordPromise);
 
     if (!verifyPasswordPromise) {
       return next(
@@ -60,9 +69,9 @@ const authenticateLoginAction = asyncHandlerT(
   }
 );
 
-const logoutAction = asyncHandlerT(async (req, res, next) => {});
+// const logoutAction = asyncHandlerT(async (req, res, next) => {});
 
-// Restrict permission
-const restrictTo = asyncHandlerT(async (req, res, next) => {});
+// // Restrict permission
+// const restrictTo = asyncHandlerT(async (req, res, next) => {});
 
-const protect = asyncHandlerT(async (req, res, next) => {});
+// const protect = asyncHandlerT(async (req, res, next) => {});
