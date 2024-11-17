@@ -1,10 +1,11 @@
 import { OptionalId, ObjectId, MongoServerError } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
+import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
-export const getAllWeathers = async () => {
+export const getAllWeathers = async (reqQuery = { page: 1, limit: 10 }) => {
   try {
     // const cursor = weathersColl.find<Weather>(
     //   {},
@@ -12,26 +13,44 @@ export const getAllWeathers = async () => {
     //   // { limit: 10 }
     // );
 
-    let page: number = 1;
-    let pageSize: number = 10;
+    const matchCriteria = AggregationBuilder.parseQueryToMatch(reqQuery);
+    const pipeline = new AggregationBuilder()
+      .match(matchCriteria)
+      .sort({ createdAt: -1 })
+      .build();
 
-    const aggCursor = weathersColl.aggregate([
-      // sort
-      // { $count: "totalCount" },
-      { $sort: { createdAt: -1 } },
-      // { $skip: (page - 1) * pageSize },
-      // { $limit: pageSize },
-      {
-        $facet: {
-          metadata: [{ $count: "totalCount" }],
-          data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
-        },
-      },
-    ]);
+    const result = await weathersColl.aggregate(pipeline).toArray();
 
-    const aggResult = await aggCursor.toArray();
+    const totalCount = result[0].totalCount[0]?.totalCount || 0;
 
-    return { page, pageSize, aggResult };
+    const { totalPages, currentPage } = AggregationBuilder.calculatePagination(
+      totalCount,
+      reqQuery.limit,
+      reqQuery.page
+    );
+
+    return {
+      totalCount,
+      totalPages,
+      currentPage,
+      data: result[0].data,
+    };
+
+    // let page: number = 1;
+    // let pageSize: number = 10;
+
+    // const aggCursor = weathersColl.aggregate([
+    //   { $sort: { createdAt: -1 } },
+    //   {
+    //     $facet: {
+    //       metadata: [{ $count: "totalCount" }],
+    //       data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
+    //     },
+    //   },
+    // ]);
+
+    // const aggResult = await aggCursor.toArray();
+    // return { page, pageSize, aggResult };
 
     // const results = await cursor.toArray();
     // return results;

@@ -1,29 +1,75 @@
+import { Collection } from "mongodb";
+
 export class AggregationBuilder {
-  query: any;
-  queryString: any;
-  constructor(query: any, queryString: any) {
-    // MongoDB query
-    this.query = query;
-    // queryString: req.query
-    this.queryString = queryString;
-  }
+  // deno-lint-ignore no-explicit-any
+  private pipeline: any[] = [];
+  private limit: number = 10;
+  private page: number = 1;
 
-  filter() {
-    const queryObj = { ...this.queryString };
-    const excludedFields = ["page", "sort", "limit", "fields"] as const;
-    excludedFields.forEach((item) => delete queryObj[item]);
-
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
-    this.query = this.query.find(JSON.parse(queryStr));
-
+  // deno-lint-ignore no-explicit-any
+  match(criteria: Record<string, any>) {
+    if (Object.keys(criteria).length > 0) {
+      this.pipeline.push({ $match: criteria });
+    }
     return this;
   }
 
-  sort() {}
+  // deno-lint-ignore no-explicit-any
+  group(grouping: Record<string, any>) {
+    this.pipeline.push({ $group: grouping });
+    return this;
+  }
 
-  limitFields() {}
+  sort(sortCriteria: Record<string, 1 | -1>) {
+    this.pipeline.push({ $sort: sortCriteria });
+    return this;
+  }
 
-  paginate() {}
+  // deno-lint-ignore no-explicit-any
+  project(projection: Record<string, any>) {
+    this.pipeline.push({ $project: projection });
+    return this;
+  }
+
+  paginate(limit: number, page: number) {
+    this.limit = limit > 0 ? limit : 10;
+    this.page = page > 0 ? page : 1;
+
+    const skip = (this.page - 1) * this.limit;
+
+    const paginationFacet = {
+      totalCount: [{ $count: "totalCount" }],
+      data: [{ $skip: skip }, { $limit: this.limit }],
+    };
+    this.pipeline.push({ $facet: paginationFacet });
+    return this;
+  }
+
+  // deno-lint-ignore no-explicit-any
+  static parseQueryToMatch(query: Record<string, any>) {
+    // deno-lint-ignore no-explicit-any
+    const matchCriteria: Record<string, any> = {};
+
+    for (const key in query) {
+      if (key === "limit" || key === "page") {
+        continue;
+      }
+
+      matchCriteria[key] = query[key];
+    }
+
+    return matchCriteria;
+  }
+
+  static calculatePagination(totalCount: number, limit: number, page: number) {
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page > totalPages ? totalPages : page;
+
+    return { totalPages, currentPage };
+  }
+
+  // deno-lint-ignore no-explicit-any
+  build(): any[] {
+    return this.pipeline;
+  }
 }
