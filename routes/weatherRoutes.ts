@@ -9,7 +9,7 @@ import {
   validateWeatherInput,
 } from "../controllers/weatherController.ts";
 import { validateParams } from "../middlewares/validation.ts";
-import { protect } from "../controllers/authController.ts";
+import { protect, authorisedTo } from "../controllers/authController.ts";
 
 export const weatherRouter = Router();
 
@@ -17,29 +17,49 @@ export const weatherRouter = Router();
 weatherRouter.use(protect);
 
 // Get all weathers
-weatherRouter.get("/", listWeathers);
+weatherRouter.get(
+  "/",
+  authorisedTo("admin", "teacher", "student"),
+  listWeathers
+);
 
-// Create one or more new weather readings
-weatherRouter.post("/", validateWeatherInput, createWeatherAction);
+// Create one new weather reading
+weatherRouter.post(
+  "/",
+  authorisedTo("admin", "teacher", "sensor"),
+  validateWeatherInput,
+  createWeatherAction
+);
 
 // Update one or more new weather readings
-weatherRouter.put("/");
+// weatherRouter.put("/");
 
 // delete one or more new weather readings
-weatherRouter.delete("/");
+// weatherRouter.delete("/");
 
 // TODO: UPLOAD WEATHER DATA THROUGH FILES (JSON, CSV)
 
-// Get a single weather reading
-weatherRouter.get("/:id", validateParams(), showWeatherAction);
+// Get one weather reading
+weatherRouter.get(
+  "/:id",
+  authorisedTo("admin", "teacher", "student"),
+  validateParams(),
+  showWeatherAction
+);
 
-// update one
+// update one weather reading
 weatherRouter.put(
   "/:id",
+  authorisedTo("admin", "teacher"),
   validateParams(),
   validateWeatherInput,
   updateWeatherAction
 );
 
 // delete one or more weather readings
-weatherRouter.delete("/:id", validateParams(), deleteWeatherAction);
+weatherRouter.delete(
+  "/:id",
+  authorisedTo("admin", "teacher"),
+  validateParams(),
+  deleteWeatherAction
+);

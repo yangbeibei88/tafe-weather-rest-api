@@ -17,6 +17,7 @@ import { ClientError } from "../errors/ClientError.ts";
 import { decodeJwt, signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
 import { isSubset } from "../utils/helpers.ts";
+import { RequestHandler } from "express-serve-static-core";
 
 const loginValidations: Record<
   keyof Pick<User, "emailAddress" | "password">,
@@ -122,9 +123,8 @@ export const protect = asyncHandlerT(
 );
 
 // Restrict permission
-export const authorisedTo =
-  (...roles: Role[]) =>
-  (req: Request, _res: Response, next: NextFunction) => {
+export const authorisedTo = (...roles: Role[]) =>
+  ((req: Request, _res: Response, next: NextFunction) => {
     if (!isSubset(roles, req.user.role)) {
       return next(
         new ClientError({
@@ -134,4 +134,4 @@ export const authorisedTo =
       );
     }
     next();
-  };
+  }) as RequestHandler;

@@ -10,8 +10,12 @@ import {
   validateUpdateUserInputs,
 } from "../controllers/userController.ts";
 import { validateParams } from "../middlewares/validation.ts";
+import { protect, authorisedTo } from "../controllers/authController.ts";
 
 export const userRouter = Router();
+
+// protect all user routes
+userRouter.use(protect, authorisedTo("admin", "teacher"));
 
 // Get all users
 userRouter.get("/", listUsersAction);
