@@ -8,7 +8,7 @@ import {
   updateWeatherAction,
   validateWeatherInput,
 } from "../controllers/weatherController.ts";
-import { validateParams } from "../middlewares/validation.ts";
+import { validateParams, validateQuery } from "../middlewares/validation.ts";
 import { protect, authorisedTo } from "../controllers/authController.ts";
 
 export const weatherRouter = Router();
@@ -19,6 +19,7 @@ weatherRouter.use(protect);
 // Get all weathers
 weatherRouter.get(
   "/",
+  validateQuery(),
   authorisedTo("admin", "teacher", "student"),
   listWeathersAction
 );

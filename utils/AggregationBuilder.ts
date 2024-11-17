@@ -1,5 +1,3 @@
-import { Collection } from "mongodb";
-
 export class AggregationBuilder {
   // deno-lint-ignore no-explicit-any
   private pipeline: any[] = [];

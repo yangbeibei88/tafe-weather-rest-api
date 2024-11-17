@@ -1,59 +1,21 @@
 import { OptionalId, ObjectId, MongoServerError } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
-import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
+import { getPaginatedData } from "./modelFactory.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
-export const getAllWeathers = async (reqQuery = { page: 1, limit: 10 }) => {
+export const getAllWeathers = async (
+  query: Record<string, any>,
+  limit: number = 10,
+  page: number = 1
+) => {
   try {
-    // const cursor = weathersColl.find<Weather>(
-    //   {},
-    //   { sort: { createdAt: -1 }, limit: 10 }
-    //   // { limit: 10 }
-    // );
+    const result = await getPaginatedData(weathersColl, query, limit, page, {
+      createdAt: -1,
+    });
 
-    const matchCriteria = AggregationBuilder.parseQueryToMatch(reqQuery);
-    const pipeline = new AggregationBuilder()
-      .match(matchCriteria)
-      .sort({ createdAt: -1 })
-      .build();
-
-    const result = await weathersColl.aggregate(pipeline).toArray();
-
-    const totalCount = result[0].totalCount[0]?.totalCount || 0;
-
-    const { totalPages, currentPage } = AggregationBuilder.calculatePagination(
-      totalCount,
-      reqQuery.limit,
-      reqQuery.page
-    );
-
-    return {
-      totalCount,
-      totalPages,
-      currentPage,
-      data: result[0].data,
-    };
-
-    // let page: number = 1;
-    // let pageSize: number = 10;
-
-    // const aggCursor = weathersColl.aggregate([
-    //   { $sort: { createdAt: -1 } },
-    //   {
-    //     $facet: {
-    //       metadata: [{ $count: "totalCount" }],
-    //       data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
-    //     },
-    //   },
-    // ]);
-
-    // const aggResult = await aggCursor.toArray();
-    // return { page, pageSize, aggResult };
-
-    // const results = await cursor.toArray();
-    // return results;
+    return result;
   } catch (error) {
     console.log(error);
     throw error;

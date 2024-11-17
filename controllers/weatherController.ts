@@ -24,11 +24,16 @@ import { ClientError } from "../errors/ClientError.ts";
 
 export const listWeathersAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const result = await getAllWeathers();
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const result = await getAllWeathers(req.query, limit, page);
 
     res.status(200).json({
       success: true,
       totalCount: result.totalCount,
+      totalPages: result.totalPages,
+      currentPage: result.currentPage,
+      limit,
       data: result.data,
     });
   }
