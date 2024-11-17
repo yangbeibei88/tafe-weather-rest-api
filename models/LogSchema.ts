@@ -1,11 +1,11 @@
 import { ObjectId } from "mongodb";
 import { Weather, weatherSchema } from "./WeatherSchema.ts";
-import { MongoDBRef, MongoJSONSchema } from "../utils/utilTypes.ts";
+import { MongoJSONSchema } from "../utils/utilTypes.ts";
 
 export interface Log {
-  _id?: ObjectId;
+  _id: ObjectId;
   deletedAt?: Date;
-  deletedBy?: MongoDBRef;
+  deletedBy?: ObjectId;
   weatherReading: Weather;
 }
 
@@ -14,35 +14,22 @@ type LogWithoutId = Omit<Log, "_id">;
 export const logSchema: MongoJSONSchema = {
   bsonType: "object",
   title: "log object validation",
-  required: ["weatherReading"],
+  required: ["_id", "weatherReading"],
   properties: {
+    _id: {
+      bsonType: "objectId",
+    },
     deletedAt: {
       bsonType: "date",
       description: "The current timestamp when the document is deleted",
     },
     deletedBy: {
-      bsonType: "string",
-      required: ["$ref", "$id"],
-      properties: {
-        $ref: {
-          bsonType: "string",
-          enum: ["users"],
-          description: "The collection the DBRef points to",
-        },
-        $id: {
-          bsonType: "objectId",
-          description: "The objectId of the referenced document",
-        },
-        $db: {
-          bsonType: "string",
-          enum: ["tafe-weather-api"],
-          description: "database name where the referenced document resides",
-        },
-      },
-      description: "DBRef for the user who deleted the reference",
+      bsonType: ["objectId", "null"],
+      description: "User objectId refer to who deleted the document",
     },
     weatherReading: weatherSchema,
   },
+  additionalProperties: false,
 };
 
 // const createLogsCollection = async (database: Db) => {
