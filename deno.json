@@ -16,5 +16,8 @@
     "express-validator": "npm:express-validator@^7.2.0",
     "jsonwebtoken": "npm:jsonwebtoken@^9.0.2",
     "mongodb": "npm:mongodb@^6.10.0"
+  },
+  "compilerOptions": {
+    "types": ["./types.d.ts"]
   }
 }

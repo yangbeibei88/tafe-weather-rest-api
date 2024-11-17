@@ -109,14 +109,15 @@ export const protect = asyncHandlerT(
 
     // 3) check if user still exists
     const currentUser = await findUserById(decoded._id);
-    if (!currentUser) {
+    if (!currentUser || currentUser.status === "inactive") {
       return next(
         new ClientError({ code: 401, message: "The user no longer exists." })
       );
     }
 
-    // 4) check if user changed password after the token was issued
+    // 4) TODO: check if user changed password after the token was issued
 
+    req.user = currentUser;
     next();
   }
 );
