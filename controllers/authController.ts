@@ -89,7 +89,7 @@ export const protect = asyncHandlerT(
     let token: string | undefined;
 
     // 1) check if token exists
-    if (req.headers?.authorization.startsWith("Bearer")) {
+    if (req.headers?.authorization?.startsWith("Bearer")) {
       token = req.headers.authorization.split(" ")[1];
     }
 
