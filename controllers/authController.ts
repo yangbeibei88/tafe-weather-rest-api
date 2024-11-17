@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 // @deno-types="@types/jsonwebtoken"
 import jwt from "jsonwebtoken";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
-import { User } from "../models/UserSchema.ts";
+import { Role, User } from "../models/UserSchema.ts";
 import {
   validateBodyFactory,
   validateEmail,
@@ -16,6 +16,7 @@ import { findUserByEmail, findUserById } from "../models/UserModel.ts";
 import { ClientError } from "../errors/ClientError.ts";
 import { decodeJwt, signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
+import { isSubset } from "../utils/helpers.ts";
 
 const loginValidations: Record<
   keyof Pick<User, "emailAddress" | "password">,
@@ -81,9 +82,6 @@ export const authLoginAction = asyncHandlerT(
 
 // const logoutAction = asyncHandlerT(async (req, res, next) => {});
 
-// // Restrict permission
-// const restrictTo = asyncHandlerT(async (req, res, next) => {});
-
 export const protect = asyncHandlerT(
   async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     let token: string | undefined;
@@ -115,9 +113,25 @@ export const protect = asyncHandlerT(
       );
     }
 
+    // 3) TODO: check if user's email, status, role are changed after issued (change stream)
     // 4) TODO: check if user changed password after the token was issued
 
     req.user = currentUser;
     next();
   }
 );
+
+// Restrict permission
+export const authorisedTo =
+  (...roles: Role[]) =>
+  (req: Request, _res: Response, next: NextFunction) => {
+    if (!isSubset(roles, req.user.role)) {
+      return next(
+        new ClientError({
+          code: 403,
+          message: "Sorry, you are not authorised for this resouce",
+        })
+      );
+    }
+    next();
+  };

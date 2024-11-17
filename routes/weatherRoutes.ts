@@ -13,8 +13,11 @@ import { protect } from "../controllers/authController.ts";
 
 export const weatherRouter = Router();
 
+// protect all weather routes
+weatherRouter.use(protect);
+
 // Get all weathers
-weatherRouter.get("/", protect, listWeathers);
+weatherRouter.get("/", listWeathers);
 
 // Create one or more new weather readings
 weatherRouter.post("/", validateWeatherInput, createWeatherAction);
