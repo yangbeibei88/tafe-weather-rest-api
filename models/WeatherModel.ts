@@ -6,15 +6,35 @@ import { Weather } from "./WeatherSchema.ts";
 
 export const getAllWeathers = async () => {
   try {
-    // TODO: ADD limit, sort, skip, pagination, page later on
-    const cursor = weathersColl.find<Weather>(
-      {},
-      { sort: { createdAt: -1 }, limit: 10 }
-      // { limit: 10 }
-    );
+    // const cursor = weathersColl.find<Weather>(
+    //   {},
+    //   { sort: { createdAt: -1 }, limit: 10 }
+    //   // { limit: 10 }
+    // );
 
-    const results = await cursor.toArray();
-    return results;
+    let page: number = 1;
+    let pageSize: number = 10;
+
+    const aggCursor = weathersColl.aggregate([
+      // sort
+      // { $count: "totalCount" },
+      { $sort: { createdAt: -1 } },
+      // { $skip: (page - 1) * pageSize },
+      // { $limit: pageSize },
+      {
+        $facet: {
+          metadata: [{ $count: "totalCount" }],
+          data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
+        },
+      },
+    ]);
+
+    const aggResult = await aggCursor.toArray();
+
+    return { page, pageSize, aggResult };
+
+    // const results = await cursor.toArray();
+    // return results;
   } catch (error) {
     console.log(error);
     throw error;

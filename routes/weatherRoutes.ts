@@ -3,7 +3,7 @@ import { Router } from "express";
 import {
   createWeatherAction,
   deleteWeatherAction,
-  listWeathers,
+  listWeathersAction,
   showWeatherAction,
   updateWeatherAction,
   validateWeatherInput,
@@ -20,7 +20,7 @@ weatherRouter.use(protect);
 weatherRouter.get(
   "/",
   authorisedTo("admin", "teacher", "student"),
-  listWeathers
+  listWeathersAction
 );
 
 // Create one new weather reading

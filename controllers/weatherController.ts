@@ -22,13 +22,17 @@ import {
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
 
-export const listWeathers = asyncHandlerT(
+export const listWeathersAction = asyncHandlerT(
   async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const weathers = await getAllWeathers();
+    const result = await getAllWeathers();
 
     res.status(200).json({
       success: true,
-      data: weathers,
+      totalCount: result.aggResult[0].metadata[0].totalCount,
+      page: result.page,
+      pageSize: result.pageSize,
+      data: result.aggResult[0].data,
+      result,
     });
   }
 );
