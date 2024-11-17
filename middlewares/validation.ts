@@ -9,7 +9,6 @@ import {
   ContextRunner,
   param,
   validationResult,
-  Result,
   body,
   ValidationChain,
 } from "express-validator";
@@ -27,7 +26,7 @@ export const validateBody = (validations: ContextRunner[]): RequestHandler => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      next(
+      return next(
         new ClientError({
           code: 400,
           message: "Validation Error",
@@ -35,7 +34,7 @@ export const validateBody = (validations: ContextRunner[]): RequestHandler => {
         })
       );
       // res.json({ errors: errors.array() });
-      return;
+      // return;
     }
     next();
   }) as RequestHandler;
@@ -50,11 +49,32 @@ export const validateParams = (): RequestHandler => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      next(new ClientError({ code: 404, context: { ...errors.array() } }));
+      return next(
+        new ClientError({ code: 404, context: { ...errors.array() } })
+      );
       // res.json({ errors: errors.array() });
-      return;
+      // return;
     }
 
+    next();
+  }) as RequestHandler;
+};
+
+export const validateQuery = (): RequestHandler => {
+  return (async (req: Request, _res: Response, next: NextFunction) => {
+    for (const queryKey in req.query) {
+      await param(queryKey).trim().escape().run(req);
+    }
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return next(
+        new ClientError({ code: 404, context: { ...errors.array() } })
+      );
+      // res.json({ errors: errors.array() });
+      // return;
+    }
     next();
   }) as RequestHandler;
 };
