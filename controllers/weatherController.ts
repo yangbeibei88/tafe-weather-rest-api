@@ -70,23 +70,34 @@ export const validateWeatherInput = validateBody([
   validateNumber("latitude", "float", -90, 90),
 ]);
 
+const getValidatedWeatherInput = (
+  inputData: Omit<OptionalId<Weather>, "geoLocation"> & {
+    longitude: number;
+    latitude: number;
+  }
+) => {
+  const weatherInputData: OptionalId<Weather> = {
+    deviceName: inputData.deviceName,
+    precipitation: inputData.precipitation,
+    temperature: inputData.temperature,
+    atmosphericPressure: inputData.atmosphericPressure,
+    maxWindSpeed: inputData.maxWindSpeed,
+    solarRadiation: inputData.solarRadiation,
+    vaporPressure: inputData.vaporPressure,
+    humidity: inputData.humidity,
+    windDirection: inputData.windDirection,
+    geoLocation: {
+      type: "Point",
+      coordinates: [inputData.longitude, inputData.latitude],
+    },
+  };
+
+  return weatherInputData;
+};
+
 export const createWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction) => {
-    const inputData: OptionalId<Weather> = {
-      deviceName: req.body.deviceName,
-      precipitation: req.body["precipitation"],
-      temperature: req.body.temperature,
-      atmosphericPressure: req.body.atmosphericPressure,
-      maxWindSpeed: req.body.maxWindSpeed,
-      solarRadiation: req.body.solarRadiation,
-      vaporPressure: req.body.vaporPressure,
-      humidity: req.body.humidity,
-      windDirection: req.body.windDirection,
-      geoLocation: {
-        type: "Point",
-        coordinates: [req.body.longitude, req.body.latitude],
-      },
-    };
+    const inputData = getValidatedWeatherInput(req.body);
     const newWeather = await insertWeather(inputData);
 
     res.status(201).json({
@@ -98,21 +109,7 @@ export const createWeatherAction = asyncHandlerT(
 
 export const updateWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const inputData: OptionalId<Weather> = {
-      deviceName: req.body.deviceName,
-      precipitation: req.body.precipitation,
-      temperature: req.body.temperature,
-      atmosphericPressure: req.body.atmosphericPressure,
-      maxWindSpeed: req.body.maxWindSpeed,
-      solarRadiation: req.body.solarRadiation,
-      vaporPressure: req.body.vaporPressure,
-      humidity: req.body.humidity,
-      windDirection: req.body.windDirection,
-      geoLocation: {
-        type: "Point",
-        coordinates: [req.body.longitude, req.body.latitude],
-      },
-    };
+    const inputData = getValidatedWeatherInput(req.body);
 
     console.log(inputData);
 
