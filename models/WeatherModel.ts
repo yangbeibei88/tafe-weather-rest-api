@@ -11,9 +11,7 @@ export const getAllWeathers = async (
   page: number = 1
 ) => {
   try {
-    const result = await getPaginatedData(weathersColl, query, limit, page, {
-      createdAt: -1,
-    });
+    const result = await getPaginatedData(weathersColl, query, limit, page);
 
     return result;
   } catch (error) {

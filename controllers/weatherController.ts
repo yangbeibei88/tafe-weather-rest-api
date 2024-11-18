@@ -39,25 +39,6 @@ export const listWeathersAction = asyncHandlerT(
   }
 );
 
-// export const showWeatherAction = asyncHandler(
-//   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-//     // if param id is valid, call findOne
-//     const weather = await getWeather(req.params.id);
-
-//     if (!weather) {
-//       res.status(404).json({
-//         msg: "Not Found",
-//       });
-//       return;
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       data: weather,
-//     });
-//   }
-// );
-
 export const showWeatherAction: RequestHandler = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // if param id is valid, call findOne
