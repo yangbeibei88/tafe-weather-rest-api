@@ -26,6 +26,16 @@ export class AggregationBuilder {
     return this;
   }
 
+  set(fields: Record<string, any>) {
+    this.pipeline.push({ $set: fields });
+    return this;
+  }
+
+  unset(fields: string[]) {
+    this.pipeline.push({ unset: fields });
+    return this;
+  }
+
   paginate(limit: number, page: number) {
     // this.limit = limit > 0 ? limit : 10;
     // this.page = page > 0 ? page : 1;
