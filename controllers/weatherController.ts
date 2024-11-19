@@ -40,8 +40,8 @@ const weatherValidations: Record<keyof WeatherInput, ContextRunner> = {
   latitude: validateNumber("latitude", "float", -90, 90),
   createdAt: validateDate("createdAt", false),
   lastModifiedAt: validateDate("lastModifiedAt", false),
-  createdBy: validateText("_id", 1, 50, false),
-  lastModifiedBy: validateText("_id", 1, 50, false),
+  createdBy: validateText("createdBy", 1, 50, false),
+  lastModifiedBy: validateText("lastModifiedBy", 1, 50, false),
 };
 
 export const validateWeatherInput = () =>
@@ -62,6 +62,9 @@ export const validateWeatherInput = () =>
     "createdBy",
     "lastModifiedBy",
   ]);
+
+// const createIndicators = () => {};
+// const updateIndicators = () => {};
 
 export const listWeathersAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -131,33 +134,40 @@ const getValidatedWeatherInput = (inputData: WeatherInput) => {
   return weatherInputData;
 };
 
-// const getValidatedWeatherInputArr = (inputData: WeatherInput[]) => {
-//   const weatherInputData: OptionalId<Weather>[] = inputData.map(
-//     (obj: WeatherInput) => {
-//       return {
-//         deviceName: obj.deviceName,
-//         precipitation: obj.precipitation,
-//         temperature: obj.temperature,
-//         atmosphericPressure: obj.atmosphericPressure,
-//         maxWindSpeed: obj.maxWindSpeed,
-//         solarRadiation: obj.solarRadiation,
-//         vaporPressure: obj.vaporPressure,
-//         humidity: obj.humidity,
-//         windDirection: obj.windDirection,
-//         geoLocation: {
-//           type: "Point",
-//           coordinates: [obj.longitude, obj.latitude],
-//         },
-//       };
-//     }
-//   );
-
-//   return weatherInputData;
-// };
+const getValidatedWeatherInputArr = (
+  validInputData: WeatherInput | WeatherInput[]
+) => {
+  if (Array.isArray(validInputData)) {
+    return validInputData.map(
+      ({ longitude, latitude, ...restInput }: WeatherInput) => {
+        return {
+          ...restInput,
+          geoLocation: {
+            type: "Point",
+            coordinates: [longitude, latitude],
+          },
+        };
+      }
+    );
+  } else {
+    const { longitude, latitude, ...restInput } = validInputData;
+    return {
+      ...restInput,
+      geoLocation: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
+    };
+  }
+};
 
 export const createWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction) => {
-    const inputData = getValidatedWeatherInput(req.body);
+    const inputData: OptionalId<Weather> = {
+      ...getValidatedWeatherInput(req.body),
+      createdAt: req.body.createdAt ?? new Date(),
+      createdBy: req.body.createdBy ?? req.user._id,
+    };
     const newWeather = await insertWeather(inputData);
 
     res.status(201).json({
@@ -175,7 +185,11 @@ export const createWeatherAction = asyncHandlerT(
 
 export const updateWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const inputData = getValidatedWeatherInput(req.body);
+    const inputData: OptionalId<Weather> = {
+      ...getValidatedWeatherInput(req.body),
+      lastModifiedAt: req.body.lastModifiedAt ?? new Date(),
+      lastModifiedBy: req.body.lastModifiedBy ?? req.user._id,
+    };
 
     console.log(inputData);
 

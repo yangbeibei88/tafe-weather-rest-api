@@ -35,7 +35,6 @@ export const insertWeather = async (weather: OptionalId<Weather>) => {
   try {
     const result = await weathersColl.insertOne({
       ...weather,
-      createdAt: new Date(),
     });
     return { id: result.insertedId, ...weather };
   } catch (error) {
@@ -60,7 +59,7 @@ export const updateWeather = async (
     const result = await weathersColl.updateOne(
       { _id: new ObjectId(id) },
       // { $set: weather, $currentDate: { lastModifiedAt: true } },
-      { $set: { ...weather, lastModifiedAt: new Date() } }
+      { $set: { ...weather } }
     );
     return result;
   } catch (error) {

@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, OptionalId } from "mongodb";
 import {
   GeoJSONGeometryType,
   GeoLocation,
@@ -25,9 +25,15 @@ export interface Weather {
 
 type WeatherWithoutId = Omit<Weather, "_id">;
 
-export type WeatherInput = Omit<Weather, "geoLocation"> & {
+export type WeatherInput = Omit<
+  Weather,
+  "geoLocation" | "_id" | "createdBy" | "lastModifiedBy"
+> & {
+  _id?: string;
   longitude: number;
   latitude: number;
+  createdBy?: string;
+  lastModifiedBy?: string;
 };
 
 const coordinateSchema: MongoJSONSchema = {
