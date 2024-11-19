@@ -28,6 +28,7 @@ export interface User {
 type UserWithoutId = Omit<User, "_id">;
 export type UserWithoutIdkeys = keyof UserWithoutId;
 export type RequiredUser = Pick<UserWithoutId, RequiredKeys<UserWithoutId>>;
+export type UserInput = User & { confirmPassword: string };
 
 export const userSchema: MongoJSONSchema = {
   bsonType: "object",

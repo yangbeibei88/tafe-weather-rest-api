@@ -5,7 +5,13 @@ import { ContextRunner } from "express-validator";
 // @deno-types="@types/bcryptjs"
 import bcrypt from "bcryptjs";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
-import { RequiredUser, User, roles, userStatus } from "../models/UserSchema.ts";
+import {
+  RequiredUser,
+  User,
+  UserInput,
+  roles,
+  userStatus,
+} from "../models/UserSchema.ts";
 import {
   compareStrings,
   validateBodyFactory,
@@ -14,6 +20,7 @@ import {
   validatePhoneNumber,
   validateSelect,
   validateText,
+  validateDate,
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
 import {
@@ -28,26 +35,24 @@ import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
 
 // Define the validation rules for user-related fields
-const userValidations: Record<
-  keyof RequiredUser | "confirmPassword",
-  ContextRunner
-> = {
+const userValidations: Record<keyof UserInput, ContextRunner> = {
+  _id: validateText("_id", 2, 50, false),
   firstName: validateText("firstName", 2, 50),
   lastName: validateText("lastName", 2, 50),
-  emailAddress: validateEmail("emailAddress", true, findUserByEmail, true),
+  emailAddress: validateEmail("emailAddress"),
   phone: validatePhoneNumber("phone"),
   role: validateSelect("role", roles, "array"),
   status: validateSelect("status", userStatus, "string"),
   password: validatePassword("password", 8, 50),
   confirmPassword: compareStrings("passwords", "password", "confirmPassword"),
+  createdAt: validateDate("createdAt", false),
+  updatedAt: validateDate("updatedAt", false),
+  passwordChangedAt: validateDate("passwordChangedAt", false),
+  lastLoggedInAt: validateDate("lastLoggedInAt", false),
 };
 
-const validateUserInputs = (
-  fields: (keyof RequiredUser | "confirmPassword")[]
-) => validateBodyFactory(userValidations)(fields);
-
-export const validateNewUserInputs = () =>
-  validateUserInputs([
+export const validateNewUserInput = () =>
+  validateBodyFactory<UserInput>(userValidations)([
     "firstName",
     "lastName",
     "emailAddress",
@@ -58,8 +63,14 @@ export const validateNewUserInputs = () =>
     "confirmPassword",
   ]);
 
-export const validateUpdateUserInputs = () =>
-  validateUserInputs(["firstName", "lastName", "phone", "role", "status"]);
+export const validateUpdateUserInput = () =>
+  validateBodyFactory<UserInput>(userValidations)([
+    "firstName",
+    "lastName",
+    "phone",
+    "role",
+    "status",
+  ]);
 
 export const listUsersAction = asyncHandlerT(
   async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -90,6 +101,15 @@ export const showUserAction = asyncHandlerT(
 
 export const createUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    // check if the new user's email already exists
+    const user = await findUserByEmail(req.body.emailAddress);
+
+    if (user?.length) {
+      return next(
+        new ClientError({ code: 400, message: "The user already exists." })
+      );
+    }
+
     // hash password
     const hashedPassword = await bcrypt.hash(req.body.password, 12);
 
@@ -136,6 +156,14 @@ export const createUserAction = asyncHandlerT(
 
 export const updateUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    // Check if the if new email address doesn't exist excluding the old one.
+    const user = await findUserByEmail(req.body.emailAddress);
+    if (user?.[0]?.emailAddress !== req.body.emailAddress) {
+      return next(
+        new ClientError({ code: 400, message: "The email already exists." })
+      );
+    }
+
     const inputData: Omit<OptionalId<User>, "password"> = {
       emailAddress: req.body.emailAddress,
       firstName: req.body.firstName,

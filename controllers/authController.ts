@@ -23,7 +23,7 @@ const loginValidations: Record<
   keyof Pick<User, "emailAddress" | "password">,
   ContextRunner
 > = {
-  emailAddress: validateEmail("emailAddress", false, undefined, true),
+  emailAddress: validateEmail("emailAddress"),
   password: validatePassword("password", 8, 50),
 };
 

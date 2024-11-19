@@ -6,8 +6,8 @@ import {
   listUsersAction,
   showUserAction,
   updateUserAction,
-  validateNewUserInputs,
-  validateUpdateUserInputs,
+  validateNewUserInput,
+  validateUpdateUserInput,
 } from "../controllers/userController.ts";
 import { validateParams } from "../middlewares/validation.ts";
 import { protect, authorisedTo } from "../controllers/authController.ts";
@@ -21,7 +21,7 @@ userRouter.use(protect, authorisedTo("admin", "teacher"));
 userRouter.get("/", listUsersAction);
 
 // Create one new user
-userRouter.post("/", validateNewUserInputs(), createUserAction);
+userRouter.post("/", validateNewUserInput(), createUserAction);
 
 // Get one user
 userRouter.get("/:id", validateParams(), showUserAction);
@@ -32,7 +32,7 @@ userRouter.get("/:id", validateParams(), showUserAction);
 userRouter.put(
   "/:id",
   validateParams(),
-  validateUpdateUserInputs(),
+  validateUpdateUserInput(),
   updateUserAction
 );
 

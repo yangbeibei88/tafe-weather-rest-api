@@ -164,9 +164,6 @@ export const validatePhoneNumber = (
 
 export const validateEmail = (
   name: string,
-  runInUse: boolean = false,
-  // deno-lint-ignore no-explicit-any
-  cb: any = undefined,
   required: boolean = true
 ): ValidationChain => {
   let chain: ValidationChain = body(name);
@@ -184,14 +181,14 @@ export const validateEmail = (
       `${name} must be a valid email address, not more than 254 characters.`
     );
 
-  if (runInUse === true && cb === "function") {
-    chain = chain.custom(async (v) => {
-      const results = await cb(v);
-      if (results?.length > 0) {
-        throw new Error("Email already in use.");
-      }
-    });
-  }
+  // if (runInUse === true && cb === "function") {
+  //   chain = chain.custom(async (v) => {
+  //     const results = await cb(v);
+  //     if (results?.length > 0) {
+  //       throw new Error("Email already in use.");
+  //     }
+  //   });
+  // }
 
   return chain;
 };
