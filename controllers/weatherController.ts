@@ -17,7 +17,6 @@ import {
 } from "../models/WeatherModel.ts";
 import { Weather, WeatherInput } from "../models/WeatherSchema.ts";
 import {
-  validateBody,
   validateBodyFactory,
   validateDate,
   validateNumber,

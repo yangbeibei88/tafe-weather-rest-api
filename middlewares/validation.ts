@@ -20,22 +20,38 @@ type Location = "body" | "cookies" | "headers" | "params" | "query";
 
 export const validateBody = (validations: ContextRunner[]): RequestHandler => {
   return (async (req: Request, _res: Response, next: NextFunction) => {
-    for (const validation of validations) {
-      await validation.run(req);
-    }
-    const errors = validationResult(req);
+    const isArray = Array.isArray(req.body);
+    const documents = isArray ? req.body : [req.body];
 
-    if (!errors.isEmpty()) {
+    const validDocuments: any[] = [];
+    const errors: { index: number; issues: any[] }[] = [];
+
+    for (const [index, document] of documents) {
+      const innerReq = { ...req, body: document };
+      for (const validation of validations) {
+        await validation.run(innerReq);
+      }
+
+      const result = validationResult(innerReq);
+      if (result.isEmpty()) {
+        validDocuments.push(document);
+      } else {
+        errors.push({ index, issues: result.array() });
+      }
+    }
+
+    if (errors.length > 0) {
       return next(
         new ClientError({
           code: 400,
           message: "Validation Error",
-          context: { ...errors.array() },
+          context: errors,
         })
       );
-      // res.json({ errors: errors.array() });
-      // return;
     }
+
+    req.body = isArray ? validDocuments : validDocuments[0];
+
     next();
   }) as RequestHandler;
 };
@@ -72,8 +88,6 @@ export const validateQuery = (): RequestHandler => {
       return next(
         new ClientError({ code: 404, context: { ...errors.array() } })
       );
-      // res.json({ errors: errors.array() });
-      // return;
     }
     next();
   }) as RequestHandler;
