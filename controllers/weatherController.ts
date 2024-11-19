@@ -5,8 +5,9 @@ import {
   NextFunction,
   RequestHandler,
 } from "express-serve-static-core";
-import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import { OptionalId } from "mongodb";
+import { ContextRunner } from "express-validator";
+import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import {
   getAllWeathers,
   deleteWeather,
@@ -14,13 +15,54 @@ import {
   insertWeather,
   updateWeather,
 } from "../models/WeatherModel.ts";
-import { Weather } from "../models/WeatherSchema.ts";
+import { Weather, WeatherInput } from "../models/WeatherSchema.ts";
 import {
   validateBody,
+  validateBodyFactory,
+  validateDate,
   validateNumber,
   validateText,
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
+
+// Define the validation rules for weather-related fields
+const weatherValidations: Record<keyof WeatherInput, ContextRunner> = {
+  _id: validateText("_id", 1, 50, false),
+  deviceName: validateText("deviceName", 1, 50),
+  precipitation: validateNumber("precipitation", "float", -100, 100),
+  temperature: validateNumber("temperature", "float"),
+  atmosphericPressure: validateNumber("atmosphericPressure", "float"),
+  maxWindSpeed: validateNumber("maxWindSpeed", "float"),
+  solarRadiation: validateNumber("solarRadiation", "float"),
+  vaporPressure: validateNumber("vaporPressure", "float"),
+  humidity: validateNumber("humidity", "float"),
+  windDirection: validateNumber("windDirection", "float"),
+  longitude: validateNumber("longitude", "float", -180, 180),
+  latitude: validateNumber("latitude", "float", -90, 90),
+  createdAt: validateDate("createdAt", false),
+  lastModifiedAt: validateDate("lastModifiedAt", false),
+  createdBy: validateText("_id", 1, 50, false),
+  lastModifiedBy: validateText("_id", 1, 50, false),
+};
+
+export const validateWeatherInput = () =>
+  validateBodyFactory<WeatherInput>(weatherValidations)([
+    "_id",
+    "deviceName",
+    "precipitation",
+    "temperature",
+    "atmosphericPressure",
+    "solarRadiation",
+    "vaporPressure",
+    "humidity",
+    "windDirection",
+    "longitude",
+    "latitude",
+    "createdAt",
+    "lastModifiedAt",
+    "createdBy",
+    "lastModifiedBy",
+  ]);
 
 export const listWeathersAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -56,26 +98,21 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
   }
 ) as RequestHandler;
 
-export const validateWeatherInput = validateBody([
-  validateText("deviceName", 1, 50, true),
-  validateNumber("precipitation", "float", -100, 100),
-  validateNumber("temperature", "float"),
-  validateNumber("atmosphericPressure", "float"),
-  validateNumber("maxWindSpeed", "float"),
-  validateNumber("solarRadiation", "float"),
-  validateNumber("vaporPressure", "float"),
-  validateNumber("humidity", "float"),
-  validateNumber("windDirection", "float"),
-  validateNumber("longitude", "float", -180, 180),
-  validateNumber("latitude", "float", -90, 90),
-]);
+// export const validateWeatherInput = validateBody([
+//   validateText("deviceName", 1, 50, true),
+//   validateNumber("precipitation", "float", -100, 100),
+//   validateNumber("temperature", "float"),
+//   validateNumber("atmosphericPressure", "float"),
+//   validateNumber("maxWindSpeed", "float"),
+//   validateNumber("solarRadiation", "float"),
+//   validateNumber("vaporPressure", "float"),
+//   validateNumber("humidity", "float"),
+//   validateNumber("windDirection", "float"),
+//   validateNumber("longitude", "float", -180, 180),
+//   validateNumber("latitude", "float", -90, 90),
+// ]);
 
-const getValidatedWeatherInput = (
-  inputData: Omit<OptionalId<Weather>, "geoLocation"> & {
-    longitude: number;
-    latitude: number;
-  }
-) => {
+const getValidatedWeatherInput = (inputData: WeatherInput) => {
   const weatherInputData: OptionalId<Weather> = {
     deviceName: inputData.deviceName,
     precipitation: inputData.precipitation,
@@ -95,6 +132,30 @@ const getValidatedWeatherInput = (
   return weatherInputData;
 };
 
+// const getValidatedWeatherInputArr = (inputData: WeatherInput[]) => {
+//   const weatherInputData: OptionalId<Weather>[] = inputData.map(
+//     (obj: WeatherInput) => {
+//       return {
+//         deviceName: obj.deviceName,
+//         precipitation: obj.precipitation,
+//         temperature: obj.temperature,
+//         atmosphericPressure: obj.atmosphericPressure,
+//         maxWindSpeed: obj.maxWindSpeed,
+//         solarRadiation: obj.solarRadiation,
+//         vaporPressure: obj.vaporPressure,
+//         humidity: obj.humidity,
+//         windDirection: obj.windDirection,
+//         geoLocation: {
+//           type: "Point",
+//           coordinates: [obj.longitude, obj.latitude],
+//         },
+//       };
+//     }
+//   );
+
+//   return weatherInputData;
+// };
+
 export const createWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction) => {
     const inputData = getValidatedWeatherInput(req.body);
@@ -106,6 +167,12 @@ export const createWeatherAction = asyncHandlerT(
     });
   }
 );
+
+// export const createWeathersAction = asyncHandlerT(
+//   async (req: Request, res: Response, _next: NextFunction) => {
+//     const inputData = getValidatedWeatherInput(req.body);
+//   }
+// );
 
 export const updateWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {

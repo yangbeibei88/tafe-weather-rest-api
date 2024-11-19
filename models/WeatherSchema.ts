@@ -23,18 +23,12 @@ export interface Weather {
   geoLocation: GeoLocation<GeoJSONGeometryType>;
 }
 
-type AppWeather = Omit<
-  Weather,
-  "_id" | "createdBy" | "lastModifiedBy" | "geoLocation"
-> & {
-  _id: string;
-  createdBy: string;
-  lastModifiedBy: string;
+type WeatherWithoutId = Omit<Weather, "_id">;
+
+export type WeatherInput = Omit<Weather, "geoLocation"> & {
   longitude: number;
   latitude: number;
 };
-
-type WeatherWithoutId = Omit<Weather, "_id">;
 
 const coordinateSchema: MongoJSONSchema = {
   bsonType: "array",

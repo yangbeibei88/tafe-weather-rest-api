@@ -80,8 +80,8 @@ export const validateQuery = (): RequestHandler => {
 };
 
 export const validateBodyFactory =
-  (resourceValidations: Record<string, ContextRunner>) =>
-  (fields: string[]): RequestHandler =>
+  <T>(resourceValidations: Record<keyof T, ContextRunner>) =>
+  (fields: (keyof T)[]): RequestHandler =>
     validateBody(
       fields.flatMap((field) => {
         const validation = resourceValidations[field];
@@ -289,16 +289,17 @@ export const validateSelect = (
   return chain;
 };
 
-// const validateParams = (req: Request, res: Response, next: NextFunction) => {
-//   const paramKeys = Object.keys(req.params);
+export const validateDate = (
+  name: string,
+  required: boolean = true
+): ValidationChain => {
+  let chain: ValidationChain = body(name);
 
-//   if (paramKeys && paramKeys.length > 0) {
-//     paramKeys.map(async (key) => await param(key).notEmpty().escape().run(req));
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       res.status(400).json({ errors: errors.array() });
-//       return;
-//     }
-//   }
-//   next();
-// };
+  if (required === false) {
+    chain = chain.optional({ values: "falsy" });
+  }
+
+  chain = chain.isDate().withMessage("Invalid date");
+
+  return chain;
+};
