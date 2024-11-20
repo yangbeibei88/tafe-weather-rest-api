@@ -2,6 +2,7 @@
 import { Router } from "express";
 import {
   createWeatherAction,
+  createWeathersAction,
   deleteWeatherAction,
   listWeathersAction,
   showWeatherAction,
@@ -28,8 +29,16 @@ weatherRouter.get(
 weatherRouter.post(
   "/",
   authorisedTo("admin", "teacher", "sensor"),
-  validateWeatherInput,
+  validateWeatherInput(),
   createWeatherAction
+);
+
+// Create many weather readings
+weatherRouter.post(
+  "/bulk",
+  authorisedTo("admin", "teacher", "sensor"),
+  validateWeatherInput(),
+  createWeathersAction
 );
 
 // Update one or more new weather readings
@@ -53,7 +62,7 @@ weatherRouter.put(
   "/:id",
   authorisedTo("admin", "teacher"),
   validateParams(),
-  validateWeatherInput,
+  validateWeatherInput(),
   updateWeatherAction
 );
 

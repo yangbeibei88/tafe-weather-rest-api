@@ -25,6 +25,10 @@ export interface Weather {
 
 type WeatherWithoutId = Omit<Weather, "_id">;
 
+// export type WeatherInput = Omit<OptionalId<Weather>, "geoLocation"> & {
+//   longitude: number;
+//   latitude: number;
+// };
 export type WeatherInput = Omit<
   Weather,
   "geoLocation" | "_id" | "createdBy" | "lastModifiedBy"

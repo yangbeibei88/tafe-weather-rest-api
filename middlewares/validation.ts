@@ -26,7 +26,7 @@ export const validateBody = (validations: ContextRunner[]): RequestHandler => {
     const validDocuments: any[] = [];
     const errors: { index: number; issues: any[] }[] = [];
 
-    for (const [index, document] of documents) {
+    for (const [index, document] of documents.entries()) {
       const innerReq = { ...req, body: document };
       for (const validation of validations) {
         await validation.run(innerReq);

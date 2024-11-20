@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import { OptionalId, ObjectId, MongoServerError } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";

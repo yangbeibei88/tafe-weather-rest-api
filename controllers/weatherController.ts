@@ -14,6 +14,7 @@ import {
   getWeather,
   insertWeather,
   updateWeather,
+  insertWeathers,
 } from "../models/WeatherModel.ts";
 import { Weather, WeatherInput } from "../models/WeatherSchema.ts";
 import {
@@ -100,41 +101,7 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
   }
 ) as RequestHandler;
 
-// export const validateWeatherInput = validateBody([
-//   validateText("deviceName", 1, 50, true),
-//   validateNumber("precipitation", "float", -100, 100),
-//   validateNumber("temperature", "float"),
-//   validateNumber("atmosphericPressure", "float"),
-//   validateNumber("maxWindSpeed", "float"),
-//   validateNumber("solarRadiation", "float"),
-//   validateNumber("vaporPressure", "float"),
-//   validateNumber("humidity", "float"),
-//   validateNumber("windDirection", "float"),
-//   validateNumber("longitude", "float", -180, 180),
-//   validateNumber("latitude", "float", -90, 90),
-// ]);
-
-const getValidatedWeatherInput = (inputData: WeatherInput) => {
-  const weatherInputData: OptionalId<Weather> = {
-    deviceName: inputData.deviceName,
-    precipitation: inputData.precipitation,
-    temperature: inputData.temperature,
-    atmosphericPressure: inputData.atmosphericPressure,
-    maxWindSpeed: inputData.maxWindSpeed,
-    solarRadiation: inputData.solarRadiation,
-    vaporPressure: inputData.vaporPressure,
-    humidity: inputData.humidity,
-    windDirection: inputData.windDirection,
-    geoLocation: {
-      type: "Point",
-      coordinates: [inputData.longitude, inputData.latitude],
-    },
-  };
-
-  return weatherInputData;
-};
-
-const getValidatedWeatherInputArr = (
+const getValidatedWeatherInput = (
   validInputData: WeatherInput | WeatherInput[]
 ) => {
   if (Array.isArray(validInputData)) {
@@ -167,7 +134,7 @@ export const createWeatherAction = asyncHandlerT(
       ...getValidatedWeatherInput(req.body),
       createdAt: req.body.createdAt ?? new Date(),
       createdBy: req.body.createdBy ?? req.user._id,
-    };
+    } as OptionalId<Weather>;
     const newWeather = await insertWeather(inputData);
 
     res.status(201).json({
@@ -177,11 +144,29 @@ export const createWeatherAction = asyncHandlerT(
   }
 );
 
-// export const createWeathersAction = asyncHandlerT(
-//   async (req: Request, res: Response, _next: NextFunction) => {
-//     const inputData = getValidatedWeatherInput(req.body);
-//   }
-// );
+export const createWeathersAction = asyncHandlerT(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const inputData: OptionalId<Weather>[] = getValidatedWeatherInput(
+      req.body
+    ) as OptionalId<Weather>[];
+
+    const payload: OptionalId<Weather>[] = inputData.map((item) => {
+      return {
+        ...item,
+        createdAt: req.body.createdAt ?? new Date(),
+        createdBy: req.body.createdBy ?? req.user._id,
+      };
+    });
+
+    const result = await insertWeathers(payload);
+
+    res.status(201).json({
+      success: true,
+      count: result?.insertedCount,
+      data: result?.insertedIds,
+    });
+  }
+);
 
 export const updateWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -189,7 +174,7 @@ export const updateWeatherAction = asyncHandlerT(
       ...getValidatedWeatherInput(req.body),
       lastModifiedAt: req.body.lastModifiedAt ?? new Date(),
       lastModifiedBy: req.body.lastModifiedBy ?? req.user._id,
-    };
+    } as OptionalId<Weather>;
 
     console.log(inputData);
 
