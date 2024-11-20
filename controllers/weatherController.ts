@@ -67,6 +67,33 @@ export const validateWeatherInput = () =>
 // const createIndicators = () => {};
 // const updateIndicators = () => {};
 
+const getValidatedWeatherInput = (
+  validInputData: WeatherInput | WeatherInput[]
+) => {
+  if (Array.isArray(validInputData)) {
+    return validInputData.map(
+      ({ longitude, latitude, ...restInput }: WeatherInput) => {
+        return {
+          ...restInput,
+          geoLocation: {
+            type: "Point",
+            coordinates: [longitude, latitude],
+          },
+        };
+      }
+    );
+  } else {
+    const { longitude, latitude, ...restInput } = validInputData;
+    return {
+      ...restInput,
+      geoLocation: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
+    };
+  }
+};
+
 export const listWeathersAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -100,33 +127,6 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
     });
   }
 ) as RequestHandler;
-
-const getValidatedWeatherInput = (
-  validInputData: WeatherInput | WeatherInput[]
-) => {
-  if (Array.isArray(validInputData)) {
-    return validInputData.map(
-      ({ longitude, latitude, ...restInput }: WeatherInput) => {
-        return {
-          ...restInput,
-          geoLocation: {
-            type: "Point",
-            coordinates: [longitude, latitude],
-          },
-        };
-      }
-    );
-  } else {
-    const { longitude, latitude, ...restInput } = validInputData;
-    return {
-      ...restInput,
-      geoLocation: {
-        type: "Point",
-        coordinates: [longitude, latitude],
-      },
-    };
-  }
-};
 
 export const createWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction) => {

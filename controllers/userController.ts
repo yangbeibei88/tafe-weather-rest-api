@@ -5,13 +5,7 @@ import { ContextRunner } from "express-validator";
 // @deno-types="@types/bcryptjs"
 import bcrypt from "bcryptjs";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
-import {
-  RequiredUser,
-  User,
-  UserInput,
-  roles,
-  userStatus,
-} from "../models/UserSchema.ts";
+import { User, UserInput, roles, userStatus } from "../models/UserSchema.ts";
 import {
   compareStrings,
   validateBodyFactory,
@@ -33,6 +27,7 @@ import {
 } from "../models/UserModel.ts";
 import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
+import { objectOmit } from "../utils/helpers.ts";
 
 // Define the validation rules for user-related fields
 const userValidations: Record<keyof UserInput, ContextRunner> = {
@@ -67,10 +62,21 @@ export const validateUpdateUserInput = () =>
   validateBodyFactory<UserInput>(userValidations)([
     "firstName",
     "lastName",
+    "emailAddress",
     "phone",
     "role",
     "status",
   ]);
+
+const getValidatedUserInput = (validInputData: UserInput | UserInput[]) => {
+  if (Array.isArray(validInputData)) {
+    return validInputData.map((obj: UserInput) => {
+      return objectOmit(obj, ["confirmPassword"]);
+    });
+  } else {
+    return objectOmit(validInputData, ["confirmPassword"]);
+  }
+};
 
 export const listUsersAction = asyncHandlerT(
   async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
@@ -113,28 +119,20 @@ export const createUserAction = asyncHandlerT(
     // hash password
     const hashedPassword = await bcrypt.hash(req.body.password, 12);
 
-    const inputData: OptionalId<User> = {
-      emailAddress: req.body.emailAddress,
+    const payload: OptionalId<User> = {
+      ...getValidatedUserInput(req.body),
       password: hashedPassword,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      phone: req.body.phone,
-      role: req.body.role,
-      status: req.body.status,
-    };
+      createdAt: req.body.createdAt ?? new Date(),
+    } as OptionalId<User>;
 
-    console.log(inputData);
+    console.log(payload);
 
-    const newUser = await insertUser(inputData);
+    const newUser = await insertUser(payload);
 
     if (!newUser._id) {
       return next(new ClientError({ code: 400 }));
     }
     console.log(typeof newUser._id);
-
-    // Pick<OptionalId<User>, "emailAddress" | "role" | "status"> & {
-    //   _id: string;
-    // }
 
     // To compare if each field in decoded payload is deeply equal to stringified fields in the database, so when signing the token, stringify each field.
     const token = signToken<
@@ -164,16 +162,15 @@ export const updateUserAction = asyncHandlerT(
       );
     }
 
-    const inputData: Omit<OptionalId<User>, "password"> = {
-      emailAddress: req.body.emailAddress,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      phone: req.body.phone,
-      role: req.body.role,
-      status: req.body.status,
+    const payload: Omit<OptionalId<User>, "password"> = {
+      ...(objectOmit(getValidatedUserInput(req.body), ["password"]) as Omit<
+        OptionalId<User>,
+        "password"
+      >),
+      createdAt: req.body.createdAt ?? new Date(),
     };
 
-    const result = await updateUser(req.params.id, inputData);
+    const result = await updateUser(req.params.id, payload);
 
     if (!result?.matchedCount) {
       next(new ClientError({ code: 404, message: "The user not found." }));

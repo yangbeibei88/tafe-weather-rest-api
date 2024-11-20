@@ -1,5 +1,3 @@
-import { Weather } from "../models/WeatherSchema.ts";
-
 function unionToArray<T extends string>(...args: T[]): T[] {
   return args;
 }
@@ -18,5 +16,13 @@ export function isSubset(
 export function getKeys<T extends object>() {
   return Object.keys({} as T) as Array<keyof T>;
 }
-const weatherKeys = getKeys<Weather>();
-console.log(weatherKeys);
+
+export function objectPick(obj: object, keys: string[]) {
+  return Object.entries(obj).filter(([key]) => keys.includes(key));
+}
+
+export function objectOmit(obj: object, keys: string[]) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([key]) => !keys.includes(key))
+  );
+}
