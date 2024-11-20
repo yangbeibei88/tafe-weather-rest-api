@@ -1,4 +1,4 @@
-import { ObjectId, OptionalId } from "mongodb";
+import { ObjectId } from "mongodb";
 import {
   GeoJSONGeometryType,
   GeoLocation,
@@ -16,7 +16,7 @@ export interface Weather {
   vaporPressure: number;
   humidity: number;
   windDirection: number;
-  createdAt?: Date;
+  createdAt: Date;
   createdBy?: ObjectId;
   lastModifiedAt?: Date;
   lastModifiedBy?: ObjectId;
@@ -40,7 +40,7 @@ export type WeatherInput = Omit<
   lastModifiedBy?: string;
 };
 
-const coordinateSchema: MongoJSONSchema = {
+export const coordinateSchema: MongoJSONSchema = {
   bsonType: "array",
   minItems: 2,
   maxItems: 2,
@@ -76,6 +76,7 @@ export const weatherSchema: MongoJSONSchema = {
     "vaporPressure",
     "humidity",
     "windDirection",
+    "createdAt",
   ],
   properties: {
     _id: {

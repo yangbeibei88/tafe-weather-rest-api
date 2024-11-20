@@ -28,11 +28,6 @@ const coordinateSchema = {
 // db.createCollection("weathers", {
 db.runCommand({
   collMod: "weathers",
-  // timeseries: {
-  //   timeField: "createdAt",
-  //   metaField: "deviceName",
-  //   granularity: "minutes",
-  // },
   validator: {
     $jsonSchema: {
       bsonType: "object",
@@ -49,6 +44,7 @@ db.runCommand({
         "humidity",
         "windDirection",
         "geoLocation",
+        "createdAt",
       ],
       properties: {
         _id: {

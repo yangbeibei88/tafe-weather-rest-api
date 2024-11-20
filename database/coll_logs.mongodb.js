@@ -1,6 +1,7 @@
 const database = "tafe-weather-api";
 use(database);
 db; // "tafe-weather-api"
+// db.runCommand({ connectionStatus: 1 });
 
 const coordinateSchema = {
   bsonType: "array",
@@ -24,7 +25,7 @@ const coordinateSchema = {
   description: "An array of two numbers representing [longitude, latitude]",
 };
 
-const weatherSchema = {
+const logSchema = {
   bsonType: "object",
   title: "weather object validation",
   required: [
@@ -39,6 +40,8 @@ const weatherSchema = {
     "humidity",
     "windDirection",
     "geoLocation",
+    "createdAt",
+    "deletedAt",
   ],
   properties: {
     _id: {
@@ -97,6 +100,10 @@ const weatherSchema = {
     lastModifiedBy: {
       bsonType: ["objectId", "null"],
       description: "User objectId refer to who last modified the document",
+    },
+    deletedAt: {
+      bsonType: ["date", "null"],
+      description: "The current timestamp when the document is deleted",
     },
     geoLocation: {
       bsonType: "object",
@@ -170,28 +177,10 @@ const weatherSchema = {
   additionalProperties: false,
 };
 
-db.createCollection("logs", {
+db.runCommand({
+  collMod: "logs",
   validator: {
-    $jsonSchema: {
-      bsonType: "object",
-      title: "log object validation",
-      required: ["_id", "weatherReading"],
-      properties: {
-        _id: {
-          bsonType: "objectId",
-        },
-        deletedAt: {
-          bsonType: "date",
-          description: "The current timestamp when the document is deleted",
-        },
-        deletedBy: {
-          bsonType: ["objectId", "null"],
-          description: "User objectId refer to who deleted the document",
-        },
-        weatherReading: weatherSchema,
-      },
-      additionalProperties: false,
-    },
+    $jsonSchema: logSchema,
   },
   validationLevel: "strict",
   validationAction: "error",
