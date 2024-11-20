@@ -83,10 +83,30 @@ export const updateUser = async (
   }
 };
 
+export const updateUserLastLoggedInAt = async (id: string) => {
+  try {
+    const result = await usersColl.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { lastLoggedInAt: new Date() } }
+    );
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const deleteUser = async (id: string) => {
   try {
     const result = await usersColl.deleteOne({ _id: new ObjectId(id) });
     return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteUsers = async () => {
+  try {
+    const result = await usersColl.deleteMany({});
   } catch (error) {
     console.log(error);
   }

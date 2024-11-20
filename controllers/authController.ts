@@ -12,7 +12,11 @@ import {
   validateEmail,
   validatePassword,
 } from "../middlewares/validation.ts";
-import { findUserByEmail, findUserById } from "../models/UserModel.ts";
+import {
+  findUserByEmail,
+  findUserById,
+  updateUserLastLoggedInAt,
+} from "../models/UserModel.ts";
 import { ClientError } from "../errors/ClientError.ts";
 import { decodeJwt, signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
@@ -120,6 +124,10 @@ export const protect = asyncHandlerT(
     // 4) TODO: check if user changed password after the token was issued
 
     req.user = currentUser;
+
+    // update last loggedIn date when an authenticated user access to protect routes
+    await updateUserLastLoggedInAt(decoded._id);
+
     next();
   }
 );

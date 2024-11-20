@@ -11,21 +11,14 @@ export async function getPaginatedData<T>(
   project?: Record<string, any>
 ) {
   const matchCriteria = AggregationBuilder.parseQueryToMatch(query);
-  const sortCriteria = AggregationBuilder.parseSort(query);
+  const sortCriteria = AggregationBuilder.parseSort(query) || undefined;
 
   const aggregationBuilder = new AggregationBuilder()
     .match(matchCriteria)
-    .sort(sortCriteria);
-
-  if (group) {
-    aggregationBuilder.group(group);
-  }
-
-  aggregationBuilder.paginate(limit, page);
-
-  if (project) {
-    aggregationBuilder.project(project);
-  }
+    .sort(sortCriteria)
+    .group(group)
+    .project(project)
+    .paginate(limit, page);
 
   const pipeline = aggregationBuilder.build();
 

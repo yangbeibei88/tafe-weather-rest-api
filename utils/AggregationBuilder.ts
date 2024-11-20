@@ -5,34 +5,44 @@ export class AggregationBuilder {
   // private page: number = 1;
 
   match(criteria: Record<string, any>) {
-    this.pipeline.push({ $match: criteria });
-    // if (Object.keys(criteria).length > 0) {
-    // }
+    if (criteria && Object.keys(criteria).length > 0) {
+      this.pipeline.push({ $match: criteria });
+    }
     return this;
   }
 
-  group(grouping: Record<string, any>) {
-    this.pipeline.push({ $group: grouping });
+  group(grouping?: Record<string, any>) {
+    if (grouping) {
+      this.pipeline.push({ $group: grouping });
+    }
     return this;
   }
 
-  sort(sortCriteria: Record<string, 1 | -1>) {
-    this.pipeline.push({ $sort: sortCriteria });
+  sort(sortCriteria?: Record<string, 1 | -1>) {
+    if (sortCriteria && Object.keys(sortCriteria).length > 0) {
+      this.pipeline.push({ $sort: sortCriteria });
+    }
     return this;
   }
 
-  project(projection: Record<string, any>) {
-    this.pipeline.push({ $project: projection });
+  project(projection?: Record<string, any>) {
+    if (projection) {
+      this.pipeline.push({ $project: projection });
+    }
     return this;
   }
 
   set(fields: Record<string, any>) {
-    this.pipeline.push({ $set: fields });
+    if (fields && Object.keys(fields).length > 0) {
+      this.pipeline.push({ $set: fields });
+    }
     return this;
   }
 
   unset(fields: string[]) {
-    this.pipeline.push({ unset: fields });
+    if (fields && fields.length > 0) {
+      this.pipeline.push({ unset: fields });
+    }
     return this;
   }
 
@@ -65,13 +75,6 @@ export class AggregationBuilder {
     return matchCriteria;
   }
 
-  static calculatePagination(totalCount: number, limit: number, page: number) {
-    const totalPages = Math.ceil(totalCount / limit);
-    const currentPage = Math.min(page, totalPages);
-
-    return { totalPages, currentPage };
-  }
-
   static parseSort(query: Record<string, any>) {
     const sortCriteria: Record<string, 1 | -1> = {};
 
@@ -85,7 +88,14 @@ export class AggregationBuilder {
         }
       }
     }
-    return sortCriteria;
+    return Object.keys(sortCriteria).length > 0 ? sortCriteria : undefined;
+  }
+
+  static calculatePagination(totalCount: number, limit: number, page: number) {
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = Math.min(page, totalPages);
+
+    return { totalPages, currentPage };
   }
 
   build(): any[] {
