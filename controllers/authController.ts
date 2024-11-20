@@ -28,7 +28,9 @@ const loginValidations: Record<
 };
 
 export const validateLoginInputs = () =>
-  validateBodyFactory(loginValidations)(["emailAddress", "password"]);
+  validateBodyFactory<Pick<User, "emailAddress" | "password">>(
+    loginValidations
+  )(["emailAddress", "password"]);
 
 // greetings
 export const greetingAction = (_req: Request, res: Response) => {

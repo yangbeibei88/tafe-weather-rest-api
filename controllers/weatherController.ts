@@ -24,6 +24,7 @@ import {
   validateText,
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
+import { objectOmit } from "../utils/helpers.ts";
 
 // Define the validation rules for weather-related fields
 const weatherValidations: Record<keyof WeatherInput, ContextRunner> = {
@@ -71,24 +72,21 @@ const getValidatedWeatherInput = (
   validInputData: WeatherInput | WeatherInput[]
 ) => {
   if (Array.isArray(validInputData)) {
-    return validInputData.map(
-      ({ longitude, latitude, ...restInput }: WeatherInput) => {
-        return {
-          ...restInput,
-          geoLocation: {
-            type: "Point",
-            coordinates: [longitude, latitude],
-          },
-        };
-      }
-    );
+    return validInputData.map((obj: WeatherInput) => {
+      return {
+        ...objectOmit(obj, ["longitude", "latitude"]),
+        geoLocation: {
+          type: "Point",
+          coordinates: [obj.longitude, obj.latitude],
+        },
+      };
+    });
   } else {
-    const { longitude, latitude, ...restInput } = validInputData;
     return {
-      ...restInput,
+      ...objectOmit(validInputData, ["longitude", "latitude"]),
       geoLocation: {
         type: "Point",
-        coordinates: [longitude, latitude],
+        coordinates: [validInputData.longitude, validInputData.latitude],
       },
     };
   }
@@ -169,29 +167,38 @@ export const createWeathersAction = asyncHandlerT(
 );
 
 export const updateWeatherAction = asyncHandlerT(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const inputData: OptionalId<Weather> = {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const payload: OptionalId<Weather> = {
       ...getValidatedWeatherInput(req.body),
       lastModifiedAt: req.body.lastModifiedAt ?? new Date(),
       lastModifiedBy: req.body.lastModifiedBy ?? req.user._id,
     } as OptionalId<Weather>;
 
-    console.log(inputData);
+    console.log(payload);
 
-    const updatedWeather = await updateWeather(req.params.id, inputData);
+    const result = await updateWeather(req.params.id, payload);
+
+    if (!result?.matchedCount) {
+      return next(
+        new ClientError({
+          code: 404,
+          message: "No documents matched the query. Updated 0 documents.",
+        })
+      );
+    }
 
     res.status(200).json({
       success: true,
-      data: updatedWeather,
+      data: result,
     });
   }
 );
 
 export const deleteWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const deletedWeather = await deleteWeather(req.params.id);
+    const result = await deleteWeather(req.params.id);
 
-    if (!deletedWeather?.deletedCount) {
+    if (!result?.deletedCount) {
       next(
         new ClientError({
           code: 404,
@@ -204,8 +211,8 @@ export const deleteWeatherAction = asyncHandlerT(
 
     res.status(204).json({
       success: true,
-      msg: "Successfully deleted one document.",
-      deletedWeather,
+      message: "Successfully deleted one document.",
+      result,
     });
   }
 );
