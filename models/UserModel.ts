@@ -1,4 +1,4 @@
-import { ObjectId, OptionalId } from "mongodb";
+import { Filter, ObjectId, OptionalId } from "mongodb";
 import { usersColl } from "../config/db.ts";
 import { User } from "./UserSchema.ts";
 
@@ -82,13 +82,17 @@ export const updateUserById = async (
   }
 };
 
-// const updateUsers = async () => {
-//   try {
-//     const result = await usersColl.updateMany({})
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
+export const updateUsersRole = async (
+  filter: Filter<OptionalId<User>>,
+  data: Pick<OptionalId<User>, "role" | "updatedAt">
+) => {
+  try {
+    const result = await usersColl.updateMany(filter, { $set: data });
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const updateUserLastLoggedInAt = async (id: string) => {
   try {

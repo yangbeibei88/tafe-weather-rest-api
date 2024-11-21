@@ -11,10 +11,15 @@ import {
   validationResult,
   body,
   ValidationChain,
+  buildCheckFunction,
+  query,
+  check,
 } from "express-validator";
 import { ClientError } from "../errors/ClientError.ts";
 
 type Location = "body" | "cookies" | "headers" | "params" | "query";
+
+const bodyOrQuery = buildCheckFunction(["body", "query"]);
 
 // calling validationResult(req) will include the results for this validation
 
@@ -56,7 +61,7 @@ export const validateBody = (validations: ContextRunner[]): RequestHandler => {
   }) as RequestHandler;
 };
 
-export const validateParams = (): RequestHandler => {
+export const validatePathParams = (): RequestHandler => {
   return (async (req: Request, _res: Response, next: NextFunction) => {
     for (const paramKey in req.params) {
       await param(paramKey).notEmpty().escape().run(req);
@@ -68,18 +73,17 @@ export const validateParams = (): RequestHandler => {
       return next(
         new ClientError({ code: 404, context: { ...errors.array() } })
       );
-      // res.json({ errors: errors.array() });
-      // return;
     }
 
     next();
   }) as RequestHandler;
 };
 
-export const validateQuery = (): RequestHandler => {
+export const validateQueryParams = (): RequestHandler => {
   return (async (req: Request, _res: Response, next: NextFunction) => {
     for (const queryKey in req.query) {
-      await param(queryKey).trim().escape().run(req);
+      // compatible with query params contains nested operator
+      await query(`${queryKey}.*`).trim().toLowerCase().escape().run(req);
     }
 
     const errors = validationResult(req);
@@ -109,7 +113,7 @@ export const validateText = (
   max: number = 254,
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain = body(name);
+  let chain: ValidationChain = check(`${name}.*`);
 
   if (required === false) {
     chain = chain.optional({ values: "falsy" });
@@ -132,7 +136,7 @@ export const validateNumber = (
   max: number = +Infinity,
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain = body(name);
+  let chain: ValidationChain = check(`${name}.*`);
 
   if (required === false) {
     chain = chain.optional({ values: "null" });
@@ -262,7 +266,7 @@ export const validateSelect = (
   storeType: "string" | "array",
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain = body(name);
+  let chain: ValidationChain = check(`${name}.*`);
 
   if (required === false) {
     chain.optional({ values: "null" });
@@ -304,7 +308,7 @@ export const validateDate = (
   name: string,
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain = body(name);
+  let chain: ValidationChain = check(`${name}.*`);
 
   if (required === false) {
     chain = chain.optional({ values: "falsy" });

@@ -25,6 +25,7 @@ import {
   insertUser,
   updateUserById,
   deleteUsers,
+  updateUsersRole,
 } from "../models/UserModel.ts";
 import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
@@ -70,6 +71,9 @@ export const validateUpdateUserInput = () =>
     "status",
   ]);
 
+export const validateBatchUpdateUsersRoleInput = () =>
+  validateBodyFactory<UserInput>(userValidations)(["role"]);
+
 const getValidatedUserInput = (validInputData: UserInput | UserInput[]) => {
   if (Array.isArray(validInputData)) {
     return validInputData.map((obj: UserInput) => {
@@ -81,8 +85,10 @@ const getValidatedUserInput = (validInputData: UserInput | UserInput[]) => {
 };
 
 export const listUsersAction = asyncHandlerT(
-  async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const users = await getAllUsers();
+
+    console.log(req.query);
 
     res.status(200).json({
       success: true,
@@ -186,6 +192,39 @@ export const updateUserAction = asyncHandlerT(
   }
 );
 
+export const updateUsersRoleAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const filterBuilder = new FilterBuilder(req.query);
+    const filter = filterBuilder.build();
+    const payload: Pick<OptionalId<User>, "role" | "updatedAt"> = {
+      role: req.body.role,
+      updatedAt: new Date(),
+    };
+
+    // Prevent update all documents if no filter provided
+    if (Object.keys(filter).length === 0) {
+      return next(
+        new ClientError({
+          code: 400,
+          message:
+            "Batch update users' role operation cannot have empty filters.",
+        })
+      );
+    }
+
+    const result = await updateUsersRole(filter, payload);
+
+    if (!result?.matchedCount) {
+      return next(new ClientError({ code: 404, message: "Users not found." }));
+    }
+
+    res.status(200).json({
+      success: true,
+      result,
+    });
+  }
+);
+
 export const deleteUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const result = await deleteUserById(req.params.id);
@@ -217,8 +256,7 @@ export const deleteUsersAction = asyncHandlerT(
       return next(
         new ClientError({
           code: 400,
-          message:
-            "Delete operation requires at least one query parameter to specify the filter.",
+          message: "Batch delete operation cannot have empty filters",
         })
       );
     }

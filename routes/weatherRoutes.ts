@@ -9,7 +9,10 @@ import {
   updateWeatherAction,
   validateWeatherInput,
 } from "../controllers/weatherController.ts";
-import { validateParams, validateQuery } from "../middlewares/validation.ts";
+import {
+  validatePathParams,
+  validateQueryParams,
+} from "../middlewares/validation.ts";
 import { protect, authorisedTo } from "../controllers/authController.ts";
 
 export const weatherRouter = Router();
@@ -20,7 +23,7 @@ weatherRouter.use(protect);
 // Get all weathers
 weatherRouter.get(
   "/",
-  validateQuery(),
+  validateQueryParams(),
   authorisedTo("admin", "teacher", "student"),
   listWeathersAction
 );
@@ -53,7 +56,7 @@ weatherRouter.post(
 weatherRouter.get(
   "/:id",
   authorisedTo("admin", "teacher", "student"),
-  validateParams(),
+  validatePathParams(),
   showWeatherAction
 );
 
@@ -61,7 +64,7 @@ weatherRouter.get(
 weatherRouter.put(
   "/:id",
   authorisedTo("admin", "teacher"),
-  validateParams(),
+  validatePathParams(),
   validateWeatherInput(),
   updateWeatherAction
 );
@@ -70,6 +73,6 @@ weatherRouter.put(
 weatherRouter.delete(
   "/:id",
   authorisedTo("admin", "teacher"),
-  validateParams(),
+  validatePathParams(),
   deleteWeatherAction
 );
