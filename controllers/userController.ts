@@ -18,12 +18,12 @@ import {
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
 import {
-  deleteUser,
+  deleteUserById,
   findUserByEmail,
   getAllUsers,
   findUserById,
   insertUser,
-  updateUser,
+  updateUserById,
 } from "../models/UserModel.ts";
 import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
@@ -170,7 +170,7 @@ export const updateUserAction = asyncHandlerT(
       createdAt: req.body.createdAt ?? new Date(),
     };
 
-    const result = await updateUser(req.params.id, payload);
+    const result = await updateUserById(req.params.id, payload);
 
     if (!result?.matchedCount) {
       next(new ClientError({ code: 404, message: "The user not found." }));
@@ -186,7 +186,7 @@ export const updateUserAction = asyncHandlerT(
 
 export const deleteUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const result = await deleteUser(req.params.id);
+    const result = await deleteUserById(req.params.id);
 
     if (!result?.deletedCount) {
       next(

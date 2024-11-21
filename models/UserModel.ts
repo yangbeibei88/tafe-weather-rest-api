@@ -68,7 +68,7 @@ export const insertUser = async (
   }
 };
 
-export const updateUser = async (
+export const updateUserById = async (
   id: string,
   user: Omit<OptionalId<User>, "password">
 ) => {
@@ -78,6 +78,14 @@ export const updateUser = async (
       { $set: { ...user } }
     );
     return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const updateUsers = async () => {
+  try {
+    const result = await usersColl.deleteMany({});
   } catch (error) {
     console.log(error);
   }
@@ -95,7 +103,7 @@ export const updateUserLastLoggedInAt = async (id: string) => {
   }
 };
 
-export const deleteUser = async (id: string) => {
+export const deleteUserById = async (id: string) => {
   try {
     const result = await usersColl.deleteOne({ _id: new ObjectId(id) });
     return result;
