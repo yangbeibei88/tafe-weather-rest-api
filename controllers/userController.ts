@@ -29,6 +29,7 @@ import {
 import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
 import { objectOmit } from "../utils/helpers.ts";
+import { FilterBuilder } from "../utils/FilterBuilder.ts";
 
 // Define the validation rules for user-related fields
 const userValidations: Record<keyof UserInput, ContextRunner> = {
@@ -208,7 +209,21 @@ export const deleteUserAction = asyncHandlerT(
 
 export const deleteUsersAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const result = await deleteUsers(req.query);
+    const filterBuilder = new FilterBuilder(req.query);
+    const filter = filterBuilder.build();
+
+    // Prevent deleting all documents if no filter provided
+    if (Object.keys(filter).length === 0) {
+      return next(
+        new ClientError({
+          code: 400,
+          message:
+            "Delete operation requires at least one query parameter to specify the filter.",
+        })
+      );
+    }
+
+    const result = await deleteUsers(filter);
 
     if (!result?.deletedCount) {
       return next(
