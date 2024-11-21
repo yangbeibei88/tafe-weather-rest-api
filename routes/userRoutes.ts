@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   createUserAction,
   deleteUserAction,
+  deleteUsersAction,
   listUsersAction,
   showUserAction,
   updateUserAction,
@@ -42,4 +43,4 @@ userRouter.put(
 userRouter.delete("/:id", validateParams(), deleteUserAction);
 
 // Delete many users
-userRouter.delete("/batch", validateQuery(), deleteUserAction);
+userRouter.delete("/batch", validateQuery(), deleteUsersAction);
