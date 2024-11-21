@@ -52,8 +52,15 @@ export class FilterBuilder {
   }
 
   private parseValue(value: any): any {
-    if (!isNaN(Number(value))) return Number(value);
-    if (value === "true" || value === "false") return value === "true";
+    if (this.isISODate(value)) {
+      return new Date(value);
+    }
+    if (!isNaN(Number(value))) {
+      return Number(value);
+    }
+    if (value === "true" || value === "false") {
+      return value === "true";
+    }
     return value;
   }
 
@@ -61,5 +68,9 @@ export class FilterBuilder {
     if (Array.isArray(value)) return value;
     if (typeof value === "string") return value.split(",");
     throw new Error(`Invalid array value: ${value}`);
+  }
+
+  private isISODate(value: string): boolean {
+    return !isNaN(Date.parse(value));
   }
 }

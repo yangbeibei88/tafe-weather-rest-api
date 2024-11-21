@@ -24,6 +24,7 @@ import {
   findUserById,
   insertUser,
   updateUserById,
+  deleteUsers,
 } from "../models/UserModel.ts";
 import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
@@ -189,18 +190,36 @@ export const deleteUserAction = asyncHandlerT(
     const result = await deleteUserById(req.params.id);
 
     if (!result?.deletedCount) {
-      next(
+      return next(
         new ClientError({
           code: 404,
           message: "The user not found.",
         })
       );
-      return;
     }
 
     res.status(204).json({
       success: true,
-      msg: "Successfully deleted one document.",
+      message: "Successfully deleted one document.",
+      result,
+    });
+  }
+);
+
+export const deleteUsersAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const result = await deleteUsers(req.query);
+
+    if (!result?.deletedCount) {
+      return next(
+        new ClientError({
+          code: 404,
+          message: "The user not found.",
+        })
+      );
+    }
+
+    res.status(204).json({
       result,
     });
   }

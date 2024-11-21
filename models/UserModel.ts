@@ -1,7 +1,7 @@
-import { OptionalId } from "mongodb";
+import { ObjectId, OptionalId } from "mongodb";
 import { usersColl } from "../config/db.ts";
 import { User } from "./UserSchema.ts";
-import { ObjectId } from "mongodb";
+import { FilterBuilder } from "../utils/FilterBuilder.ts";
 
 // const usersColl = database.collection<OptionalId<User>>("users");
 export const getAllUsers = async () => {
@@ -83,13 +83,13 @@ export const updateUserById = async (
   }
 };
 
-const updateUsers = async () => {
-  try {
-    const result = await usersColl.deleteMany({});
-  } catch (error) {
-    console.log(error);
-  }
-};
+// const updateUsers = async () => {
+//   try {
+//     const result = await usersColl.updateMany({})
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 export const updateUserLastLoggedInAt = async (id: string) => {
   try {
@@ -112,9 +112,11 @@ export const deleteUserById = async (id: string) => {
   }
 };
 
-export const deleteUsers = async () => {
+export const deleteUsers = async (query: object) => {
   try {
-    const result = await usersColl.deleteMany({});
+    const filter = new FilterBuilder(query).build();
+    const result = await usersColl.deleteMany(filter);
+    return result;
   } catch (error) {
     console.log(error);
   }

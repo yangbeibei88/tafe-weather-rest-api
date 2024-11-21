@@ -9,7 +9,7 @@ import {
   validateNewUserInput,
   validateUpdateUserInput,
 } from "../controllers/userController.ts";
-import { validateParams } from "../middlewares/validation.ts";
+import { validateParams, validateQuery } from "../middlewares/validation.ts";
 import { protect, authorisedTo } from "../controllers/authController.ts";
 
 export const userRouter = Router();
@@ -42,3 +42,4 @@ userRouter.put(
 userRouter.delete("/:id", validateParams(), deleteUserAction);
 
 // Delete many users
+userRouter.delete("/batch", validateQuery(), deleteUserAction);

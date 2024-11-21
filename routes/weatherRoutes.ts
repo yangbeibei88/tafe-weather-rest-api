@@ -35,7 +35,7 @@ weatherRouter.post(
 
 // Create many weather readings
 weatherRouter.post(
-  "/bulk",
+  "/batch",
   authorisedTo("admin", "teacher", "sensor"),
   validateWeatherInput(),
   createWeathersAction
