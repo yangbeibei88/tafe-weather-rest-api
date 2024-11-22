@@ -202,7 +202,7 @@ export const updateUsersRoleAction = asyncHandlerT(
     };
 
     // Prevent update all documents if no filter provided
-    if (Object.keys(filter).length === 0) {
+    if (!Object.keys(filter).length) {
       return next(
         new ClientError({
           code: 400,
@@ -252,7 +252,7 @@ export const deleteUsersAction = asyncHandlerT(
     const filter = filterBuilder.build();
 
     // Prevent deleting all documents if no filter provided
-    if (Object.keys(filter).length === 0) {
+    if (!Object.keys(filter).length) {
       return next(
         new ClientError({
           code: 400,

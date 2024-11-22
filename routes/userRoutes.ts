@@ -8,6 +8,7 @@ import {
   showUserAction,
   updateUserAction,
   updateUsersRoleAction,
+  validateBatchUpdateUsersRoleInput,
   validateNewUserInput,
   validateUpdateUserInput,
 } from "../controllers/userController.ts";
@@ -41,11 +42,16 @@ userRouter.put(
   updateUserAction
 );
 
-// Update many users role
-userRouter.patch("/batch", validateQueryParams(), updateUsersRoleAction);
-
 // Delete one user
 userRouter.delete("/:id", validatePathParams(), deleteUserAction);
 
 // Delete many users
 userRouter.delete("/batch", validateQueryParams(), deleteUsersAction);
+
+// Update many users role
+userRouter.patch(
+  "/roles",
+  validateQueryParams(),
+  validateBatchUpdateUsersRoleInput(),
+  updateUsersRoleAction
+);

@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
 import {
   Request,
@@ -113,7 +114,7 @@ export const validateText = (
   max: number = 254,
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain = check(`${name}.*`);
+  let chain: ValidationChain = body(name);
 
   if (required === false) {
     chain = chain.optional({ values: "falsy" });
@@ -136,7 +137,7 @@ export const validateNumber = (
   max: number = +Infinity,
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain = check(`${name}.*`);
+  let chain: ValidationChain = body(name);
 
   if (required === false) {
     chain = chain.optional({ values: "null" });
@@ -266,7 +267,7 @@ export const validateSelect = (
   storeType: "string" | "array",
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain = check(`${name}.*`);
+  let chain: ValidationChain = body(name);
 
   if (required === false) {
     chain.optional({ values: "null" });
@@ -308,7 +309,7 @@ export const validateDate = (
   name: string,
   required: boolean = true
 ): ValidationChain => {
-  let chain: ValidationChain = check(`${name}.*`);
+  let chain: ValidationChain = body(name);
 
   if (required === false) {
     chain = chain.optional({ values: "falsy" });
