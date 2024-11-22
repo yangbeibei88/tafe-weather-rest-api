@@ -30,7 +30,7 @@ import {
 import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
 import { objectOmit } from "../utils/helpers.ts";
-import { FilterBuilder } from "../utils/FilterBuilder.ts";
+import { QueryBuilder } from "../utils/QueryBuilder.ts";
 
 // Define the validation rules for user-related fields
 const userValidations: Record<keyof UserInput, ContextRunner> = {
@@ -194,8 +194,8 @@ export const updateUserAction = asyncHandlerT(
 
 export const updateUsersRoleAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const filterBuilder = new FilterBuilder(req.query);
-    const filter = filterBuilder.build();
+    const filterBuilder = new QueryBuilder(req.query);
+    const filter = filterBuilder.filterBuild();
     const payload: Pick<OptionalId<User>, "role" | "updatedAt"> = {
       role: req.body.role,
       updatedAt: new Date(),
@@ -248,8 +248,8 @@ export const deleteUserAction = asyncHandlerT(
 
 export const deleteUsersAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const filterBuilder = new FilterBuilder(req.query);
-    const filter = filterBuilder.build();
+    const filterBuilder = new QueryBuilder(req.query);
+    const filter = filterBuilder.filterBuild();
 
     // Prevent deleting all documents if no filter provided
     if (!Object.keys(filter).length) {

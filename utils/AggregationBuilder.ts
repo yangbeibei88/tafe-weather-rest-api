@@ -1,12 +1,25 @@
 // deno-lint-ignore-file no-explicit-any
-export class AggregationBuilder {
+import { QueryBuilder } from "./QueryBuilder.ts";
+
+export class AggregationBuilder extends QueryBuilder {
   private pipeline: any[] = [];
   // private limit: number = 10;
   // private page: number = 1;
 
-  match(criteria: Record<string, any>) {
-    if (criteria && Object.keys(criteria).length > 0) {
-      this.pipeline.push({ $match: criteria });
+  constructor(query: Record<string, any> = {}) {
+    super(query);
+  }
+
+  // match(criteria: Record<string, any>) {
+  //   if (criteria && Object.keys(criteria).length > 0) {
+  //     this.pipeline.push({ $match: criteria });
+  //   }
+  //   return this;
+  // }
+  match() {
+    const filter = this.filterBuild();
+    if (Object.keys(filter).length > 0) {
+      this.pipeline.push({ $match: filter });
     }
     return this;
   }
@@ -39,12 +52,12 @@ export class AggregationBuilder {
     return this;
   }
 
-  unset(fields: string[]) {
-    if (fields && fields.length > 0) {
-      this.pipeline.push({ unset: fields });
-    }
-    return this;
-  }
+  // unset(fields: string[]) {
+  //   if (fields && fields.length > 0) {
+  //     this.pipeline.push({ unset: fields });
+  //   }
+  //   return this;
+  // }
 
   paginate(limit: number, page: number) {
     // this.limit = limit > 0 ? limit : 10;
@@ -60,20 +73,20 @@ export class AggregationBuilder {
     return this;
   }
 
-  static parseQueryToMatch(query: Record<string, any>) {
-    const matchCriteria: Record<string, any> = {};
+  // static parseQueryToMatch(query: Record<string, any>) {
+  //   const matchCriteria: Record<string, any> = {};
 
-    for (const key in query) {
-      // skip pagination and sort-related keys
-      if (key === "limit" || key === "page" || key.startsWith("sort[")) {
-        continue;
-      }
+  //   for (const key in query) {
+  //     // skip pagination and sort-related keys
+  //     if (key === "limit" || key === "page" || key.startsWith("sort[")) {
+  //       continue;
+  //     }
 
-      matchCriteria[key] = query[key];
-    }
+  //     matchCriteria[key] = query[key];
+  //   }
 
-    return matchCriteria;
-  }
+  //   return matchCriteria;
+  // }
 
   static parseSort(query: Record<string, any>) {
     const sortCriteria: Record<string, 1 | -1> = {};

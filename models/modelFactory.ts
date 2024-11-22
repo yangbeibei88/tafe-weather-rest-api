@@ -10,19 +10,23 @@ export async function getPaginatedData<T>(
   group?: Record<string, any>,
   project?: Record<string, any>
 ) {
-  const matchCriteria = AggregationBuilder.parseQueryToMatch(query);
+  // const matchCriteria = AggregationBuilder.parseQueryToMatch(query);
   const sortCriteria = AggregationBuilder.parseSort(query) || undefined;
 
-  const aggregationBuilder = new AggregationBuilder()
-    .match(matchCriteria)
+  const aggregationBuilder = new AggregationBuilder(query);
+
+  const pipeline = aggregationBuilder
+    .match()
     .sort(sortCriteria)
     .group(group)
     .project(project)
-    .paginate(limit, page);
-
-  const pipeline = aggregationBuilder.build();
+    .paginate(limit, page)
+    .build();
 
   const result = await collection.aggregate(pipeline).toArray();
+
+  const explain = await collection.aggregate(pipeline).explain();
+  console.log(explain);
 
   const data = result[0]?.data || [];
   const totalCount = result[0]?.totalCount[0]?.totalCount || 0;

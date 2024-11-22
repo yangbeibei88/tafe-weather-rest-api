@@ -99,11 +99,12 @@ export const listWeathersAction = asyncHandlerT(
     const result = await getAllWeathers(req.query, limit, page);
 
     res.status(200).json({
-      success: true,
-      totalCount: result.totalCount,
-      totalPages: result.totalPages,
-      currentPage: result.currentPage,
-      limit,
+      paging: {
+        totalCount: result.totalCount,
+        totalPages: result.totalPages,
+        currentPage: result.currentPage,
+        limit,
+      },
       data: result.data,
     });
   }
