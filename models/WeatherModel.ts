@@ -88,6 +88,53 @@ export const findMaxPrecipitationBySensor = async (
   }
 };
 
+export const findMaxTemperature = async (startDate: Date, endDate: Date) => {
+  try {
+    const result = await weathersColl
+      .aggregate([
+        { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+        { $group: { _id: "$deviceName", maxTemp: { $max: "$temperature" } } },
+        {
+          $lookup: {
+            from: "weathers",
+            let: {
+              deviceName: "$_id.deviceName",
+              maxPrecipitation: "$_id.maxTemp",
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$deviceName", "$$deviceName"] },
+                      { $eq: ["$temperature", "$$maxTemp"] },
+                    ],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  deviceName: 1,
+                  temperature: 1,
+                  createdAt: 1,
+                },
+              },
+            ],
+            as: "matchingDocs",
+          },
+        },
+        { $unwind: "$matchingDocs" },
+        { $replaceRoot: { newRoot: "$matchingDocs" } },
+      ])
+      .toArray();
+
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const insertWeather = async (weather: OptionalId<Weather>) => {
   try {
     const result = await weathersColl.insertOne({
