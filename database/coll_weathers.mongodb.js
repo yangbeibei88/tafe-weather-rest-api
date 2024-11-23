@@ -90,7 +90,7 @@ db.runCommand({
         },
         createdAt: {
           bsonType: ["date", "null"],
-          description: "The current timestamp when the document is created.",
+          description: "The current timestamp when the document is created",
         },
         createdBy: {
           bsonType: ["objectId", "null"],
@@ -108,7 +108,7 @@ db.runCommand({
           bsonType: "object",
           description: "Must be an object if the field exists",
           required: ["type", "coordinates"],
-          oneOf: [
+          anyOf: [
             // Point
             {
               properties: {

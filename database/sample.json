@@ -1,0 +1,38 @@
+[
+  {
+    "Device Name": "Woodford_Sensor",
+    "Precipitation mm/h": 0.085,
+    "Time": {
+      "$date": {
+        "$numberLong": "1620359044000"
+      }
+    },
+    "Latitude": 152.77891,
+    "Longitude": -26.95064,
+    "Temperature (°C)": 22.74,
+    "Atmospheric Pressure (kPa)": 128.02,
+    "Max Wind Speed (m/s)": 4.94,
+    "Solar Radiation (W/m2)": 113.21,
+    "Vapor Pressure (kPa)": 1.73,
+    "Humidity (%)": 73.84,
+    "Wind Direction (°)": 155.6
+  },
+  {
+    "Device Name": "Woodford_Sensor",
+    "Precipitation mm/h": 0.085,
+    "Time": {
+      "$date": {
+        "$numberLong": "1620358445000"
+      }
+    },
+    "Latitude": 152.77891,
+    "Longitude": -26.95064,
+    "Temperature (°C)": 23.07,
+    "Atmospheric Pressure (kPa)": 128.02,
+    "Max Wind Speed (m/s)": 3.77,
+    "Solar Radiation (W/m2)": 290.5,
+    "Vapor Pressure (kPa)": 1.72,
+    "Humidity (%)": 71.9,
+    "Wind Direction (°)": 163.3
+  }
+]

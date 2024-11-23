@@ -121,8 +121,34 @@ export const weatherSchema: MongoJSONSchema = {
       description: "Must be a number, unit: degree",
     },
     createdAt: {
-      bsonType: ["date", "null"],
-      description: "The current timestamp when the document is created.",
+      anyOf: [
+        {
+          bsonType: "date",
+          description: "A valid BSON date.",
+        },
+        {
+          bsonType: "null",
+          description: "The field can be null.",
+        },
+        {
+          bsonType: "object",
+          required: ["$date"],
+          properties: {
+            $date: {
+              bsonType: "object",
+              required: ["$numberLong"],
+              properties: {
+                $numberLong: {
+                  bsonType: "string",
+                  description:
+                    "The field must include a timestamp as a string.",
+                },
+              },
+            },
+          },
+          description: "An object representation of the date.",
+        },
+      ],
     },
     createdBy: {
       bsonType: ["objectId", "null"],
@@ -140,7 +166,7 @@ export const weatherSchema: MongoJSONSchema = {
       bsonType: "object",
       description: "Must be an object if the field exists",
       required: ["type", "coordinates"],
-      oneOf: [
+      anyOf: [
         // Point
         {
           properties: {
