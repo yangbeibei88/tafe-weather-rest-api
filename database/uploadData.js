@@ -11,26 +11,51 @@ const data = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
 
 console.log(data.length); // 120360
 
-const dataArr = data.map((item) => {
-  let obj = {};
+const sample = {
+  "Device Name": "Woodford_Sensor",
+  "Precipitation mm/h": 0.085,
+  Time: {
+    $date: {
+      $numberLong: "1620359044000",
+    },
+  },
+  Latitude: 152.77891,
+  Longitude: -26.95064,
+  "Temperature (°C)": 22.74,
+  "Atmospheric Pressure (kPa)": 128.02,
+  "Max Wind Speed (m/s)": 4.94,
+  "Solar Radiation (W/m2)": 113.21,
+  "Vapor Pressure (kPa)": 1.73,
+  "Humidity (%)": 73.84,
+  "Wind Direction (°)": 155.6,
+};
 
-  obj.deviceName = item["Device Name"];
-  obj.precipitation = item["Precipitation mm/h"];
-  obj.temperature = item["Temperature (°C)"];
-  obj.atmosphericPressure = item["Atmospheric Pressure (kPa)"];
-  obj.maxWindSpeed = item["Max Wind Speed (m/s)"];
-  obj.solarRadiation = item["Solar Radiation (W/m2)"];
-  obj.vaporPressure = item["Vapor Pressure (kPa)"];
-  obj.humidity = item["Humidity (%)"];
-  obj.windDirection = item["Wind Direction (°)"];
-  obj.geoLocation = {
-    type: "Point",
-    coordinates: [item["Latitude"], item["Longitude"]],
-  };
-  obj.createdAt = new Date(parseInt(item["Time"]["$date"]["$numberLong"], 10));
+const dataArr = data
+  .filter((item) => {
+    return Object.keys(sample).every((key) => Object.keys(item).includes(key));
+  })
+  .map((item) => {
+    let obj = {};
 
-  return obj;
-});
+    obj.deviceName = item["Device Name"];
+    obj.precipitation = item["Precipitation mm/h"] || 0;
+    obj.temperature = item["Temperature (°C)"] || 0;
+    obj.atmosphericPressure = item["Atmospheric Pressure (kPa)"] || 0;
+    obj.maxWindSpeed = item["Max Wind Speed (m/s)"] || 0;
+    obj.solarRadiation = item["Solar Radiation (W/m2)"] || 0;
+    obj.vaporPressure = item["Vapor Pressure (kPa)"] || 0;
+    obj.humidity = item["Humidity (%)"] || 0;
+    obj.windDirection = item["Wind Direction (°)"] || 0;
+    obj.geoLocation = {
+      type: "Point",
+      coordinates: [item["Latitude"], item["Longitude"]],
+    };
+    obj.createdAt = new Date(
+      parseInt(item["Time"]["$date"]["$numberLong"], 10)
+    );
+
+    return obj;
+  });
 
 const chunkArray = (arr, size) =>
   arr.reduce((acc, _, i) => {

@@ -34,5 +34,23 @@
     "Vapor Pressure (kPa)": 1.72,
     "Humidity (%)": 71.9,
     "Wind Direction (°)": 163.3
+  },
+  {
+    "Device Name": "Yandina_Sensor",
+    "Precipitation mm/h": 0,
+    "Time": {
+      "$date": {
+        "$numberLong": "1616346309000"
+      }
+    },
+    "Latitude": 152.95574,
+    "Longitude": -26.56271,
+    "Temperature (°C)": null,
+    "Atmospheric Pressure (kPa)": null,
+    "Max Wind Speed (m/s)": null,
+    "Solar Radiation (W/m2)": null,
+    "Vapor Pressure (kPa)": null,
+    "Humidity (%)": null,
+    "Wind Direction (°)": null
   }
 ]
