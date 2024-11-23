@@ -96,6 +96,7 @@ export const listWeathersAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const page = parseInt(req.query.page, 10) || 1;
+
     const result = await getAllWeathers(req.query, limit, page);
 
     res.status(200).json({
@@ -108,6 +109,14 @@ export const listWeathersAction = asyncHandlerT(
       data: result.data,
     });
   }
+);
+
+export const listWeatherStatsAction = asyncHandlerT(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {}
+);
+
+export const listStationStatsAction = asyncHandlerT(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {}
 );
 
 export const showWeatherAction: RequestHandler = asyncHandlerT(

@@ -18,15 +18,22 @@ export class AggregationBuilder extends QueryBuilder {
   // }
   match() {
     const filter = this.filterBuild();
-    if (Object.keys(filter).length > 0) {
+    if (filter && Object.keys(filter).length > 0) {
       this.pipeline.push({ $match: filter });
     }
     return this;
   }
 
   group(grouping?: Record<string, any>) {
-    if (grouping) {
+    if (grouping && Object.keys(grouping).length > 0) {
       this.pipeline.push({ $group: grouping });
+    }
+    return this;
+  }
+
+  lookup(lookupCriteria?: Record<string, any>) {
+    if (lookupCriteria && Object.keys(lookupCriteria).length > 0) {
+      this.pipeline.push({ $lookup: lookupCriteria });
     }
     return this;
   }

@@ -3,6 +3,7 @@ import { OptionalId, ObjectId, MongoServerError } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
 import { getPaginatedData } from "./modelFactory.ts";
+import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 

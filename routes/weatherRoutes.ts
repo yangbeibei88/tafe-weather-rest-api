@@ -5,6 +5,8 @@ import {
   createWeathersAction,
   deleteWeatherAction,
   listWeathersAction,
+  listWeatherStatsAction,
+  listStationStatsAction,
   showWeatherAction,
   updateWeatherAction,
   validateWeatherInput,
@@ -23,8 +25,8 @@ weatherRouter.use(protect);
 // Get all weathers
 weatherRouter.get(
   "/",
-  validateQueryParams(),
   authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(),
   listWeathersAction
 );
 
@@ -43,6 +45,21 @@ weatherRouter.post(
   validateWeatherInput(),
   createWeathersAction
 );
+
+weatherRouter.get(
+  "/stats",
+  authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(),
+  listWeatherStatsAction
+);
+
+// weatherRouter.get(
+//   "/:deviceName/stats",
+//   authorisedTo("admin", "teacher", "student"),
+//   validatePathParams(),
+//   validateQueryParams(),
+//   listStationStatsAction
+// );
 
 // Update one or more new weather readings
 // weatherRouter.put("/");

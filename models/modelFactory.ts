@@ -39,3 +39,12 @@ export async function getPaginatedData<T>(
 
   return { totalCount, totalPages, currentPage, data };
 }
+
+export async function getStatsData<T>(
+  collection: Collection<T>,
+  query: Record<string, any> = {},
+  group?: Record<string, any>,
+  project?: Record<string, any>
+) {
+  const aggregationBuilder = new AggregationBuilder(query);
+}
