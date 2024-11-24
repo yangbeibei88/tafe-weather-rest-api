@@ -3,7 +3,6 @@ import { OptionalId, ObjectId, MongoServerError } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
 import { getPaginatedData } from "./modelFactory.ts";
-import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
@@ -33,13 +32,35 @@ export const getWeather = async (id: string) => {
   }
 };
 
-export const findMaxPrecipitationByLocation = async (
-  latitude: number,
+const findLatestDateByLocation = async (
   longitude: number,
+  latitude: number
+) => {
+  const result = await weathersColl.findOne(
+    {
+      geoLocation: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
+    },
+    { sort: { createdAt: -1 }, projection: { createdAt: 1, _id: 0 } }
+  );
+
+  if (!result) {
+    return new Date();
+  }
+
+  return result.createdAt;
+};
+
+export const findMaxPrecipitationByLocation = async (
+  longitude: number,
+  latitude: number,
   recentMonths: number
 ) => {
   try {
-    const startDate = new Date();
+    const latestDate = await findLatestDateByLocation(longitude, latitude);
+    const startDate = new Date(latestDate);
     startDate.setMonth(startDate.getMonth() - recentMonths);
     const result = await weathersColl
       .aggregate([
@@ -54,51 +75,80 @@ export const findMaxPrecipitationByLocation = async (
                 },
               },
             },
-            createdAt: { $gte: startDate },
+            createdAt: { $gte: startDate, $lte: latestDate },
           },
         },
         {
-          // Stage 2: group by geoLocation and find the max precipitation
+          // Stage 2: limit necessory fields
+          $project: {
+            deviceName: 1,
+            createdAt: 1,
+            precipitation: 1,
+          },
+        },
+        {
+          // Stage 3: group by geoLocation and find the max precipitation
           $group: {
             _id: "$geoLocation",
             maxPrecipitation: { $max: "$precipitation" },
+            docs: {
+              $push: {
+                deviceName: "$deviceName",
+                createdAt: "$createdAt",
+                precipitation: "$precipitation",
+              },
+            },
           },
         },
         {
-          // Step 3: Match all documents with the maximum precipitation for the location
-          $lookup: {
-            from: "weathers",
-            let: {
-              location: "$_id",
-              maxPrecipitation: "$maxPrecipitation",
+          // Stage 4: Filter docs matching the max precipation
+          $project: {
+            docs: {
+              $filter: {
+                input: "$docs",
+                as: "doc",
+                cond: { $eq: ["$$doc.precipitation", "$maxPrecipitation"] },
+              },
             },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ["$geoLocation", "$$location"] },
-                      { $eq: ["$recipitation", "$$maxPrecipitation"] },
-                    ],
-                  },
-                },
-              },
-              {
-                $project: {
-                  _id: 0,
-                  deviceName: 1,
-                  createdAt: 1,
-                  precipitation: 1,
-                },
-              },
-            ],
-            as: "machingDocs",
           },
         },
-        // Step 4: Flattern the array of matching docs
-        { $unwind: "$machingDocs" },
-        // Step 5: Replace the root with the matching docs fields
-        { $replaceRoot: { newRoot: "$matchingDocs" } },
+        // {
+        //   // Step 3: Match all documents with the maximum precipitation for the location
+        //   $lookup: {
+        //     from: "weathers",
+        //     let: {
+        //       location: "$_id",
+        //       maxPrecipitation: "$maxPrecipitation",
+        //     },
+        //     pipeline: [
+        //       {
+        //         $match: {
+        //           $expr: {
+        //             $and: [
+        //               { $eq: ["$geoLocation", "$$location"] },
+        //               { $eq: ["$recipitation", "$$maxPrecipitation"] },
+        //             ],
+        //           },
+        //         },
+        //       },
+        //       {
+        //         $project: {
+        //           _id: 0,
+        //           deviceName: 1,
+        //           createdAt: 1,
+        //           precipitation: 1,
+        //         },
+        //       },
+        //     ],
+        //     as: "machingDocs",
+        //   },
+        // },
+        // Step 5: Flattern the array of matching docs
+        { $unwind: "$docs" },
+        // Step 6: Replace the root with the matching docs fields
+        { $replaceRoot: { newRoot: "$docs" } },
+        // Step 7: sort the result by createdAt in desc
+        { $sort: { createdAt: -1 } },
       ])
       .toArray();
     return result;
