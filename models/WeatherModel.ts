@@ -33,8 +33,9 @@ export const getWeather = async (id: string) => {
   }
 };
 
-export const findMaxPrecipitationBySensor = async (
-  deviceName: string,
+export const findMaxPrecipitationByLocation = async (
+  latitude: number,
+  longitude: number,
   recentMonths: number
 ) => {
   try {
@@ -42,27 +43,42 @@ export const findMaxPrecipitationBySensor = async (
     startDate.setMonth(startDate.getMonth() - recentMonths);
     const result = await weathersColl
       .aggregate([
-        { $match: { deviceName, createdAt: { $gte: startDate } } },
         {
+          // Stage 1: Match docs for the specifc location and date range
+          $match: {
+            geoLocation: {
+              $geoIntersects: {
+                $geometry: {
+                  type: "Point",
+                  coordinates: [longitude, latitude],
+                },
+              },
+            },
+            createdAt: { $gte: startDate },
+          },
+        },
+        {
+          // Stage 2: group by geoLocation and find the max precipitation
           $group: {
-            _id: "$deviceName",
+            _id: "$geoLocation",
             maxPrecipitation: { $max: "$precipitation" },
           },
         },
         {
+          // Step 3: Match all documents with the maximum precipitation for the location
           $lookup: {
             from: "weathers",
             let: {
-              deviceName: "$_id.deviceName",
-              maxPrecipitation: "$_id.maxPrecipitation",
+              location: "$_id",
+              maxPrecipitation: "$maxPrecipitation",
             },
             pipeline: [
               {
                 $match: {
                   $expr: {
                     $and: [
-                      { $eq: ["deviceName", "$$deviceName"] },
-                      { $eq: ["recipitation", "$$maxPrecipitation"] },
+                      { $eq: ["$geoLocation", "$$location"] },
+                      { $eq: ["$recipitation", "$$maxPrecipitation"] },
                     ],
                   },
                 },
@@ -79,7 +95,9 @@ export const findMaxPrecipitationBySensor = async (
             as: "machingDocs",
           },
         },
+        // Step 4: Flattern the array of matching docs
         { $unwind: "$machingDocs" },
+        // Step 5: Replace the root with the matching docs fields
         { $replaceRoot: { newRoot: "$matchingDocs" } },
       ])
       .toArray();
@@ -94,12 +112,12 @@ export const findMaxTemperature = async (startDate: Date, endDate: Date) => {
     const result = await weathersColl
       .aggregate([
         { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
-        { $group: { _id: "$deviceName", maxTemp: { $max: "$temperature" } } },
+        { $group: { _id: "$geoLocation", maxTemp: { $max: "$temperature" } } },
         {
           $lookup: {
             from: "weathers",
             let: {
-              deviceName: "$_id.deviceName",
+              deviceName: "$_id.geoLocation",
               maxPrecipitation: "$_id.maxTemp",
             },
             pipeline: [
@@ -107,7 +125,7 @@ export const findMaxTemperature = async (startDate: Date, endDate: Date) => {
                 $match: {
                   $expr: {
                     $and: [
-                      { $eq: ["$deviceName", "$$deviceName"] },
+                      { $eq: ["$geoLocation", "$$geoLocation"] },
                       { $eq: ["$temperature", "$$maxTemp"] },
                     ],
                   },

@@ -198,3 +198,5 @@ db.weathers.insertOne({
 });
 
 db.weathers.createIndex({ geoLocation: "2dsphere" });
+db.weathers.createIndex({ deviceName: 1 });
+db.weathers.createIndex({ createdAt: -1 });
