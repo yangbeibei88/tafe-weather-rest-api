@@ -48,7 +48,14 @@ weatherRouter.post(
 
 // Aggregation all locations
 weatherRouter.get(
-  "/aggregate",
+  "/aggregate/locations",
+  authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(),
+  listWeatherStatsAction
+);
+// Aggregation all devices
+weatherRouter.get(
+  "/aggregate/devices",
   authorisedTo("admin", "teacher", "student"),
   validateQueryParams(),
   listWeatherStatsAction

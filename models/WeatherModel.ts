@@ -3,16 +3,24 @@ import { OptionalId, ObjectId, MongoServerError } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
 import { getPaginatedData } from "./modelFactory.ts";
+import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
 export const getAllWeathers = async (
   query: Record<string, any>,
   limit: number = 10,
-  page: number = 1
+  page: number = 1,
+  param: Record<string, any> = {}
 ) => {
   try {
-    const result = await getPaginatedData(weathersColl, query, limit, page);
+    const result = await getPaginatedData(
+      weathersColl,
+      param,
+      query,
+      limit,
+      page
+    );
 
     return result;
   } catch (error) {
@@ -128,37 +136,7 @@ export const findMaxPrecipitationByLocation = async (
             },
           },
         },
-        // {
-        //   // Step 3: Match all documents with the maximum precipitation for the location
-        //   $lookup: {
-        //     from: "weathers",
-        //     let: {
-        //       location: "$_id",
-        //       maxPrecipitation: "$maxPrecipitation",
-        //     },
-        //     pipeline: [
-        //       {
-        //         $match: {
-        //           $expr: {
-        //             $and: [
-        //               { $eq: ["$geoLocation", "$$location"] },
-        //               { $eq: ["$recipitation", "$$maxPrecipitation"] },
-        //             ],
-        //           },
-        //         },
-        //       },
-        //       {
-        //         $project: {
-        //           _id: 0,
-        //           deviceName: 1,
-        //           createdAt: 1,
-        //           precipitation: 1,
-        //         },
-        //       },
-        //     ],
-        //     as: "machingDocs",
-        //   },
-        // },
+
         // Step 5: Flattern the array of matching docs
         { $unwind: "$docs" },
         // Step 6: Replace the root with the matching docs fields
@@ -350,6 +328,53 @@ export const deleteWeather = async (id: string) => {
     const result = await weathersColl.deleteOne({
       _id: new ObjectId(id),
     });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const aggregateWeatherByLocation = async (
+  longitude: number,
+  latitude: number,
+  operation: string,
+  aggField: string,
+  recentMonths?: number,
+  startDate?: number,
+  endDate?: number
+) => {
+  try {
+    const aggBuilder = new AggregationBuilder(
+      { longitude, latitude },
+      { operation, aggField, startDate, endDate, recentMonths }
+    );
+
+    const pipeline = aggBuilder
+      .match()
+      .project({ deviceName: 1, createdAt: 1, [aggField]: 1 })
+      .group({
+        _id: "$geoLocation",
+        [`${operation}${aggField}`]: { [`$${operation}`]: `$${aggField}` },
+        docs: {
+          $push: {
+            deviceName: "$deviceName",
+            createdAt: "$createdAt",
+            [`${aggField}`]: `$${aggField}`,
+          },
+        },
+      })
+      .aggFilter({
+        input: "$docs",
+        as: "doc",
+        cond: { $eq: [`$$doc.${aggField}`, `$${operation}${aggField}`] },
+      })
+      .unwind("$docs")
+      .replaceRoot({ newRoot: "$docs" })
+      .sort({ createdAt: -1 })
+      .build();
+
+    const result = await weathersColl.aggregate(pipeline).toArray();
 
     return result;
   } catch (error) {

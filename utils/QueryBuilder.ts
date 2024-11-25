@@ -1,15 +1,29 @@
 // deno-lint-ignore-file no-explicit-any
-type operators = "gte" | "gt" | "lte" | "lt" | "in" | "all";
+type Operator = "gte" | "gt" | "lte" | "lt" | "in" | "all";
 
 export class QueryBuilder {
   private filter: Record<string, any> = {};
 
-  constructor(private query: Record<string, any> = {}) {}
+  // query here for req.query
+  // param here for req.params
+  constructor(
+    private param: Record<string, any> = {},
+    private query: Record<string, any> = {}
+  ) {}
 
   filterBuild(): Record<string, any> {
+    for (const [key, value] of Object.entries(this.param)) {
+      this.filter[key] = value;
+    }
     for (const [key, value] of Object.entries(this.query)) {
       // skip pagination and sort-related keys
-      if (key === "limit" || key === "page" || key.startsWith("sort[")) {
+      if (
+        key === "limit" ||
+        key === "page" ||
+        key === "operation" ||
+        key === "aggField" ||
+        key.startsWith("sort[")
+      ) {
         continue;
       }
       // check if key contains an operator e.g. humidity[gt]
@@ -17,7 +31,7 @@ export class QueryBuilder {
 
       if (match) {
         const [, field, operator] = match; // ["humidity[gt]", "humidity", "gt"]
-        this.addOperator(field, operator as operators, value);
+        this.addOperator(field, operator as Operator, value);
       } else {
         this.filter[key] = value;
       }
@@ -25,7 +39,7 @@ export class QueryBuilder {
     return this.filter;
   }
 
-  private addOperator(field: string, operator: operators, value: any) {
+  private addOperator(field: string, operator: Operator, value: any) {
     if (!this.filter[field]) {
       this.filter[field] = {};
     }

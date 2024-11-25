@@ -6,16 +6,13 @@ export class AggregationBuilder extends QueryBuilder {
   // private limit: number = 10;
   // private page: number = 1;
 
-  constructor(query: Record<string, any> = {}) {
-    super(query);
+  constructor(
+    param: Record<string, any> = {},
+    query: Record<string, any> = {}
+  ) {
+    super(param, query);
   }
 
-  // match(criteria: Record<string, any>) {
-  //   if (criteria && Object.keys(criteria).length > 0) {
-  //     this.pipeline.push({ $match: criteria });
-  //   }
-  //   return this;
-  // }
   match() {
     const filter = this.filterBuild();
     if (filter && Object.keys(filter).length > 0) {
@@ -38,13 +35,6 @@ export class AggregationBuilder extends QueryBuilder {
     return this;
   }
 
-  sort(sortCriteria?: Record<string, 1 | -1>) {
-    if (sortCriteria && Object.keys(sortCriteria).length > 0) {
-      this.pipeline.push({ $sort: sortCriteria });
-    }
-    return this;
-  }
-
   project(projection?: Record<string, any>) {
     if (projection) {
       this.pipeline.push({ $project: projection });
@@ -59,12 +49,22 @@ export class AggregationBuilder extends QueryBuilder {
     return this;
   }
 
-  // unset(fields: string[]) {
-  //   if (fields && fields.length > 0) {
-  //     this.pipeline.push({ unset: fields });
-  //   }
-  //   return this;
-  // }
+  unwind(path: string) {
+    this.pipeline.push({ $unwind: path });
+    return this;
+  }
+
+  replaceRoot(newRoot: Record<string, any>) {
+    this.pipeline.push({ $replaceRoot: { newRoot } });
+    return this;
+  }
+
+  aggFilter(filter: Record<string, any>) {
+    if (filter && Object.keys(filter).length > 0) {
+      this.pipeline.push({ $project: { docs: { $filter: filter } } });
+    }
+    return this;
+  }
 
   paginate(limit: number, page: number) {
     // this.limit = limit > 0 ? limit : 10;
@@ -80,20 +80,12 @@ export class AggregationBuilder extends QueryBuilder {
     return this;
   }
 
-  // static parseQueryToMatch(query: Record<string, any>) {
-  //   const matchCriteria: Record<string, any> = {};
-
-  //   for (const key in query) {
-  //     // skip pagination and sort-related keys
-  //     if (key === "limit" || key === "page" || key.startsWith("sort[")) {
-  //       continue;
-  //     }
-
-  //     matchCriteria[key] = query[key];
-  //   }
-
-  //   return matchCriteria;
-  // }
+  sort(sortCriteria?: Record<string, 1 | -1>) {
+    if (sortCriteria && Object.keys(sortCriteria).length > 0) {
+      this.pipeline.push({ $sort: sortCriteria });
+    }
+    return this;
+  }
 
   static parseSort(query: Record<string, any>) {
     const sortCriteria: Record<string, 1 | -1> = {};
