@@ -46,8 +46,25 @@ weatherRouter.post(
   createWeathersAction
 );
 
+// Aggregation all locations
 weatherRouter.get(
-  "/stats",
+  "/aggregate",
+  authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(),
+  listWeatherStatsAction
+);
+
+// Aggregation by single location
+weatherRouter.get(
+  "/aggregate/locations/@:longitude,:latitude",
+  authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(),
+  listWeatherStatsAction
+);
+
+// Aggregation by single device
+weatherRouter.get(
+  "/aggregate/devices/:deviceName",
   authorisedTo("admin", "teacher", "student"),
   validateQueryParams(),
   listWeatherStatsAction
@@ -66,8 +83,6 @@ weatherRouter.get(
 
 // delete one or more new weather readings
 // weatherRouter.delete("/");
-
-// TODO: UPLOAD WEATHER DATA THROUGH FILES (JSON, CSV)
 
 // Get one weather reading
 weatherRouter.get(
