@@ -200,3 +200,10 @@ db.weathers.insertOne({
 db.weathers.createIndex({ geoLocation: "2dsphere" });
 db.weathers.createIndex({ deviceName: 1 });
 db.weathers.createIndex({ createdAt: -1 });
+db.weathers.createIndex(
+  { deviceName: 1, createdAt: -1 },
+  {
+    name: "deviceName_1_createdAt_-1_en_ci",
+    collation: { locale: "en", strength: 2 },
+  }
+);

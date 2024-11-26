@@ -54,7 +54,11 @@ export const findDevice = async (deviceName: string) => {
     const result = await weathersColl
       .find<Weather>(
         { deviceName },
-        { limit: 1, projection: { deviceName: 1 } }
+        {
+          limit: 1,
+          projection: { deviceName: 1 },
+          collation: { locale: "en", strength: 2 },
+        }
       )
       .toArray();
 
@@ -90,7 +94,12 @@ const findLatestDateByLocation = async (
 const findLatestDateByDevice = async (deviceName: string) => {
   const cursor = weathersColl.find<Weather>(
     { deviceName },
-    { sort: { createdAt: -1 }, limit: 1, projection: { createdAt: 1, _id: 0 } }
+    {
+      sort: { createdAt: -1 },
+      limit: 1,
+      projection: { createdAt: 1, _id: 0 },
+      collation: { locale: "en", strength: 2 },
+    }
   );
 
   const result = await cursor.toArray();
@@ -224,9 +233,14 @@ export async function aggregateWeatherByLocationOrDevice(
 
   console.log("Aggregation Pipeline:", JSON.stringify(pipeline, null, 2));
   try {
-    const result = await weathersColl.aggregate(pipeline).toArray();
+    const result = await weathersColl
+      .aggregate(pipeline, { collation: { locale: "en", strength: 2 } })
+      .toArray();
 
-    console.log("Aggregation Result:", result);
+    const explain = await weathersColl
+      .aggregate(pipeline)
+      .explain("executionStats");
+    console.log(explain);
 
     return result;
   } catch (error) {
