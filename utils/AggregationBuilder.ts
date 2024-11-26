@@ -7,14 +7,14 @@ export class AggregationBuilder extends QueryBuilder {
   // private page: number = 1;
 
   constructor(
-    param: Record<string, any> = {},
+    // param: Record<string, any> = {},
     query: Record<string, any> = {}
   ) {
-    super(param, query);
+    super(query);
   }
 
-  match() {
-    const filter = this.filterBuild();
+  match(customMatch: Record<string, any> = {}) {
+    const filter = this.filterBuild(customMatch);
     if (filter && Object.keys(filter).length > 0) {
       this.pipeline.push({ $match: filter });
     }
@@ -24,6 +24,59 @@ export class AggregationBuilder extends QueryBuilder {
   group(grouping?: Record<string, any>) {
     if (grouping && Object.keys(grouping).length > 0) {
       this.pipeline.push({ $group: grouping });
+    }
+    return this;
+  }
+
+  group2(
+    operation: string,
+    aggField: string,
+    groupBy: string | null = null,
+    customGroup: Record<string, any> = {}
+  ) {
+    const mongoOperation = {
+      max: "$max",
+      min: "$min",
+      avg: "$avg",
+      median: null,
+    }[operation];
+
+    const group: Record<string, any> = groupBy
+      ? { _id: groupBy }
+      : { _id: null };
+
+    if (mongoOperation) {
+      group[`${operation}${aggField}`] = { [`$${operation}`]: `$${aggField}` };
+    } else if (operation === "median") {
+      group[`median${aggField}`] = { $push: `$${aggField}` };
+    }
+
+    Object.assign(group, customGroup);
+
+    if (Object.keys(group).length > 1) {
+      this.pipeline.push({ $group: group });
+    }
+
+    if (operation === "median") {
+      this.pipeline.push({
+        $addFields: {
+          [`median${aggField}`]: {
+            $let: {
+              vars: {
+                sorted: {
+                  $sortArray: { input: `$median${aggField}`, sortBy: 1 },
+                },
+              },
+              in: {
+                $arrayElemAt: [
+                  "$$sorted",
+                  { $floor: { $divide: [{ $size: "$$sorted" }, 2] } },
+                ],
+              },
+            },
+          },
+        },
+      });
     }
     return this;
   }
@@ -55,7 +108,7 @@ export class AggregationBuilder extends QueryBuilder {
   }
 
   replaceRoot(newRoot: Record<string, any>) {
-    this.pipeline.push({ $replaceRoot: { newRoot } });
+    this.pipeline.push({ $replaceRoot: newRoot });
     return this;
   }
 

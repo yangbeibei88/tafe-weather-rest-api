@@ -10,6 +10,7 @@ import {
   showWeatherAction,
   updateWeatherAction,
   validateWeatherInput,
+  showStationStatsAction,
 } from "../controllers/weatherController.ts";
 import {
   validatePathParams,
@@ -46,33 +47,35 @@ weatherRouter.post(
   createWeathersAction
 );
 
-// Aggregation all locations
-weatherRouter.get(
-  "/aggregate/locations",
-  authorisedTo("admin", "teacher", "student"),
-  validateQueryParams(),
-  listWeatherStatsAction
-);
-// Aggregation all devices
-weatherRouter.get(
-  "/aggregate/devices",
-  authorisedTo("admin", "teacher", "student"),
-  validateQueryParams(),
-  listWeatherStatsAction
-);
+// // Aggregation all locations
+// weatherRouter.get(
+//   "/aggregate/locations",
+//   authorisedTo("admin", "teacher", "student"),
+//   validateQueryParams(),
+//   listWeatherStatsAction
+// );
+// // Aggregation all devices
+// weatherRouter.get(
+//   "/aggregate/devices",
+//   authorisedTo("admin", "teacher", "student"),
+//   validateQueryParams(),
+//   listWeatherStatsAction
+// );
 
 // Aggregation by single location
 weatherRouter.get(
   "/aggregate/locations/@:longitude,:latitude",
   authorisedTo("admin", "teacher", "student"),
+  validatePathParams(),
   validateQueryParams(),
-  listWeatherStatsAction
+  showStationStatsAction
 );
 
 // Aggregation by single device
 weatherRouter.get(
   "/aggregate/devices/:deviceName",
   authorisedTo("admin", "teacher", "student"),
+  validatePathParams(),
   validateQueryParams(),
   listWeatherStatsAction
 );

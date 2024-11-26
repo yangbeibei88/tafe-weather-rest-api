@@ -4,14 +4,13 @@ import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
 
 export async function getPaginatedData<T extends Document>(
   collection: Collection<T>,
-  param: Record<string, any> = {},
   query: Record<string, any> = {},
   limit: number = 10,
   page: number = 1,
   group?: Record<string, any>,
   project?: Record<string, any>
 ) {
-  const aggregationBuilder = new AggregationBuilder(param, query);
+  const aggregationBuilder = new AggregationBuilder(query);
 
   // const matchCriteria = AggregationBuilder.parseQueryToMatch(query);
   const sortCriteria = AggregationBuilder.parseSort(query) || undefined;

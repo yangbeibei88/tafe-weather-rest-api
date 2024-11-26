@@ -5,7 +5,7 @@ import {
   NextFunction,
   RequestHandler,
 } from "express-serve-static-core";
-import { OptionalId } from "mongodb";
+import { Code, OptionalId } from "mongodb";
 import { ContextRunner } from "express-validator";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import {
@@ -15,6 +15,8 @@ import {
   insertWeather,
   updateWeather,
   insertWeathers,
+  findGeolocation,
+  aggregateWeatherByLocation,
 } from "../models/WeatherModel.ts";
 import { Weather, WeatherInput } from "../models/WeatherSchema.ts";
 import {
@@ -117,6 +119,40 @@ export const listWeatherStatsAction = asyncHandlerT(
 
 export const listStationStatsAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {}
+);
+
+export const showStationStatsAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { longitude, latitude } = req.params;
+    const { operation, aggField, createdAt, recentMonths } = req.query;
+
+    console.log(req.params);
+    console.log(req.query);
+
+    // check if the location exists
+    const location = await findGeolocation(Number(longitude), Number(latitude));
+
+    if (!location?.length) {
+      return next(
+        new ClientError({ code: 404, message: "This location not found." })
+      );
+    }
+
+    const result = await aggregateWeatherByLocation(
+      Number(longitude),
+      Number(latitude),
+      operation,
+      aggField,
+      Number(recentMonths),
+      createdAt
+    );
+
+    console.log("Aggregation result:", result);
+
+    res.status(200).json({
+      result,
+    });
+  }
 );
 
 export const showWeatherAction: RequestHandler = asyncHandlerT(

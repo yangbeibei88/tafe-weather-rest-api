@@ -7,14 +7,14 @@ export class QueryBuilder {
   // query here for req.query
   // param here for req.params
   constructor(
-    private param: Record<string, any> = {},
+    // private param: Record<string, any> = {},
     private query: Record<string, any> = {}
   ) {}
 
-  filterBuild(): Record<string, any> {
-    for (const [key, value] of Object.entries(this.param)) {
-      this.filter[key] = value;
-    }
+  filterBuild(customFilter: Record<string, any> = {}): Record<string, any> {
+    // for (const [key, value] of Object.entries(this.param)) {
+    //   this.filter[key] = value;
+    // }
     for (const [key, value] of Object.entries(this.query)) {
       // skip pagination and sort-related keys
       if (
@@ -22,21 +22,38 @@ export class QueryBuilder {
         key === "page" ||
         key === "operation" ||
         key === "aggField" ||
+        key === "recentMonths" ||
         key.startsWith("sort[")
       ) {
         continue;
       }
-      // check if key contains an operator e.g. humidity[gt]
-      const match = key.match(/(.+)\[(.+)\]/);
 
-      if (match) {
-        const [, field, operator] = match; // ["humidity[gt]", "humidity", "gt"]
-        this.addOperator(field, operator as Operator, value);
+      // Handle nested objects (e.g., createdAt: { gte: '2021-03-01', lte: '2021-03-31' })
+      if (typeof value === "object" && !Array.isArray(value)) {
+        this.addNestedOperator(key, value as Record<string, any>);
       } else {
-        this.filter[key] = value;
+        // check if key contains an operator e.g. humidity[gt]
+        const match = key.match(/(.+)\[(.+)\]/);
+
+        if (match) {
+          const [, field, operator] = match; // ["humidity[gt]", "humidity", "gt"]
+          this.addOperator(field, operator as Operator, value);
+        } else {
+          this.filter[key] = value;
+        }
       }
     }
-    return this.filter;
+    return { ...this.filter, ...customFilter };
+  }
+
+  private addNestedOperator(field: string, operators: Record<string, any>) {
+    if (!this.filter[field]) {
+      this.filter[field] = {};
+    }
+
+    for (const [operator, value] of Object.entries(operators)) {
+      this.addOperator(field, operator as Operator, value);
+    }
   }
 
   private addOperator(field: string, operator: Operator, value: any) {

@@ -4,23 +4,17 @@ import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
 import { getPaginatedData } from "./modelFactory.ts";
 import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
+import { weatherAggregationPipeline } from "../services/weatherAggregationService.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
 export const getAllWeathers = async (
   query: Record<string, any>,
   limit: number = 10,
-  page: number = 1,
-  param: Record<string, any> = {}
+  page: number = 1
 ) => {
   try {
-    const result = await getPaginatedData(
-      weathersColl,
-      param,
-      query,
-      limit,
-      page
-    );
+    const result = await getPaginatedData(weathersColl, query, limit, page);
 
     return result;
   } catch (error) {
@@ -34,6 +28,23 @@ export const getWeather = async (id: string) => {
     const result = await weathersColl.findOne<Weather>({
       _id: new ObjectId(id),
     });
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const findGeolocation = async (longitude: number, latitude: number) => {
+  try {
+    const result = await weathersColl
+      .find<Weather>(
+        {
+          geoLocation: { type: "Point", coordinates: [longitude, latitude] },
+        },
+        { limit: 1, projection: { geoLocation: 1 } }
+      )
+      .toArray();
+
     return result;
   } catch (error) {
     console.log(error);
@@ -62,6 +73,7 @@ const findLatestDateByLocation = async (
 
   return result[0].createdAt;
 };
+
 const findLatestDateByDevice = async (deviceName: string) => {
   const cursor = weathersColl.find<Weather>(
     { deviceName },
@@ -75,80 +87,6 @@ const findLatestDateByDevice = async (deviceName: string) => {
   }
 
   return result[0].createdAt;
-};
-
-export const findMaxPrecipitationByLocation = async (
-  longitude: number,
-  latitude: number,
-  recentMonths: number
-) => {
-  try {
-    const latestDate = await findLatestDateByLocation(longitude, latitude);
-    const startDate = new Date(latestDate);
-    startDate.setMonth(startDate.getMonth() - recentMonths);
-    const result = await weathersColl
-      .aggregate([
-        {
-          // Stage 1: Match docs for the specifc location and date range
-          $match: {
-            geoLocation: {
-              $geoIntersects: {
-                $geometry: {
-                  type: "Point",
-                  coordinates: [longitude, latitude],
-                },
-              },
-            },
-            createdAt: { $gte: startDate, $lte: latestDate },
-          },
-        },
-        {
-          // Stage 2: limit necessory fields
-          $project: {
-            deviceName: 1,
-            createdAt: 1,
-            precipitation: 1,
-          },
-        },
-        {
-          // Stage 3: group by geoLocation and find the max precipitation
-          $group: {
-            _id: "$geoLocation",
-            maxPrecipitation: { $max: "$precipitation" },
-            docs: {
-              $push: {
-                deviceName: "$deviceName",
-                createdAt: "$createdAt",
-                precipitation: "$precipitation",
-              },
-            },
-          },
-        },
-        {
-          // Stage 4: Filter docs matching the max precipation
-          $project: {
-            docs: {
-              $filter: {
-                input: "$docs",
-                as: "doc",
-                cond: { $eq: ["$$doc.precipitation", "$maxPrecipitation"] },
-              },
-            },
-          },
-        },
-
-        // Step 5: Flattern the array of matching docs
-        { $unwind: "$docs" },
-        // Step 6: Replace the root with the matching docs fields
-        { $replaceRoot: { newRoot: "$docs" } },
-        // Step 7: sort the result by createdAt in desc
-        { $sort: { createdAt: -1 } },
-      ])
-      .toArray();
-    return result;
-  } catch (error) {
-    console.log(error);
-  }
 };
 
 export const findMaxPrecipitationByDevice = async (
@@ -341,21 +279,42 @@ export const aggregateWeatherByLocation = async (
   operation: string,
   aggField: string,
   recentMonths?: number,
-  startDate?: number,
-  endDate?: number
+  createdAt?: Date | object
 ) => {
   try {
-    const aggBuilder = new AggregationBuilder(
-      { longitude, latitude },
-      { operation, aggField, startDate, endDate, recentMonths }
-    );
+    const matchParams: Record<string, any> = {
+      geoLocation: {
+        $geoIntersects: {
+          $geometry: {
+            type: "Point",
+            coordinates: [longitude, latitude],
+          },
+        },
+      },
+    };
+    console.log("Match Params:", matchParams);
 
-    const pipeline = aggBuilder
-      .match()
-      .project({ deviceName: 1, createdAt: 1, [aggField]: 1 })
-      .group({
-        _id: "$geoLocation",
-        [`${operation}${aggField}`]: { [`$${operation}`]: `$${aggField}` },
+    if (recentMonths && !createdAt) {
+      const latestDate = await findLatestDateByLocation(longitude, latitude);
+      const startDate = new Date(latestDate);
+      startDate.setMonth(startDate.getMonth() - recentMonths);
+      matchParams.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(latestDate),
+      };
+    }
+
+    // console.log("Final Match Params:", matchParams);
+    const pipeline = weatherAggregationPipeline(
+      operation,
+      aggField,
+      "$geoLocation",
+      { deviceName: 1, createdAt: 1, [aggField]: 1 },
+      createdAt,
+      recentMonths,
+      { createdAt: -1 },
+      matchParams,
+      {
         docs: {
           $push: {
             deviceName: "$deviceName",
@@ -363,21 +322,26 @@ export const aggregateWeatherByLocation = async (
             [`${aggField}`]: `$${aggField}`,
           },
         },
-      })
-      .aggFilter({
-        input: "$docs",
-        as: "doc",
-        cond: { $eq: [`$$doc.${aggField}`, `$${operation}${aggField}`] },
-      })
-      .unwind("$docs")
-      .replaceRoot({ newRoot: "$docs" })
-      .sort({ createdAt: -1 })
-      .build();
+      }
+    );
+
+    console.log("Aggregation Pipeline:", JSON.stringify(pipeline, null, 2));
 
     const result = await weathersColl.aggregate(pipeline).toArray();
+
+    console.log("Aggregation Result:", result);
 
     return result;
   } catch (error) {
     console.log(error);
+    throw error;
+  }
+};
+
+export const aggregateWeatherByDevice = async () => {
+  try {
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
 };
