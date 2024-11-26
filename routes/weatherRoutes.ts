@@ -5,12 +5,11 @@ import {
   createWeathersAction,
   deleteWeatherAction,
   listWeathersAction,
-  listWeatherStatsAction,
-  listStationStatsAction,
   showWeatherAction,
   updateWeatherAction,
   validateWeatherInput,
   showStationStatsAction,
+  showDeviceStatsAction,
 } from "../controllers/weatherController.ts";
 import {
   validatePathParams,
@@ -77,7 +76,7 @@ weatherRouter.get(
   authorisedTo("admin", "teacher", "student"),
   validatePathParams(),
   validateQueryParams(),
-  listWeatherStatsAction
+  showDeviceStatsAction
 );
 
 // weatherRouter.get(

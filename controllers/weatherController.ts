@@ -5,7 +5,7 @@ import {
   NextFunction,
   RequestHandler,
 } from "express-serve-static-core";
-import { Code, OptionalId } from "mongodb";
+import { OptionalId } from "mongodb";
 import { ContextRunner } from "express-validator";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import {
@@ -16,7 +16,8 @@ import {
   updateWeather,
   insertWeathers,
   findGeolocation,
-  aggregateWeatherByLocation,
+  findDevice,
+  aggregateWeatherByLocationOrDevice,
 } from "../models/WeatherModel.ts";
 import { Weather, WeatherInput } from "../models/WeatherSchema.ts";
 import {
@@ -138,9 +139,41 @@ export const showStationStatsAction = asyncHandlerT(
       );
     }
 
-    const result = await aggregateWeatherByLocation(
-      Number(longitude),
-      Number(latitude),
+    const result = await aggregateWeatherByLocationOrDevice(
+      { longitude: Number(longitude), latitude: Number(latitude) },
+      operation,
+      aggField,
+      Number(recentMonths),
+      createdAt
+    );
+
+    console.log("Aggregation result:", result);
+
+    res.status(200).json({
+      result,
+    });
+  }
+);
+
+export const showDeviceStatsAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { deviceName } = req.params;
+    const { operation, aggField, createdAt, recentMonths } = req.query;
+
+    console.log(req.params);
+    console.log(req.query);
+
+    // check if the device exists
+    const device = await findDevice(deviceName);
+
+    if (!device?.length) {
+      return next(
+        new ClientError({ code: 404, message: "This device not found." })
+      );
+    }
+
+    const result = await aggregateWeatherByLocationOrDevice(
+      { deviceName },
       operation,
       aggField,
       Number(recentMonths),
