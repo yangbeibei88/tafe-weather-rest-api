@@ -1,0 +1,27 @@
+components:
+  schemas:
+   WeatherModel:
+    type: object
+    required:
+     - _id
+     - deviceName
+     - precipitation
+     - temperature
+     - atmosphericPressure
+     - maxWindSpeed
+     - solarRadiation
+     - vaporPressure
+     - humidity
+     - windDirection
+     - createdAt
+    properties:
+      _id:
+        type: string
+        description: Unique identifier of each weather reading document.
+      deviceName:
+        type: string
+        minLength: 1
+        maxLength: 50
+
+     
+     
