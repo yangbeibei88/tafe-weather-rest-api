@@ -4,6 +4,7 @@ import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
 import { getPaginatedData } from "./modelFactory.ts";
 import { weatherAggregationPipeline } from "../services/weatherAggregationService.ts";
+import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
@@ -161,47 +162,35 @@ export const deleteWeather = async (id: string) => {
   }
 };
 
-export async function aggregateWeatherByLocationOrDevice(
-  params: { longitude: number; latitude: number },
-  operation: string,
-  aggField: string,
+async function buildMatchParams(
+  // deno-lint-ignore ban-types
+  params: { longitude: number; latitude: number } | { deviceName: string } | {},
   recentMonths?: number,
-  createdAt?: Date | object
-): Promise<Document[]>;
-export async function aggregateWeatherByLocationOrDevice(
-  params: { deviceName: string },
-  operation: string,
-  aggField: string,
-  recentMonths?: number,
-  createdAt?: Date | object
-): Promise<Document[]>;
-export async function aggregateWeatherByLocationOrDevice(
-  params: { longitude: number; latitude: number } | { deviceName: string },
-  operation: string,
-  aggField: string,
-  recentMonths?: number,
-  createdAt?: Date | object
-): Promise<Document[]> {
-  // determine if location-based or device-based
-  const isLocationBased = "longitude" in params && "latitude" in params;
+  createdAt?: Date | object | string
+): Promise<Record<string, any>> {
+  const matchParams: Record<string, any> = {};
 
-  const matchParams: Record<string, any> = isLocationBased
-    ? {
-        geoLocation: {
-          $geoIntersects: {
-            $geometry: {
-              type: "Point",
-              coordinates: [params.longitude, params.latitude],
-            },
-          },
+  if ("longitude" in params && "latitude" in params) {
+    matchParams.geoLocation = {
+      $geoIntersects: {
+        $geometry: {
+          type: "Point",
+          coordinates: [params.longitude, params.latitude],
         },
-      }
-    : { deviceName: params.deviceName };
+      },
+    };
+  } else if ("deviceName" in params) {
+    matchParams.deviceName = params.deviceName;
+  }
 
   if (recentMonths && !createdAt) {
-    const latestDate = isLocationBased
-      ? await findLatestDateByLocation(params.longitude, params.latitude)
-      : await findLatestDateByDevice(params.deviceName);
+    const latestDate =
+      "longitude" in params
+        ? await findLatestDateByLocation(params.longitude, params.latitude)
+        : "deviceName" in params
+        ? await findLatestDateByDevice(params.deviceName)
+        : new Date();
+
     const startDate = new Date(latestDate);
     startDate.setMonth(startDate.getMonth() - recentMonths);
     matchParams.createdAt = {
@@ -209,18 +198,57 @@ export async function aggregateWeatherByLocationOrDevice(
       $lte: new Date(latestDate),
     };
   }
+  return matchParams;
+}
 
-  // console.log("Final Match Params:", matchParams);
-  const pipeline = weatherAggregationPipeline(
+export async function aggregateWeatherByLocationOrDevice(
+  // deno-lint-ignore ban-types
+  params: {},
+  operation: string,
+  aggField: string,
+  groupBy: "$geoLocation" | "$deviceName" | null,
+  recentMonths?: number,
+  createdAt?: Date | object
+): Promise<Document[]>;
+export async function aggregateWeatherByLocationOrDevice(
+  params: { longitude: number; latitude: number },
+  operation: string,
+  aggField: string,
+  groupBy: "$geoLocation" | "$deviceName" | null,
+  recentMonths?: number,
+  createdAt?: Date | object
+): Promise<Document[]>;
+export async function aggregateWeatherByLocationOrDevice(
+  params: { deviceName: string },
+  operation: string,
+  aggField: string,
+  groupBy: "$geoLocation" | "$deviceName" | null,
+  recentMonths?: number,
+  createdAt?: Date | object
+): Promise<Document[]>;
+export async function aggregateWeatherByLocationOrDevice(
+  // deno-lint-ignore ban-types
+  params: { longitude: number; latitude: number } | { deviceName: string } | {},
+  operation: string,
+  aggField: string,
+  groupBy: "$geoLocation" | "$deviceName" | null,
+  recentMonths?: number,
+  createdAt?: Date | object
+): Promise<Document[]> {
+  const matchParams = await buildMatchParams(params, recentMonths, createdAt);
+  // groupBy = "deviceName" in params ? "$deviceName" : "$geoLocaiton";
+
+  const aggBuilder = new AggregationBuilder({
     operation,
     aggField,
-    "$geoLocation",
-    { deviceName: 1, createdAt: 1, [aggField]: 1 },
     createdAt,
     recentMonths,
-    { createdAt: -1 },
-    matchParams,
-    {
+  });
+
+  const pipeline = aggBuilder
+    .match(matchParams)
+    .project({ deviceName: 1, createdAt: 1, [aggField]: 1 })
+    .group2(operation, aggField, groupBy, {
       docs: {
         $push: {
           deviceName: "$deviceName",
@@ -228,8 +256,16 @@ export async function aggregateWeatherByLocationOrDevice(
           [`${aggField}`]: `$${aggField}`,
         },
       },
-    }
-  );
+    })
+    .aggFilter({
+      input: "$docs",
+      as: "doc",
+      cond: { $eq: [`$$doc.${aggField}`, `$${operation}${aggField}`] },
+    })
+    .unwind("$docs")
+    .replaceRoot({ newRoot: "$docs" })
+    .sort({ createdAt: -1 })
+    .build();
 
   console.log("Aggregation Pipeline:", JSON.stringify(pipeline, null, 2));
   try {

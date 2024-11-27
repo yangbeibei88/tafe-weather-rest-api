@@ -10,6 +10,8 @@ import {
   validateWeatherInput,
   showStationStatsAction,
   showDeviceStatsAction,
+  listStationStatsAction,
+  listDeviceStatsAction,
 } from "../controllers/weatherController.ts";
 import {
   validatePathParams,
@@ -46,24 +48,24 @@ weatherRouter.post(
   createWeathersAction
 );
 
-// // Aggregation all locations
-// weatherRouter.get(
-//   "/aggregate/locations",
-//   authorisedTo("admin", "teacher", "student"),
-//   validateQueryParams(),
-//   listWeatherStatsAction
-// );
-// // Aggregation all devices
-// weatherRouter.get(
-//   "/aggregate/devices",
-//   authorisedTo("admin", "teacher", "student"),
-//   validateQueryParams(),
-//   listWeatherStatsAction
-// );
+// Aggregation all locations
+weatherRouter.get(
+  "/stations/aggregate",
+  authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(),
+  listStationStatsAction
+);
+// Aggregation all devices
+weatherRouter.get(
+  "/aggregate/devices",
+  authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(),
+  listDeviceStatsAction
+);
 
 // Aggregation by single location
 weatherRouter.get(
-  "/aggregate/locations/@:longitude,:latitude",
+  "/stations/@:longitude,:latitude/aggregate",
   authorisedTo("admin", "teacher", "student"),
   validatePathParams(),
   validateQueryParams(),
@@ -72,7 +74,7 @@ weatherRouter.get(
 
 // Aggregation by single device
 weatherRouter.get(
-  "/aggregate/devices/:deviceName",
+  "/devices/:deviceName/aggregate",
   authorisedTo("admin", "teacher", "student"),
   validatePathParams(),
   validateQueryParams(),
