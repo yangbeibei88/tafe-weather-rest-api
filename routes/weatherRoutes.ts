@@ -81,14 +81,6 @@ weatherRouter.get(
   showDeviceStatsAction
 );
 
-// weatherRouter.get(
-//   "/:deviceName/stats",
-//   authorisedTo("admin", "teacher", "student"),
-//   validatePathParams(),
-//   validateQueryParams(),
-//   listStationStatsAction
-// );
-
 // Update one or more new weather readings
 // weatherRouter.put("/");
 

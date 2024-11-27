@@ -46,9 +46,9 @@ export class AggregationBuilder extends QueryBuilder {
       : { _id: null };
 
     if (mongoOperation) {
-      group[`${operation}${aggField}`] = { [`$${operation}`]: `$${aggField}` };
+      group[`${operation}_${aggField}`] = { [`$${operation}`]: `$${aggField}` };
     } else if (operation === "median") {
-      group[`median${aggField}`] = { $push: `$${aggField}` };
+      group[`median_${aggField}`] = { $push: `$${aggField}` };
     }
 
     Object.assign(group, customGroup);
@@ -64,7 +64,7 @@ export class AggregationBuilder extends QueryBuilder {
             $let: {
               vars: {
                 sorted: {
-                  $sortArray: { input: `$median${aggField}`, sortBy: 1 },
+                  $sortArray: { input: `$median_${aggField}`, sortBy: 1 },
                 },
               },
               in: {
@@ -99,6 +99,11 @@ export class AggregationBuilder extends QueryBuilder {
     if (fields && Object.keys(fields).length > 0) {
       this.pipeline.push({ $set: fields });
     }
+    return this;
+  }
+
+  limit(num: number = 10) {
+    this.pipeline.push({ $limit: num });
     return this;
   }
 

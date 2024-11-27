@@ -97,3 +97,11 @@ db.runCommand({
 });
 
 db.users.createIndex({ emailAddress: 1 }, { unique: true });
+db.users.createIndex(
+  { lastLoggedInAt: 1 },
+  {
+    name: "lastLogin_30D_student",
+    partialFilterExpression: { role: "student" },
+    expireAfterSeconds: 3600 * 24 * 30,
+  }
+);

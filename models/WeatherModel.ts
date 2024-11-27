@@ -3,7 +3,6 @@ import { OptionalId, ObjectId, MongoServerError, Document } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
 import { getPaginatedData } from "./modelFactory.ts";
-import { weatherAggregationPipeline } from "../services/weatherAggregationService.ts";
 import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
@@ -208,7 +207,7 @@ export async function aggregateWeatherByLocationOrDevice(
   aggField: string,
   groupBy: "$geoLocation" | "$deviceName" | null,
   recentMonths?: number,
-  createdAt?: Date | object
+  createdAt?: Date | object | string
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
   params: { longitude: number; latitude: number },
@@ -216,7 +215,7 @@ export async function aggregateWeatherByLocationOrDevice(
   aggField: string,
   groupBy: "$geoLocation" | "$deviceName" | null,
   recentMonths?: number,
-  createdAt?: Date | object
+  createdAt?: Date | object | string
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
   params: { deviceName: string },
@@ -224,7 +223,7 @@ export async function aggregateWeatherByLocationOrDevice(
   aggField: string,
   groupBy: "$geoLocation" | "$deviceName" | null,
   recentMonths?: number,
-  createdAt?: Date | object
+  createdAt?: Date | object | string
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
   // deno-lint-ignore ban-types
@@ -233,7 +232,7 @@ export async function aggregateWeatherByLocationOrDevice(
   aggField: string,
   groupBy: "$geoLocation" | "$deviceName" | null,
   recentMonths?: number,
-  createdAt?: Date | object
+  createdAt?: Date | object | string
 ): Promise<Document[]> {
   const matchParams = await buildMatchParams(params, recentMonths, createdAt);
   // groupBy = "deviceName" in params ? "$deviceName" : "$geoLocaiton";
@@ -260,11 +259,12 @@ export async function aggregateWeatherByLocationOrDevice(
     .aggFilter({
       input: "$docs",
       as: "doc",
-      cond: { $eq: [`$$doc.${aggField}`, `$${operation}${aggField}`] },
+      cond: { $eq: [`$$doc.${aggField}`, `$${operation}_${aggField}`] },
     })
     .unwind("$docs")
     .replaceRoot({ newRoot: "$docs" })
     .sort({ createdAt: -1 })
+    .limit(5)
     .build();
 
   console.log("Aggregation Pipeline:", JSON.stringify(pipeline, null, 2));

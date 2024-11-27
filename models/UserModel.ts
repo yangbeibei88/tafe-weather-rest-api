@@ -48,6 +48,8 @@ export const insertUser = async (
     const result = await usersColl.insertOne({
       ...user,
       createdAt: new Date(),
+      // Because remove student 30 days TTL index is based on lastLoggedIn date, this field cannot be undefined, set lastLoggedInAt initial value to now
+      lastLoggedInAt: new Date(),
     });
 
     // if (!result.insertedId) {
