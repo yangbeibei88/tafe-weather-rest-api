@@ -87,7 +87,14 @@ export const authLoginAction = asyncHandlerT(
   }
 );
 
-// const logoutAction = asyncHandlerT(async (req, res, next) => {});
+const logoutAction = (_req: Request, res: Response, _next: NextFunction) => {
+  res.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({ message: "Loggedout successfully." });
+};
 
 export const protect = asyncHandlerT(
   async (req: Request, _res: Response, next: NextFunction): Promise<void> => {

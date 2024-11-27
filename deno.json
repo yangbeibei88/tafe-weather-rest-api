@@ -11,12 +11,17 @@
     "@types/express-serve-static-core": "npm:@types/express-serve-static-core@4.19.5",
     "@types/jsonwebtoken": "npm:@types/jsonwebtoken@^9.0.7",
     "@types/node": "npm:@types/node@^22.8.7",
+    "@types/swagger-ui-express": "npm:@types/swagger-ui-express@^4.1.7",
     "bcryptjs": "npm:bcryptjs@^2.4.3",
+    "cors": "npm:cors@^2.8.5",
     "express": "npm:express@^4.21.1",
     "express-serve-static-core": "npm:express-serve-static-core@^0.1.1",
     "express-validator": "npm:express-validator@^7.2.0",
     "jsonwebtoken": "npm:jsonwebtoken@^9.0.2",
-    "mongodb": "npm:mongodb@^6.10.0"
+    "mongodb": "npm:mongodb@^6.10.0",
+    "openapi-typescript": "npm:openapi-typescript@^7.4.3",
+    "swagger-jsdoc": "npm:swagger-jsdoc@^6.2.8",
+    "swagger-ui-express": "npm:swagger-ui-express@^5.0.1"
   },
   "compilerOptions": {
     "types": ["./types.d.ts"]
