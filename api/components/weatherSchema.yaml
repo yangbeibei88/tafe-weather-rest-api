@@ -13,6 +13,8 @@ components:
         - vaporPressure
         - humidity
         - windDirection
+        - longitude
+        - latitude
         - createdAt
       properties:
         _id:
@@ -25,32 +27,40 @@ components:
           description: "Must be a string and is required, 1-50 characters"
         precipitation:
           type: number
+          format: double
           description: "Must be a number, unit: mm/h"
         temperature:
           type: number
+          format: double
           description: "Must be a number, unit: celsius degree"
         atmosphericPressure:
           type: number
+          format: double
           description: "Must be a number, unit: kpa"
         maxWindSpeed:
           type: number
+          format: double
           description: "Must be a number, unit: m/s"
         solarRadiation:
           type: number
+          format: double
           description: "Must be a number, unit: w/m2"
         vaporPressure:
           type: number
+          format: double
           description: "Must be a number, unit: kpa"
         humidity:
           type: number
+          format: double
           description: "Must be a number, unit: %"
         windDirection:
           type: number
+          format: double
           description: "Must be a number, unit: degree"
         createdAt:
           anyOf:
-            - type: date
-              description: "A valid date type"
+            - type: string
+              description: "A string representation of the date."
             - type: object
               description: "An object representation of the date."
               required:
@@ -68,7 +78,7 @@ components:
           type: string
           description: "User ID refer to who created the document"
         lastModifiedAt:
-          type: date
+          type: string
           description: "The current timestamp when the document is updated"
         lastModifiedBy:
           type: string

@@ -1,5 +1,6 @@
 import { BaseError } from "./BaseError.ts";
 import {
+  HTTPClientErrorStatus,
   HTTPClientErrorStatusCode,
   HTTPClientErrorTitle,
 } from "../utils/utilTypes.ts";
@@ -21,7 +22,12 @@ export class ClientError extends BaseError {
   }) {
     const { code, message, logging } = params || {};
 
-    const defaultMessage: HTTPClientErrorTitle<typeof code> = "Bad Request";
+    const statusEntry = Object.values(HTTPClientErrorStatus).find(
+      (status) => status.code === code
+    );
+
+    const defaultMessage: HTTPClientErrorTitle<typeof code> =
+      statusEntry?.title || "Bad Request";
 
     super(message || defaultMessage);
     this._code = code || ClientError._statusCode;

@@ -228,8 +228,7 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
     const weather = await getWeather(req.params.id);
 
     if (!weather) {
-      next(new ClientError({ code: 404 }));
-      return;
+      return next(new ClientError({ code: 404 }));
     }
 
     res.status(200).json({

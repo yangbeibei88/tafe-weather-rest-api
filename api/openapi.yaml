@@ -1,7 +1,7 @@
 openapi: "3.1.0"
 info:
   title: TAFE Weather API
-  version: "1.0"
+  version: "1.0.0"
   description: "RESTful API to read, write, update and delete weather data."
 tags:
   - name: weathers
@@ -25,3 +25,5 @@ components:
       $ref: "./components/userSchema.yaml"
     /logSchema:
       $ref: "./components/logSchema.yaml"
+    /errorSchema:
+      $ref: "./components/errorSchema.yaml"

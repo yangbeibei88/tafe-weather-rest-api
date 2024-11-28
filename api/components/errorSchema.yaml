@@ -1,0 +1,32 @@
+components:
+  schemas:
+    ErrorModel:
+      type: object
+      required:
+        - statusCode
+        - errors
+      properties:
+        statusCode:
+          type: integer
+          description: "error code"
+          example: 404
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+              context:
+                type: object
+                additionalProperties: true
+        path:
+          type: string
+
+  responses:
+    NotFoundError:
+      description: Resource not found Error
+      content:
+        application/json:
+          schema:
+            $ref: "#components/schemas/ErrorModel"
