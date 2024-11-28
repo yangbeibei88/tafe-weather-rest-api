@@ -9,4 +9,4 @@ tags:
   - name: users
     description: users information
   - name: logs
-    description:: deleted weather readings
+    description: deleted weather readings

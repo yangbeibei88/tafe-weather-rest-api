@@ -1,27 +1,85 @@
 components:
   schemas:
-   WeatherModel:
-    type: object
-    required:
-     - _id
-     - deviceName
-     - precipitation
-     - temperature
-     - atmosphericPressure
-     - maxWindSpeed
-     - solarRadiation
-     - vaporPressure
-     - humidity
-     - windDirection
-     - createdAt
-    properties:
-      _id:
-        type: string
-        description: Unique identifier of each weather reading document.
-      deviceName:
-        type: string
-        minLength: 1
-        maxLength: 50
-
-     
-     
+    WeatherModel:
+      type: object
+      required:
+        - _id
+        - deviceName
+        - precipitation
+        - temperature
+        - atmosphericPressure
+        - maxWindSpeed
+        - solarRadiation
+        - vaporPressure
+        - humidity
+        - windDirection
+        - createdAt
+      properties:
+        _id:
+          type: string
+          description: "Unique identifier of each weather reading document."
+        deviceName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: "Must be a string and is required, 1-50 characters"
+        precipitation:
+          type: number
+          description: "Must be a number, unit: mm/h"
+        temperature:
+          type: number
+          description: "Must be a number, unit: celsius degree"
+        atmosphericPressure:
+          type: number
+          description: "Must be a number, unit: kpa"
+        maxWindSpeed:
+          type: number
+          description: "Must be a number, unit: m/s"
+        solarRadiation:
+          type: number
+          description: "Must be a number, unit: w/m2"
+        vaporPressure:
+          type: number
+          description: "Must be a number, unit: kpa"
+        humidity:
+          type: number
+          description: "Must be a number, unit: %"
+        windDirection:
+          type: number
+          description: "Must be a number, unit: degree"
+        createdAt:
+          anyOf:
+            - type: date
+              description: "A valid date type"
+            - type: object
+              description: "An object representation of the date."
+              required:
+                - $date
+              properties:
+                $date:
+                  type: object
+                  required:
+                    - $numberLong
+                  properties:
+                    $numberLong:
+                      type: string
+                      description: "The field must include a timestamp as a string."
+        createdBy:
+          type: string
+          description: "User ID refer to who created the document"
+        lastModifiedAt:
+          type: date
+          description: "The current timestamp when the document is updated"
+        lastModifiedBy:
+          type: string
+          description: "User ID refer to who last modified the document"
+        longitude:
+          type: number
+          description: "Longitude must be between -180 and 180 degrees"
+          minimum: -180
+          maximum: 180
+        latitude:
+          type: number
+          description: "Latitude must be between -90 and 90 degrees"
+          minimum: -90
+          maximum: 90
