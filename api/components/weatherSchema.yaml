@@ -1,6 +1,6 @@
 components:
   schemas:
-    WeatherModel:
+    Weather:
       type: object
       required:
         - _id
@@ -13,8 +13,7 @@ components:
         - vaporPressure
         - humidity
         - windDirection
-        - longitude
-        - latitude
+        - geoLocation
         - createdAt
       properties:
         _id:
@@ -83,12 +82,8 @@ components:
         lastModifiedBy:
           type: string
           description: "User ID refer to who last modified the document"
-        longitude:
-          type: number
-          format: float
-          description: "Longitude must be between -180 and 180 degrees"
-          minimum: -180
-          maximum: 180
+        geoLocation:
+          $ref: "#components/schemas#/GeoLocationOutput"
         latitude:
           type: number
           format: float
@@ -96,3 +91,34 @@ components:
           minimum: -90
           maximum: 90
       additionalProperties: false
+    GeoLocationOutput:
+      type: object
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          enum:
+            - Point
+          type: string
+        coordinates:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            - $ref: "#components/schemas/LongitudeInput"
+            - $ref: "#components/schemas/LatitudeInput"
+    LongitudeInput:
+      type:
+        - number
+        - integer
+      minimum: -180
+      maximum: 180
+      description: Longitude must be between -180 and 180 degrees
+    LatitudeInput:
+      type:
+        - number
+        - integer
+      minimum: -90
+      maximum: 90
+      description: Latitude must be between -90 and 90 degrees
