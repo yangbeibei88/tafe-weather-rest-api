@@ -16,6 +16,8 @@ paths:
       tags:
         - weathers
       summary: List weather reading for all stations
+      security:
+        - bearerAuth: []
       operationId: listAllWeathers
       parameters:
         - name: limit
@@ -58,11 +60,29 @@ paths:
                   result:
                     type: array
                     items:
-                      $ref: "#components/schemas/Weather"
-  /users:
-    $ref: "./paths/users.yaml"
-  /logs:
-    $ref: "./paths/logs.yaml"
+                      $ref: "#/components/schemas/Weather"
+  /api/v1/weathers/{id}:
+    get:
+      tags:
+        - weathers
+      summary: Show a specific weather reading
+      security:
+        - bearerAuth: []
+      operationId: showWeatherById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the weather reading to retrive
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Weather"
 components:
   schemas:
     Weather:
@@ -148,7 +168,7 @@ components:
           type: string
           description: "User ID refer to who last modified the document"
         geoLocation:
-          $ref: "#components/schemas#/GeoLocationOutput"
+          $ref: "#/components/schemas/GeoLocationOutput"
       additionalProperties: false
     GeoLocationOutput:
       type: object
@@ -179,3 +199,8 @@ components:
       minimum: -90
       maximum: 90
       description: Latitude must be between -90 and 90 degrees
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: jwt

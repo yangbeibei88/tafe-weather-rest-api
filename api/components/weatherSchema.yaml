@@ -83,7 +83,7 @@ components:
           type: string
           description: "User ID refer to who last modified the document"
         geoLocation:
-          $ref: "#components/schemas#/GeoLocationOutput"
+          $ref: "#/components/schemas#/GeoLocationOutput"
         latitude:
           type: number
           format: float
@@ -106,8 +106,8 @@ components:
           minItems: 2
           maxItems: 2
           items:
-            - $ref: "#components/schemas/LongitudeInput"
-            - $ref: "#components/schemas/LatitudeInput"
+            - $ref: "#/components/schemas/LongitudeInput"
+            - $ref: "#/components/schemas/LatitudeInput"
     LongitudeInput:
       type:
         - number
