@@ -24,7 +24,6 @@ export const weatherRouter = Router();
 // protect all weather routes
 weatherRouter.use(protect);
 
-// Get all weathers
 weatherRouter.get(
   "/",
   authorisedTo("admin", "teacher", "student"),

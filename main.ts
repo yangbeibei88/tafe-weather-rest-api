@@ -8,7 +8,11 @@ import {
 } from "express-serve-static-core";
 // @deno-types="npm:@types/express@4.17.21"
 import express from "express";
-// import express, { Express, Request, Response, NextFunction } from "express";
+import fs from "node:fs";
+import { URL } from "node:url";
+import { parse } from "@std/yaml";
+// @deno-types="@types/swagger-ui-express"
+import swaggerUi, { JsonObject } from "swagger-ui-express";
 import { logger } from "./middlewares/logger.ts";
 import { weatherRouter } from "./routes/weatherRoutes.ts";
 import { authRouter } from "./routes/authRoutes.ts";
@@ -36,6 +40,10 @@ app.use("/api/v1/logs", logRouter);
 
 // error handling middleware
 app.use(errorHandler);
+
+const apiDocPath = new URL("./api/openapi.yaml", import.meta.url).pathname;
+const swaggerDoc = parse(fs.readFileSync(apiDocPath, "utf-8")) as JsonObject;
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 // HANDLE UNHANDLED ROUTES
 app.all("*", ((_req: Request, _res: Response, next: NextFunction) =>

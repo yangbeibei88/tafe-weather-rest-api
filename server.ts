@@ -6,7 +6,8 @@ const PORT = Number(Deno.env.get("PORT")) || 3000;
 console.log(PORT);
 
 app.listen(PORT, () => {
-  console.log(`Listening on ${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`OpenAPI doc available at http://localhost:${PORT}/api-docs`);
 });
 
 // Gracefully close MongoDB collection on SIGINT
