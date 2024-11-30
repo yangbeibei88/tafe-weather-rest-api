@@ -232,7 +232,6 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
     }
 
     res.status(200).json({
-      success: true,
       data: weather,
     });
   }
@@ -322,8 +321,6 @@ export const deleteWeatherAction = asyncHandlerT(
     }
 
     res.status(204).json({
-      success: true,
-      message: "Successfully deleted one document.",
       result,
     });
   }
