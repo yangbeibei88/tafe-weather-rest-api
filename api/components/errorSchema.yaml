@@ -22,7 +22,6 @@ components:
                 additionalProperties: true
         path:
           type: string
-
   responses:
     NotFoundError:
       description: Resource not found Error
