@@ -61,6 +61,25 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Weather"
+    post:
+      tags:
+        - weathers
+      summary: Create a new weather reading
+      security:
+        - bearerAuth: []
+      operationId: Create a new weather reading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeatherRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherResponse"
   /api/v1/weathers/{id}:
     get:
       tags:
@@ -82,13 +101,58 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Weather"
+                $ref: "#/components/schemas/WeatherResponse"
+    put:
+      tags:
+        - weathers
+      summary: Update a specific weather reading
+      security:
+        - bearerAuth: []
+      operationId: updateWeatherById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the weather reading to retrive
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeatherRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherResponse"
+    delete:
+      tags:
+        - weathers
+      summary: Delete a weather reading by Id
+      security:
+        - bearerAuth: []
+      operationId: deleteWeatherById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
 components:
   schemas:
+    UniqueId:
+      type: string
+      readOnly: true
+      description: Unique identifer for each document in a collection
     Weather:
       type: object
       required:
-        - _id
         - deviceName
         - precipitation
         - temperature
@@ -98,12 +162,9 @@ components:
         - vaporPressure
         - humidity
         - windDirection
-        - geoLocation
-        - createdAt
       properties:
         _id:
-          type: string
-          description: "Unique identifier of each weather reading document."
+          $ref: "#/components/schemas/UniqueId"
         deviceName:
           type: string
           minLength: 1
@@ -142,34 +203,39 @@ components:
           format: double
           description: "Must be a number, unit: degree"
         createdAt:
-          anyOf:
-            - type: string
-              description: "A string representation of the date."
-            - type: object
-              description: "An object representation of the date."
-              required:
-                - $date
-              properties:
-                $date:
-                  type: object
-                  required:
-                    - $numberLong
-                  properties:
-                    $numberLong:
-                      type: string
-                      description: "The field must include a timestamp as a string."
+          type: string
+          format: date-time
+          readOnly: true
+          description: "The current timestamp when the document is created"
         createdBy:
           type: string
+          readOnly: true
           description: "User ID refer to who created the document"
         lastModifiedAt:
           type: string
+          format: date-time
+          readOnly: true
           description: "The current timestamp when the document is updated"
         lastModifiedBy:
           type: string
+          readOnly: true
           description: "User ID refer to who last modified the document"
-        geoLocation:
-          $ref: "#/components/schemas/GeoLocationOutput"
-      additionalProperties: false
+    WeatherResponse:
+      allOf:
+        - $ref: "#/components/schemas/Weather"
+        - type: object
+          properties:
+            geoLocation:
+              $ref: "#/components/schemas/GeoLocationOutput"
+    WeatherRequest:
+      allOf:
+        - $ref: "#/components/schemas/Weather"
+        - type: object
+          properties:
+            longitude:
+              $ref: "#/components/schemas/LongitudeInput"
+            latitude:
+              $ref: "#/components/schemas/LatitudeInput"
     GeoLocationOutput:
       type: object
       required:
