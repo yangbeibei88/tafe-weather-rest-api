@@ -1,4 +1,4 @@
-openapi: "3.1.0"
+openapi: "3.0.3"
 info:
   title: TAFE Weather API
   version: "1.0.0"
@@ -251,7 +251,45 @@ paths:
           description: OK
         "400":
           $ref: "#/components/responses/400BadRequest"
+    delete:
+      tags:
+        - users
+      summary: Delete a user by user ID
+      operationId: deleteUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/userIdParam"
+      responses:
+        "204":
+          description: The user is deleted successfully.
+        "404":
+          $ref: "#/components/responses/404NotFound"
+
   /api/v1/users/batch:
+    put:
+      tags:
+        - users
+      summary: Update many users
+      operationId: updateMultipleUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/roleQueryParam"
+        - $ref: "#/components/parameters/createdAtQueryParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  $ref: "#/components/schemas/RoleString"
+      responses:
+        "200":
+          description: Batch update successfully.
+
     delete:
       tags:
         - users
@@ -746,6 +784,7 @@ components:
                 properties:
                   geoLocation:
                     $ref: "#/components/schemas/GeoLocation"
+
     BatchIds:
       description: Multiple documents have been inserted or updated.
       content:
