@@ -79,20 +79,11 @@ paths:
         - bearerAuth: []
       operationId: createNewWeather
       requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WeatherRequest"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/WeatherRequest"
+        $ref: "#/components/requestBodies/WeatherInput"
       responses:
         "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WeatherResponse"
+          description: A new weather reading is created successfully.
+          $ref: "#/components/responses/WeatherDoc"
   /api/v1/weathers/{id}:
     get:
       tags:
@@ -102,17 +93,12 @@ paths:
         - bearerAuth: []
       operationId: showWeatherById
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The id of the weather reading to retrive
-          schema:
-            type: string
+        - $ref: "#/components/parameters/weatherIdParam"
       responses:
         "200":
-          description: OK
+          $ref: "#/components/responses/WeatherDoc"
         "404":
-          $ref: "#/components/responses/NotFound"
+          $ref: "#/components/responses/404NotFound"
     put:
       tags:
         - weathers
@@ -121,27 +107,13 @@ paths:
         - bearerAuth: []
       operationId: updateWeatherById
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The id of the weather reading to retrive
-          schema:
-            type: string
+        - $ref: "#/components/parameters/weatherIdParam"
       requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WeatherRequest"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/WeatherRequest"
+        $ref: "#/components/requestBodies/WeatherInput"
       responses:
         "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WeatherResponse"
+          description: The weather reading is updated successfully.
+          $ref: "#/components/responses/WeatherDoc"
     delete:
       tags:
         - weathers
@@ -167,21 +139,11 @@ paths:
         - bearerAuth: []
       operationId: createNewWeathers
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/WeatherRequest"
+        $ref: "#/components/requestBodies/WeatherBatchInput"
       responses:
         "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/WeatherResponse"
+          description: Multiple weather readings are created successfully.
+          $ref: "#/components/responses/BatchIds"
   /api/v1/users:
     get:
       tags:
@@ -193,12 +155,6 @@ paths:
       responses:
         "200":
           description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
     post:
       tags:
         - users
@@ -217,21 +173,46 @@ paths:
       responses:
         "201":
           description: Created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
+  /api/v1/users/{id}:
+    get:
+      tags:
+        - users
+      summary: Show a specific user information by user ID
+      operationId: showUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/userIdParam"
+      responses:
+        "200":
+          description: OK
+        "404":
+          $ref: "#/components/responses/404NotFound"
+    put:
+      tags:
+        - users
+      summary: Update a specific user information by user ID
+      operationId: updateUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/userIdParam"
+      responses:
+        "200":
+          description: OK
+        "400":
+          $ref: "#/components/responses/400BadRequest"
 components:
   schemas:
     UniqueId:
       type: string
       readOnly: true
       description: Unique identifer for each document in a collection
-    PasswordInput:
+    Password:
       type: string
       minLength: 8
       maxLength: 50
-      description: User password
+      description: User password Input
     Weather:
       type: object
       required:
@@ -386,26 +367,10 @@ components:
             - confirmPassword
           properties:
             password:
-              $ref: "#/components/schemas/PasswordInput"
+              $ref: "#/components/schemas/Password"
             confirmPassword:
-              $ref: "#/components/schemas/PasswordInput"
-    WeatherResponse:
-      allOf:
-        - $ref: "#/components/schemas/Weather"
-        - type: object
-          properties:
-            geoLocation:
-              $ref: "#/components/schemas/GeoLocationOutput"
-    WeatherRequest:
-      allOf:
-        - $ref: "#/components/schemas/Weather"
-        - type: object
-          properties:
-            longitude:
-              $ref: "#/components/schemas/LongitudeInput"
-            latitude:
-              $ref: "#/components/schemas/LatitudeInput"
-    GeoLocationOutput:
+              $ref: "#/components/schemas/Password"
+    GeoLocation:
       type: object
       required:
         - type
@@ -420,15 +385,15 @@ components:
           minItems: 2
           maxItems: 2
           prefixItems:
-            - $ref: "#/components/schemas/LongitudeInput"
-            - $ref: "#/components/schemas/LatitudeInput"
-    LongitudeInput:
+            - $ref: "#/components/schemas/Longitude"
+            - $ref: "#/components/schemas/Latitude"
+    Longitude:
       type: number
       format: double
       minimum: -180
       maximum: 180
       description: Longitude must be between -180 and 180 degrees
-    LatitudeInput:
+    Latitude:
       type: number
       format: double
       minimum: -90
@@ -471,36 +436,147 @@ components:
               emailAddress:
                 $ref: "#/components/schemas/Email"
               password:
-                $ref: "#/components/schemas/PasswordInput"
+                $ref: "#/components/schemas/Password"
+          examples:
+            loginExample:
+              summary: User login example
+              value: { "emailAddress": "test@test.io", "password": "Test#123" }
+    WeatherInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Weather"
+              - type: object
+                required:
+                  - longitude
+                  - latitude
+                properties:
+                  longitude:
+                    $ref: "#/components/schemas/Longitude"
+                  latitude:
+                    $ref: "#/components/schemas/Latitude"
+        application/x-www-form-urlencoded:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Weather"
+              - type: object
+                required:
+                  - longitude
+                  - latitude
+                properties:
+                  longitude:
+                    $ref: "#/components/schemas/Longitude"
+                  latitude:
+                    $ref: "#/components/schemas/Latitude"
+    WeatherBatchInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              allOf:
+                - $ref: "#/components/schemas/Weather"
+                - type: object
+                  required:
+                    - longitude
+                    - latitude
+                  properties:
+                    longitude:
+                      $ref: "#/components/schemas/Longitude"
+                    latitude:
+                      $ref: "#/components/schemas/Latitude"
+  parameters:
+    userIdParam:
+      name: id
+      in: path
+      description: The id of a user to retrive
+      required: true
+      schema:
+        type: string
+    weatherIdParam:
+      name: id
+      in: path
+      description: The id of a weather reading to retrive
+      required: true
+      schema:
+        type: string
+    deviceNameParam:
+      name: deviceName
+      in: path
+      description: The deviceName of a weather reading to retrive
+      required: true
+      schema:
+        type: string
+    longitudeParam:
+      name: longitude
+      in: path
+      required: true
+      description: A station's longitude
+      schema:
+        $ref: "#/components/schemas/Longitude"
+    latitudeParam:
+      name: longitude
+      in: path
+      required: true
+      description: A station's latiitude
+      schema:
+        $ref: "#/components/schemas/Latitude"
   responses:
     # 400
-    BadRequest:
+    400BadRequest:
       description: Bad request
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
     # 401
-    Unauthorized:
+    401Unauthorized:
       description: Unauthorized
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
     # 403
-    Forbidden:
+    403Forbidden:
       description: Forbidden
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
     # 404
-    NotFound:
+    404NotFound:
       description: Not found
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+    WeatherDoc:
+      description: A weather reading document.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Weather"
+              - type: object
+                properties:
+                  geoLocation:
+                    $ref: "#/components/schemas/GeoLocation"
+    BatchIds:
+      description: Multiple documents have been inserted or updated.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+                description: Total count of documents inserted or updated.
+              data:
+                type: object
+                description: Ids of documents inserted or updated.
   securitySchemes:
     bearerAuth:
       type: http

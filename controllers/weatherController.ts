@@ -270,7 +270,6 @@ export const createWeathersAction = asyncHandlerT(
     const result = await insertWeathers(payload);
 
     res.status(201).json({
-      success: true,
       count: result?.insertedCount,
       data: result?.insertedIds,
     });
