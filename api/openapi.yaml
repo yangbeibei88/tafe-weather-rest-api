@@ -1,4 +1,4 @@
-openapi: "3.0.3"
+openapi: "3.1.0"
 info:
   title: TAFE Weather API
   version: "1.0.0"
@@ -161,7 +161,38 @@ paths:
         - $ref: "#/components/parameters/createdAtQueryParam"
       responses:
         "200":
-          $ref: "#/components/responses/WeatherDoc"
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+  /api/v1/weathers/stations/{deviceName}/aggregate:
+    get:
+      tags:
+        - weathers
+      summary: Aggregate weather data by location.
+      security:
+        - bearerAuth: []
+      operationId: aggregateWeatherByDevice
+      parameters:
+        - $ref: "#/components/parameters/deviceNameParam"
+        - $ref: "#/components/parameters/operationQueryParam"
+        - $ref: "#/components/parameters/aggFieldQueryParam"
+        - $ref: "#/components/parameters/recentMonthsQueryParam"
+        - $ref: "#/components/parameters/createdAtQueryParam"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
   /api/v1/users:
     get:
       tags:
@@ -220,17 +251,33 @@ paths:
           description: OK
         "400":
           $ref: "#/components/responses/400BadRequest"
+  /api/v1/users/batch:
+    delete:
+      tags:
+        - users
+      summary: Delete multiple users
+      operationId: deleteMultipleUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/roleQueryParam"
+        - $ref: "#/components/parameters/lastLoggedInAtQueryParam"
+      responses:
+        "204":
+          description: Users are deleted.
 components:
   schemas:
     UniqueId:
       type: string
       readOnly: true
       description: Unique identifer for each document in a collection
+      x-internal: true
     Password:
       type: string
       minLength: 8
       maxLength: 50
       description: User password Input
+      x-internal: true
     Weather:
       type: object
       required:
@@ -308,6 +355,34 @@ components:
       maxLength: 200
       pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
       description: "Must be an email address, 5-200 characters"
+      x-internal: true
+    Role:
+      oneOf:
+        - $ref: "#/components/schemas/RoleString"
+        - $ref: "#/components/schemas/RoleArray"
+      x-internal: true
+    RoleArray:
+      type: array
+      minItems: 1
+      uniqueItems: true
+      description: 'Array of user roles ["teacher", "student", "admin", "sensor"]'
+      items:
+        type: string
+        enum:
+          - teacher
+          - student
+          - admin
+          - sensor
+      x-internal: true
+    RoleString:
+      type: string
+      description: 'Select one of the user roles from "teacher", "student", "admin", "sensor"'
+      enum:
+        - teacher
+        - student
+        - admin
+        - sensor
+      x-internal: true
     User:
       type: object
       required:
@@ -340,7 +415,6 @@ components:
           type: array
           minItems: 1
           uniqueItems: true
-          additionalItems: false
           description: 'Exaustive combination of array of user roles ["teacher", "student", "admin", "sensor"]'
           items:
             type: string
@@ -411,12 +485,16 @@ components:
       minimum: -180
       maximum: 180
       description: Longitude must be between -180 and 180 degrees
+      example: 152.77891
+      x-internal: true
     Latitude:
       type: number
       format: double
       minimum: -90
       maximum: 90
       description: Latitude must be between -90 and 90 degrees
+      example: -26.95064
+      x-internal: true
     Error:
       type: object
       required:
@@ -528,6 +606,7 @@ components:
       required: true
       schema:
         type: string
+        example: woodford_sensor
     longitudeParam:
       name: longitude
       in: path
@@ -536,7 +615,7 @@ components:
       schema:
         $ref: "#/components/schemas/Longitude"
     latitudeParam:
-      name: longitude
+      name: latitude
       in: path
       required: true
       description: A station's latiitude
@@ -556,6 +635,7 @@ components:
           - min
           - avg
           - median
+        example: max
     aggFieldQueryParam:
       name: aggField
       in: query
@@ -574,6 +654,7 @@ components:
           - vaporPressure
           - humidity
           - windDirection
+        example: humidity
     recentMonthsQueryParam:
       name: recentMonths
       in: query
@@ -585,25 +666,46 @@ components:
         type: integer
         minimum: 1
         default: 3
+        example: 5
     createdAtQueryParam:
       name: createdAt
       in: query
       required: false
       style: deepObject
       explode: true
-      description: The number of recent months
+      description: Date range based on createdAt
       schema:
         type: object
-        required:
-          - gte
-          - lte
         properties:
           gte:
             type: string
-            format: date
+            example: "2020-12-07"
           lte:
             type: string
-            format: date
+            example: "2021-05-07"
+    lastLoggedInAtQueryParam:
+      name: lastLoggedInAt
+      in: query
+      required: true
+      style: deepObject
+      explode: true
+      description: Date range based on lastLoggedInAt
+      schema:
+        type: object
+        properties:
+          gte:
+            type: string
+          lte:
+            type: string
+    roleQueryParam:
+      name: role
+      in: query
+      required: true
+      style: form
+      explode: true
+      description: user role
+      schema:
+        $ref: "#/components/schemas/RoleString"
   responses:
     # 400
     400BadRequest:

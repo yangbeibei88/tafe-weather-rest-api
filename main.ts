@@ -20,6 +20,7 @@ import { userRouter } from "./routes/userRoutes.ts";
 import { logRouter } from "./routes/logRoutes.ts";
 import { errorHandler } from "./middlewares/errorHandler.ts";
 import { ClientError } from "./errors/ClientError.ts";
+import { preprocessOpenAPIDoc } from "./utils/helpers.ts";
 
 export const app: Express = express();
 
@@ -43,7 +44,10 @@ app.use(errorHandler);
 
 const apiDocPath = new URL("./api/openapi.yaml", import.meta.url).pathname;
 const swaggerDoc = parse(fs.readFileSync(apiDocPath, "utf-8")) as JsonObject;
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+
+const adjustedSwaggerDoc = preprocessOpenAPIDoc(swaggerDoc);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(adjustedSwaggerDoc));
 
 // HANDLE UNHANDLED ROUTES
 app.all("*", ((_req: Request, _res: Response, next: NextFunction) =>
