@@ -182,13 +182,18 @@ async function buildMatchParams(
     matchParams.deviceName = params.deviceName;
   }
 
-  if (recentMonths && !createdAt) {
+  if (!createdAt) {
     const latestDate =
       "longitude" in params
         ? await findLatestDateByLocation(params.longitude, params.latitude)
         : "deviceName" in params
         ? await findLatestDateByDevice(params.deviceName)
         : new Date();
+
+    // if `createdAt` not presented, set date range to recent 3 months
+    if (!recentMonths) {
+      recentMonths = 3;
+    }
 
     const startDate = new Date(latestDate);
     startDate.setMonth(startDate.getMonth() - recentMonths);

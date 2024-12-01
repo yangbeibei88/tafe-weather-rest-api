@@ -144,6 +144,24 @@ paths:
         "201":
           description: Multiple weather readings are created successfully.
           $ref: "#/components/responses/BatchIds"
+  /api/v1/weathers/stations/@{longitude},{latitude}/aggregate:
+    get:
+      tags:
+        - weathers
+      summary: Aggregate weather data by location.
+      security:
+        - bearerAuth: []
+      operationId: aggregateWeatherByLocation
+      parameters:
+        - $ref: "#/components/parameters/longitudeParam"
+        - $ref: "#/components/parameters/latitudeParam"
+        - $ref: "#/components/parameters/operationQueryParam"
+        - $ref: "#/components/parameters/aggFieldQueryParam"
+        - $ref: "#/components/parameters/recentMonthsQueryParam"
+        - $ref: "#/components/parameters/createdAtQueryParam"
+      responses:
+        "200":
+          $ref: "#/components/responses/WeatherDoc"
   /api/v1/users:
     get:
       tags:
@@ -524,6 +542,68 @@ components:
       description: A station's latiitude
       schema:
         $ref: "#/components/schemas/Latitude"
+    operationQueryParam:
+      name: operation
+      in: query
+      required: true
+      style: form
+      explode: true
+      description: Aggregation operator
+      schema:
+        type: string
+        enum:
+          - max
+          - min
+          - avg
+          - median
+    aggFieldQueryParam:
+      name: aggField
+      in: query
+      required: true
+      style: form
+      explode: true
+      description: aggregation field name
+      schema:
+        type: string
+        enum:
+          - precipitation
+          - temperature
+          - atmosphericPressure
+          - maxWindSpeed
+          - solarRadiation
+          - vaporPressure
+          - humidity
+          - windDirection
+    recentMonthsQueryParam:
+      name: recentMonths
+      in: query
+      required: false
+      style: form
+      explode: true
+      description: The number of recent months
+      schema:
+        type: integer
+        minimum: 1
+        default: 3
+    createdAtQueryParam:
+      name: createdAt
+      in: query
+      required: false
+      style: deepObject
+      explode: true
+      description: The number of recent months
+      schema:
+        type: object
+        required:
+          - gte
+          - lte
+        properties:
+          gte:
+            type: string
+            format: date
+          lte:
+            type: string
+            format: date
   responses:
     # 400
     400BadRequest:
