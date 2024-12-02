@@ -207,3 +207,20 @@ db.weathers.createIndex(
     collation: { locale: "en", strength: 2 },
   }
 );
+
+db.weathers.createIndex({
+  humidity: -1,
+  createdAt: -1,
+});
+
+db.weathers.createIndex(
+  {
+    deviceName: 1,
+    humidity: -1,
+    createdAt: -1,
+  },
+  {
+    name: "deviceName_1_createdAt_-1_humidity_-1_en_ci",
+    collation: { locale: "en", strength: 2 },
+  }
+);

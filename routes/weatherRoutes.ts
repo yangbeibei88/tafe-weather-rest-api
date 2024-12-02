@@ -67,7 +67,7 @@ weatherRouter.get(
   "/stations/@:longitude,:latitude/aggregate",
   authorisedTo("admin", "teacher", "student"),
   validatePathParams(),
-  validateQueryParams(),
+  validateQueryParams(["aggField", "createdAt", "recentMonths"]),
   showStationStatsAction
 );
 
@@ -76,7 +76,7 @@ weatherRouter.get(
   "/devices/:deviceName/aggregate",
   authorisedTo("admin", "teacher", "student"),
   validatePathParams(),
-  validateQueryParams(),
+  validateQueryParams(["aggField", "createdAt", "recentMonths"]),
   showDeviceStatsAction
 );
 

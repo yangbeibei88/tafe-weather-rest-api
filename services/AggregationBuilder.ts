@@ -28,6 +28,80 @@ export class AggregationBuilder extends QueryBuilder {
     return this;
   }
 
+  customGroup(
+    aggField: string[],
+    groupBy: string | null = null,
+    otherMinMaxFields: string[] = []
+  ) {
+    const group: Record<string, any> = groupBy
+      ? { _id: `$${groupBy}` }
+      : { _id: null };
+
+    for (const field of aggField) {
+      group[`max_${field}`] = { $max: `$${aggField}` };
+      group[`min_${field}`] = { $min: `$${aggField}` };
+      group[`avg_${field}`] = { $avg: `$${aggField}` };
+      group[`median_${field}`] = {
+        $median: { input: `$${aggField}`, method: "approximate" },
+      };
+    }
+
+    if (otherMinMaxFields.length > 0) {
+      for (const field of otherMinMaxFields) {
+        // sort needs to be descending
+        group[`max_${field}`] = { $first: `$${field}` };
+        group[`min_${field}`] = { $last: `$${field}` };
+      }
+    }
+
+    if (Object.keys(group).length > 1) {
+      this.pipeline.push({ $group: group });
+    }
+
+    return this;
+  }
+
+  customProject(
+    aggField: string[],
+    groupBy: string | null = null,
+    otherMinMaxFields: string[] = []
+  ) {
+    const project: Record<string, any> = groupBy
+      ? { _id: 0, [groupBy]: "$_id" }
+      : { _id: 0 };
+
+    for (const field of aggField) {
+      if (otherMinMaxFields.length > 0) {
+        for (const minMaxField of otherMinMaxFields) {
+          project[field] = {
+            max: {
+              value: `$max_${field}`,
+              [minMaxField]: `$max_${minMaxField}`,
+            },
+            min: {
+              value: `$min_${field}`,
+              [minMaxField]: `$min_${minMaxField}`,
+            },
+            avg: `$avg_${field}`,
+            median: `$median_${field}`,
+          };
+        }
+      } else {
+        project[field] = {
+          max: `$max_${field}`,
+          min: `$min_${field}`,
+          avg: `$avg_${field}`,
+          median: `$median_${field}`,
+        };
+      }
+    }
+    if (Object.keys(project).length > 1) {
+      this.pipeline.push({ $project: project });
+    }
+
+    return this;
+  }
+
   group2(
     operation: string,
     aggField: string,
@@ -48,7 +122,11 @@ export class AggregationBuilder extends QueryBuilder {
     if (mongoOperation) {
       group[`${operation}_${aggField}`] = { [`$${operation}`]: `$${aggField}` };
     } else if (operation === "median") {
-      group[`median_${aggField}`] = { $push: `$${aggField}` };
+      // group[`median_${aggField}`] = { $push: `$${aggField}` };
+      group[`median_${aggField}`] = {
+        input: `$${aggField}`,
+        method: "approximate",
+      };
     }
 
     Object.assign(group, customGroup);
@@ -57,27 +135,27 @@ export class AggregationBuilder extends QueryBuilder {
       this.pipeline.push({ $group: group });
     }
 
-    if (operation === "median") {
-      this.pipeline.push({
-        $addFields: {
-          [`median${aggField}`]: {
-            $let: {
-              vars: {
-                sorted: {
-                  $sortArray: { input: `$median_${aggField}`, sortBy: 1 },
-                },
-              },
-              in: {
-                $arrayElemAt: [
-                  "$$sorted",
-                  { $floor: { $divide: [{ $size: "$$sorted" }, 2] } },
-                ],
-              },
-            },
-          },
-        },
-      });
-    }
+    // if (operation === "median") {
+    //   this.pipeline.push({
+    //     $addFields: {
+    //       [`median${aggField}`]: {
+    //         $let: {
+    //           vars: {
+    //             sorted: {
+    //               $sortArray: { input: `$median_${aggField}`, sortBy: 1 },
+    //             },
+    //           },
+    //           in: {
+    //             $arrayElemAt: [
+    //               "$$sorted",
+    //               { $floor: { $divide: [{ $size: "$$sorted" }, 2] } },
+    //             ],
+    //           },
+    //         },
+    //       },
+    //     },
+    //   });
+    // }
     return this;
   }
 

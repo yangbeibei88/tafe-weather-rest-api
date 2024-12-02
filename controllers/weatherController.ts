@@ -129,14 +129,13 @@ export const listWeathersAction = asyncHandlerT(
 
 export const listDeviceStatsAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const { operation, aggField, createdAt, recentMonths } = req.query;
+    const { aggField, createdAt, recentMonths } = req.query;
     console.log(req.query);
 
     const result = await aggregateWeatherByLocationOrDevice(
       {},
-      operation,
       aggField,
-      "$deviceName",
+      "deviceName",
       recentMonths,
       createdAt
     );
@@ -154,9 +153,8 @@ export const listStationStatsAction = asyncHandlerT(
 
     const result = await aggregateWeatherByLocationOrDevice(
       {},
-      operation,
       aggField,
-      "$geoLocation",
+      "geoLocation",
       recentMonths,
       createdAt
     );
@@ -170,7 +168,7 @@ export const listStationStatsAction = asyncHandlerT(
 export const showStationStatsAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { longitude, latitude } = req.params;
-    const { operation, aggField, createdAt, recentMonths } = req.query;
+    const { aggField, createdAt, recentMonths } = req.query;
 
     console.log(req.params);
     console.log(req.query);
@@ -186,9 +184,8 @@ export const showStationStatsAction = asyncHandlerT(
 
     const result = await aggregateWeatherByLocationOrDevice(
       { longitude: Number(longitude), latitude: Number(latitude) },
-      operation,
       aggField,
-      "$geoLocation",
+      "geoLocation",
       Number(recentMonths),
       createdAt
     );
@@ -204,7 +201,7 @@ export const showStationStatsAction = asyncHandlerT(
 export const showDeviceStatsAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { deviceName } = req.params;
-    const { operation, aggField, createdAt, recentMonths } = req.query;
+    const { aggField, createdAt, recentMonths } = req.query;
 
     console.log(req.params);
     console.log(req.query);
@@ -220,9 +217,8 @@ export const showDeviceStatsAction = asyncHandlerT(
 
     const result = await aggregateWeatherByLocationOrDevice(
       { deviceName },
-      operation,
       aggField,
-      "$deviceName",
+      "deviceName",
       Number(recentMonths),
       createdAt
     );

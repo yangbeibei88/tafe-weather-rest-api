@@ -214,34 +214,34 @@ async function buildMatchParams(
 export async function aggregateWeatherByLocationOrDevice(
   // deno-lint-ignore ban-types
   params: {},
-  operation: string,
+  // operation: string,
   aggField: string,
-  groupBy: "$geoLocation" | "$deviceName" | null,
+  groupBy: "geoLocation" | "deviceName" | null,
   recentMonths?: number,
   createdAt?: Date | object | string
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
   params: { longitude: number; latitude: number },
-  operation: string,
+  // operation: string,
   aggField: string,
-  groupBy: "$geoLocation" | "$deviceName" | null,
+  groupBy: "geoLocation" | "deviceName" | null,
   recentMonths?: number,
   createdAt?: Date | object | string
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
   params: { deviceName: string },
-  operation: string,
+  // operation: string,
   aggField: string,
-  groupBy: "$geoLocation" | "$deviceName" | null,
+  groupBy: "geoLocation" | "deviceName" | null,
   recentMonths?: number,
   createdAt?: Date | object | string
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
   // deno-lint-ignore ban-types
   params: { longitude: number; latitude: number } | { deviceName: string } | {},
-  operation: string,
+  // operation: string,
   aggField: string,
-  groupBy: "$geoLocation" | "$deviceName" | null,
+  groupBy: "geoLocation" | "deviceName" | null,
   recentMonths?: number,
   createdAt?: Date | object | string
 ): Promise<Document[]> {
@@ -249,33 +249,40 @@ export async function aggregateWeatherByLocationOrDevice(
   // groupBy = "deviceName" in params ? "$deviceName" : "$geoLocaiton";
 
   const aggBuilder = new AggregationBuilder({
-    operation,
+    // operation,
     aggField,
     createdAt,
     recentMonths,
   });
 
+  // const pipeline = aggBuilder
+  //   .match(matchParams)
+  //   .project({ deviceName: 1, createdAt: 1, [aggField]: 1 })
+  //   .group2(operation, aggField, groupBy, {
+  //     docs: {
+  //       $push: {
+  //         deviceName: "$deviceName",
+  //         createdAt: "$createdAt",
+  //         [`${aggField}`]: `$${aggField}`,
+  //       },
+  //     },
+  //   })
+  //   .aggFilter({
+  //     input: "$docs",
+  //     as: "doc",
+  //     cond: { $eq: [`$$doc.${aggField}`, `$${operation}_${aggField}`] },
+  //   })
+  //   .unwind("$docs")
+  //   .replaceRoot({ newRoot: "$docs" })
+  //   .sort({ createdAt: -1 })
+  //   .limit(5)
+  //   .build();
+
   const pipeline = aggBuilder
     .match(matchParams)
-    .project({ deviceName: 1, createdAt: 1, [aggField]: 1 })
-    .group2(operation, aggField, groupBy, {
-      docs: {
-        $push: {
-          deviceName: "$deviceName",
-          createdAt: "$createdAt",
-          [`${aggField}`]: `$${aggField}`,
-        },
-      },
-    })
-    .aggFilter({
-      input: "$docs",
-      as: "doc",
-      cond: { $eq: [`$$doc.${aggField}`, `$${operation}_${aggField}`] },
-    })
-    .unwind("$docs")
-    .replaceRoot({ newRoot: "$docs" })
-    .sort({ createdAt: -1 })
-    .limit(5)
+    .sort({ [aggField]: -1, createdAt: -1 })
+    .customGroup([aggField], groupBy, ["createdAt"])
+    .customProject([aggField], groupBy, ["createdAt"])
     .build();
 
   console.log("Aggregation Pipeline:", JSON.stringify(pipeline, null, 2));
