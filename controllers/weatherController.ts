@@ -100,7 +100,20 @@ export const listWeathersAction = asyncHandlerT(
     const limit = parseInt(req.query.limit, 10) || 10;
     const page = parseInt(req.query.page, 10) || 1;
 
-    const result = await getAllWeathers(req.query, limit, page);
+    console.log(req.query);
+
+    const defaultDateRange: Record<"createdAt", string | object | Date> = {
+      createdAt: { gte: "2021-01-01" },
+    };
+
+    const defaultSort: Record<string, -1 | 1> = { createdAt: -1 };
+
+    const result = await getAllWeathers(
+      { ...req.query, ...defaultDateRange },
+      limit,
+      page,
+      defaultSort
+    );
 
     res.status(200).json({
       paging: {
@@ -109,7 +122,7 @@ export const listWeathersAction = asyncHandlerT(
         currentPage: result.currentPage,
         limit,
       },
-      data: result.data,
+      result: result.data,
     });
   }
 );
@@ -232,7 +245,7 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
     }
 
     res.status(200).json({
-      data: weather,
+      result: weather,
     });
   }
 ) as RequestHandler;

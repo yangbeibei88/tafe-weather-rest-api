@@ -30,7 +30,7 @@ import {
 import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
 import { objectOmit } from "../utils/helpers.ts";
-import { QueryBuilder } from "../utils/QueryBuilder.ts";
+import { QueryBuilder } from "../services/QueryBuilder.ts";
 
 // Define the validation rules for user-related fields
 const userValidations: Record<keyof UserInput, ContextRunner> = {

@@ -1,23 +1,25 @@
 // deno-lint-ignore-file no-explicit-any
 import { Collection, Document } from "mongodb";
-import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
+import { AggregationBuilder } from "./AggregationBuilder.ts";
 
 export async function getPaginatedData<T extends Document>(
   collection: Collection<T>,
   query: Record<string, any> = {},
   limit: number = 10,
   page: number = 1,
+  sort?: Record<string, -1 | 1>,
   group?: Record<string, any>,
   project?: Record<string, any>
 ) {
   const aggregationBuilder = new AggregationBuilder(query);
 
   // const matchCriteria = AggregationBuilder.parseQueryToMatch(query);
+  // sortCriteria is for dealing with sort in query param
   const sortCriteria = AggregationBuilder.parseSort(query) || undefined;
 
   const pipeline = aggregationBuilder
+    .sort({ ...sortCriteria, ...sort })
     .match()
-    .sort(sortCriteria)
     .group(group)
     .project(project)
     .paginate(limit, page)
@@ -28,8 +30,8 @@ export async function getPaginatedData<T extends Document>(
   const explain = await collection.aggregate(pipeline).explain();
   console.log(explain);
 
-  const data = result[0]?.data || [];
-  const totalCount = result[0]?.totalCount[0]?.totalCount || 0;
+  const data: T[] = result[0]?.data || [];
+  const totalCount: number = result[0]?.totalCount[0]?.totalCount || 0;
 
   const { totalPages, currentPage } = AggregationBuilder.calculatePagination(
     totalCount,

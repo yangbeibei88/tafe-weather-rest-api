@@ -2,19 +2,25 @@
 import { OptionalId, ObjectId, MongoServerError, Document } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
-import { getPaginatedData } from "./modelFactory.ts";
-import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
+import { getPaginatedData } from "../services/modelFactory.ts";
+import { AggregationBuilder } from "../services/AggregationBuilder.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
 export const getAllWeathers = async (
   query: Record<string, any>,
   limit: number = 10,
-  page: number = 1
+  page: number = 1,
+  sort: Record<string, any> = { createdAt: -1 }
 ) => {
   try {
-    const result = await getPaginatedData(weathersColl, query, limit, page);
-
+    const result = await getPaginatedData(
+      weathersColl,
+      query,
+      limit,
+      page,
+      sort
+    );
     return result;
   } catch (error) {
     console.log(error);

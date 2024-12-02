@@ -25,7 +25,8 @@ paths:
     get:
       tags:
         - weathers
-      summary: List weather reading for all stations
+      summary: List weather readings for all stations
+      description: Paginated all weather readings since '2021-01-01'
       security:
         - bearerAuth: []
       operationId: listAllWeathers
@@ -70,7 +71,13 @@ paths:
                   result:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Weather"
+                      allOf:
+                        - $ref: "#/components/schemas/Weather"
+                        - type: object
+                          properties:
+                            geoLocation:
+                              $ref: "#/components/schemas/GeoLocation"
+
     post:
       tags:
         - weathers

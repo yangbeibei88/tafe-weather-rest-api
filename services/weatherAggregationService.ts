@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { Weather } from "../models/WeatherSchema.ts";
-import { AggregationBuilder } from "../utils/AggregationBuilder.ts";
+import { AggregationBuilder } from "./AggregationBuilder.ts";
 
 type AggOperation = "min" | "max" | "avg" | "median";
 type WeatherProp = keyof Pick<
