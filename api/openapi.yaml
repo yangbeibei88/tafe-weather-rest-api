@@ -144,6 +144,26 @@ paths:
         "201":
           description: Multiple weather readings are created successfully.
           $ref: "#/components/responses/BatchIds"
+  /api/v1/weathers/stations/aggregate:
+    get:
+      tags:
+        - weathers
+      summary: List aggregation data for all stations
+      security:
+        - bearerAuth: []
+      operationId: listWeatherAggregationByLocation
+      parameters:
+        - $ref: "#/components/parameters/createdAtQueryParam"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
   /api/v1/weathers/stations/@{longitude},{latitude}/aggregate:
     get:
       tags:
@@ -151,7 +171,7 @@ paths:
       summary: Aggregate weather data by location.
       security:
         - bearerAuth: []
-      operationId: aggregateWeatherByLocation
+      operationId: showWeatherAggregationByLocation
       parameters:
         - $ref: "#/components/parameters/longitudeParam"
         - $ref: "#/components/parameters/latitudeParam"
@@ -169,14 +189,34 @@ paths:
                 properties:
                   result:
                     type: array
-  /api/v1/weathers/stations/{deviceName}/aggregate:
+  /api/v1/weathers/devices/aggregate:
     get:
       tags:
         - weathers
-      summary: Aggregate weather data by location.
+      summary: List weather aggregation by device.
       security:
         - bearerAuth: []
-      operationId: aggregateWeatherByDevice
+      operationId: listWeatherAggregationByDevice
+      parameters:
+        - $ref: "#/components/parameters/createdAtQueryParam"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+  /api/v1/weathers/devices/{deviceName}/aggregate:
+    get:
+      tags:
+        - weathers
+      summary: Show weather aggregation by device.
+      security:
+        - bearerAuth: []
+      operationId: showWeatherAggregationByDevice
       parameters:
         - $ref: "#/components/parameters/deviceNameParam"
         - $ref: "#/components/parameters/operationQueryParam"
@@ -265,7 +305,21 @@ paths:
           description: The user is deleted successfully.
         "404":
           $ref: "#/components/responses/404NotFound"
-
+  /api/v1/users/{id}/updatePassword:
+    patch:
+      tags:
+        - users
+      summary: Update user password by user ID.
+      security:
+        - bearerAuth: []
+      operationId: updateUserPasswordById
+      parameters:
+        - $ref: "#/components/parameters/userIdParam"
+      requestBody:
+        $ref: "#/components/requestBodies/updatePasswordInput"
+      responses:
+        "200":
+          description: Password updated successfully.
   /api/v1/users/batch:
     put:
       tags:
@@ -500,6 +554,20 @@ components:
               $ref: "#/components/schemas/Password"
             confirmPassword:
               $ref: "#/components/schemas/Password"
+    UpdatePassword:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+        - confirmPassword
+      properties:
+        currentPassword:
+          $ref: "#/components/schemas/Password"
+        newPassword:
+          $ref: "#/components/schemas/Password"
+        confirmPassword:
+          $ref: "#/components/schemas/Password"
+      # x-internal: true
     GeoLocation:
       type: object
       required:
@@ -557,6 +625,16 @@ components:
         path:
           type: string
   requestBodies:
+    updatePasswordInput:
+      description: Update user password
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdatePassword"
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/UpdatePassword"
     LoginInput:
       required: true
       content:
