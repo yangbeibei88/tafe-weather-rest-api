@@ -14,7 +14,6 @@ import {
   ValidationChain,
   buildCheckFunction,
   query,
-  check,
 } from "express-validator";
 import { ClientError } from "../errors/ClientError.ts";
 
@@ -80,9 +79,15 @@ export const validatePathParams = (): RequestHandler => {
   }) as RequestHandler;
 };
 
-export const validateQueryParams = (): RequestHandler => {
+export const validateQueryParams = (
+  allowedParams?: string[]
+): RequestHandler => {
   return (async (req: Request, _res: Response, next: NextFunction) => {
-    for (const queryKey in req.query) {
+    const queryKeys = Object.keys(req.query);
+
+    const validParams = queryKeys.filter((key) => allowedParams?.includes(key));
+
+    for (const queryKey of validParams) {
       // compatible with query params contains nested operator
       await query(`${queryKey}.*`).trim().toLowerCase().escape().run(req);
     }
