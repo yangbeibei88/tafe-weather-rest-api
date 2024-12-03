@@ -1,4 +1,4 @@
-// deno-lint-ignore-file no-explicit-any
+// deno-lint-ignore-file no-explicit-any ban-types
 import { OptionalId, ObjectId, MongoServerError, Document } from "mongodb";
 import { weathersColl } from "../config/db.ts";
 import { Weather } from "./WeatherSchema.ts";
@@ -63,7 +63,6 @@ export const findDevice = async (deviceName: string) => {
         {
           limit: 1,
           projection: { deviceName: 1 },
-          collation: { locale: "en", strength: 2 },
         }
       )
       .toArray();
@@ -71,6 +70,31 @@ export const findDevice = async (deviceName: string) => {
     return result;
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const findAllDistinctDevices = async () => {
+  try {
+    // const result = await weathersColl.distinct("deviceName", {
+    //   deviceName: { $ne: null },
+    // });
+    const deviceDocs = await weathersColl
+      .aggregate([
+        { $group: { _id: "$deviceName" } },
+        { $project: { _id: 0, deviceName: "$_id" } },
+      ])
+      .toArray();
+
+    const result = deviceDocs.reduce(
+      (acc: string[], cur) => [...acc, Object.values(cur).join()],
+      []
+    );
+
+    // console.log(result);
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
 };
 
@@ -104,7 +128,25 @@ const findLatestDateByDevice = async (deviceName: string) => {
       sort: { createdAt: -1 },
       limit: 1,
       projection: { createdAt: 1, _id: 0 },
-      collation: { locale: "en", strength: 2 },
+    }
+  );
+
+  const result = await cursor.toArray();
+
+  if (!result.length) {
+    return new Date();
+  }
+
+  return result[0].createdAt;
+};
+
+const findLatestWeather = async () => {
+  const cursor = weathersColl.find<Weather>(
+    {},
+    {
+      sort: { createdAt: -1 },
+      limit: 1,
+      projection: { createdAt: 1, _id: 0 },
     }
   );
 
@@ -168,7 +210,6 @@ export const deleteWeather = async (id: string) => {
 };
 
 async function buildMatchParams(
-  // deno-lint-ignore ban-types
   params: { longitude: number; latitude: number } | { deviceName: string } | {},
   recentMonths?: number,
   createdAt?: Date | object | string
@@ -188,6 +229,10 @@ async function buildMatchParams(
     matchParams.latitude = params.latitude;
   } else if ("deviceName" in params) {
     matchParams.deviceName = params.deviceName;
+  } else {
+    const allDevices = await findAllDistinctDevices();
+    // console.log(allDevices);
+    matchParams.deviceName = { $in: allDevices };
   }
 
   if (!createdAt) {
@@ -196,7 +241,7 @@ async function buildMatchParams(
         ? await findLatestDateByLocation(params.longitude, params.latitude)
         : "deviceName" in params
         ? await findLatestDateByDevice(params.deviceName)
-        : new Date();
+        : await findLatestWeather();
 
     // if `createdAt` not presented, set date range to recent 3 months
     if (!recentMonths) {
@@ -214,9 +259,7 @@ async function buildMatchParams(
 }
 
 export async function aggregateWeatherByLocationOrDevice(
-  // deno-lint-ignore ban-types
   params: {},
-  // operation: string,
   aggField: string,
   groupBy: "geoLocation" | "deviceName" | null,
   recentMonths?: number,
@@ -224,7 +267,6 @@ export async function aggregateWeatherByLocationOrDevice(
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
   params: { longitude: number; latitude: number },
-  // operation: string,
   aggField: string,
   groupBy: "geoLocation" | "deviceName" | null,
   recentMonths?: number,
@@ -232,16 +274,13 @@ export async function aggregateWeatherByLocationOrDevice(
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
   params: { deviceName: string },
-  // operation: string,
   aggField: string,
   groupBy: "geoLocation" | "deviceName" | null,
   recentMonths?: number,
   createdAt?: Date | object | string
 ): Promise<Document[]>;
 export async function aggregateWeatherByLocationOrDevice(
-  // deno-lint-ignore ban-types
   params: { longitude: number; latitude: number } | { deviceName: string } | {},
-  // operation: string,
   aggField: string,
   groupBy: "geoLocation" | "deviceName" | null,
   recentMonths?: number,
@@ -250,8 +289,9 @@ export async function aggregateWeatherByLocationOrDevice(
   const matchParams = await buildMatchParams(params, recentMonths, createdAt);
   // groupBy = "deviceName" in params ? "$deviceName" : "$geoLocaiton";
 
+  console.log(matchParams);
+
   const aggBuilder = new AggregationBuilder({
-    // operation,
     aggField,
     createdAt,
     recentMonths,

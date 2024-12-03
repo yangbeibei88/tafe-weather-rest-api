@@ -56,9 +56,9 @@ weatherRouter.get(
 );
 // Aggregation all devices
 weatherRouter.get(
-  "/aggregate/devices",
+  "/devices/aggregate",
   authorisedTo("admin", "teacher", "student"),
-  validateQueryParams(),
+  validateQueryParams(["aggField", "createdAt", "recentMonths"]),
   listDeviceStatsAction
 );
 

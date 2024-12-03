@@ -71,30 +71,45 @@ export class AggregationBuilder extends QueryBuilder {
       : { _id: 0 };
 
     for (const field of aggField) {
+      project[field] = {
+        max: { value: `$max_${field}` },
+        min: { value: `$min_${field}` },
+        avg: { value: `$avg_${field}` },
+        median: { value: `$median_${field}` },
+      };
+
       if (otherMinMaxFields.length > 0) {
         for (const minMaxField of otherMinMaxFields) {
-          project[field] = {
-            max: {
-              value: `$max_${field}`,
-              [minMaxField]: `$max_${minMaxField}`,
-            },
-            min: {
-              value: `$min_${field}`,
-              [minMaxField]: `$min_${minMaxField}`,
-            },
-            avg: `$avg_${field}`,
-            median: `$median_${field}`,
-          };
+          project[field]["max"][minMaxField] = `$max_${minMaxField}`;
+          project[field]["min"][minMaxField] = `$min_${minMaxField}`;
         }
-      } else {
-        project[field] = {
-          max: `$max_${field}`,
-          min: `$min_${field}`,
-          avg: `$avg_${field}`,
-          median: `$median_${field}`,
-        };
       }
     }
+    // for (const field of aggField) {
+    //   if (otherMinMaxFields.length > 0) {
+    //     for (const minMaxField of otherMinMaxFields) {
+    //       project[field] = {
+    //         max: {
+    //           value: `$max_${field}`,
+    //           [minMaxField]: `$max_${minMaxField}`,
+    //         },
+    //         min: {
+    //           value: `$min_${field}`,
+    //           [minMaxField]: `$min_${minMaxField}`,
+    //         },
+    //         avg: `$avg_${field}`,
+    //         median: `$median_${field}`,
+    //       };
+    //     }
+    //   } else {
+    //     project[field] = {
+    //       max: `$max_${field}`,
+    //       min: `$min_${field}`,
+    //       avg: `$avg_${field}`,
+    //       median: `$median_${field}`,
+    //     };
+    //   }
+    // }
     if (Object.keys(project).length > 1) {
       this.pipeline.push({ $project: project });
     }

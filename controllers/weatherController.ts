@@ -155,7 +155,7 @@ export const listStationStatsAction = asyncHandlerT(
       {},
       aggField,
       "geoLocation",
-      recentMonths,
+      Number(recentMonths),
       createdAt
     );
 
