@@ -12,6 +12,7 @@ import {
   showDeviceStatsAction,
   listStationStatsAction,
   listDeviceStatsAction,
+  listWeathersByDeviceAction,
 } from "../controllers/weatherController.ts";
 import {
   validatePathParams,
@@ -24,6 +25,7 @@ export const weatherRouter = Router();
 // protect all weather routes
 weatherRouter.use(protect);
 
+// Get all weather readings - P
 weatherRouter.get(
   "/",
   authorisedTo("admin", "teacher", "student"),
@@ -31,7 +33,7 @@ weatherRouter.get(
   listWeathersAction
 );
 
-// Create one new weather reading
+// Create one new weather reading - P
 weatherRouter.post(
   "/",
   authorisedTo("admin", "teacher", "sensor"),
@@ -39,7 +41,7 @@ weatherRouter.post(
   createWeatherAction
 );
 
-// Create many weather readings
+// Create many weather readings - P
 weatherRouter.post(
   "/batch",
   authorisedTo("admin", "teacher", "sensor"),
@@ -47,19 +49,63 @@ weatherRouter.post(
   createWeathersAction
 );
 
-// Aggregation all locations
+// Get weather reading by device - P
 weatherRouter.get(
-  "/stations/aggregate",
-  authorisedTo("admin", "teacher", "student"),
-  validateQueryParams(),
-  listStationStatsAction
+  "/devices/:deviceName",
+  authorisedTo("admin", "teacher", "sensor"),
+  validatePathParams(),
+  validateQueryParams(["limit", "page", "createdAt"]),
+  listWeathersByDeviceAction
 );
-// Aggregation all devices
+
+// Aggregation all devices - P
 weatherRouter.get(
   "/devices/aggregate",
   authorisedTo("admin", "teacher", "student"),
   validateQueryParams(["aggField", "createdAt", "recentMonths"]),
   listDeviceStatsAction
+);
+
+// Aggregation by single device - P
+weatherRouter.get(
+  "/devices/:deviceName/aggregate",
+  authorisedTo("admin", "teacher", "student"),
+  validatePathParams(),
+  validateQueryParams(["aggField", "createdAt", "recentMonths"]),
+  showDeviceStatsAction
+);
+
+// Get one weather reading - P
+weatherRouter.get(
+  "/:id",
+  authorisedTo("admin", "teacher", "student"),
+  validatePathParams(),
+  showWeatherAction
+);
+
+// update one weather reading - P
+weatherRouter.put(
+  "/:id",
+  authorisedTo("admin", "teacher"),
+  validatePathParams(),
+  validateWeatherInput(),
+  updateWeatherAction
+);
+
+// delete one or more weather readings - P
+weatherRouter.delete(
+  "/:id",
+  authorisedTo("admin", "teacher"),
+  validatePathParams(),
+  deleteWeatherAction
+);
+
+// Aggregation all locations
+weatherRouter.get(
+  "/stations/aggregate",
+  authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(["aggField", "createdAt", "recentMonths"]),
+  listStationStatsAction
 );
 
 // Aggregation by single location
@@ -71,42 +117,8 @@ weatherRouter.get(
   showStationStatsAction
 );
 
-// Aggregation by single device
-weatherRouter.get(
-  "/devices/:deviceName/aggregate",
-  authorisedTo("admin", "teacher", "student"),
-  validatePathParams(),
-  validateQueryParams(["aggField", "createdAt", "recentMonths"]),
-  showDeviceStatsAction
-);
-
 // Update one or more new weather readings
 // weatherRouter.put("/");
 
 // delete one or more new weather readings
 // weatherRouter.delete("/");
-
-// Get one weather reading
-weatherRouter.get(
-  "/:id",
-  authorisedTo("admin", "teacher", "student"),
-  validatePathParams(),
-  showWeatherAction
-);
-
-// update one weather reading
-weatherRouter.put(
-  "/:id",
-  authorisedTo("admin", "teacher"),
-  validatePathParams(),
-  validateWeatherInput(),
-  updateWeatherAction
-);
-
-// delete one or more weather readings
-weatherRouter.delete(
-  "/:id",
-  authorisedTo("admin", "teacher"),
-  validatePathParams(),
-  deleteWeatherAction
-);

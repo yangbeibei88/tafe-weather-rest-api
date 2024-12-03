@@ -64,7 +64,7 @@ export const validateBody = (validations: ContextRunner[]): RequestHandler => {
 export const validatePathParams = (): RequestHandler => {
   return (async (req: Request, _res: Response, next: NextFunction) => {
     for (const paramKey in req.params) {
-      await param(paramKey).notEmpty().escape().run(req);
+      await param(paramKey).trim().toLowerCase().escape().run(req);
     }
 
     const errors = validationResult(req);

@@ -18,6 +18,7 @@ import {
   findGeolocation,
   findDevice,
   aggregateWeatherByLocationOrDevice,
+  getWeathersByDevice,
 } from "../models/WeatherModel.ts";
 import { Weather, WeatherInput } from "../models/WeatherSchema.ts";
 import {
@@ -110,6 +111,43 @@ export const listWeathersAction = asyncHandlerT(
 
     const result = await getAllWeathers(
       { ...req.query, ...defaultDateRange },
+      limit,
+      page,
+      defaultSort
+    );
+
+    res.status(200).json({
+      paging: {
+        totalCount: result.totalCount,
+        totalPages: result.totalPages,
+        currentPage: result.currentPage,
+        limit,
+      },
+      result: result.data,
+    });
+  }
+);
+
+export const listWeathersByDeviceAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { deviceName } = req.params;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const createdAt = req.query.createdAt || { gte: "2021-01-01" };
+
+    // check if the device exists
+    const device = await findDevice(deviceName);
+
+    if (!device?.length) {
+      return next(
+        new ClientError({ code: 404, message: "This device not found." })
+      );
+    }
+
+    const defaultSort: Record<string, -1 | 1> = { createdAt: -1 };
+
+    const result = await getWeathersByDevice(
+      { deviceName, createdAt },
       limit,
       page,
       defaultSort

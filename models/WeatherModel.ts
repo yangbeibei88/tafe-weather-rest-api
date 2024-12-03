@@ -7,6 +7,21 @@ import { AggregationBuilder } from "../services/AggregationBuilder.ts";
 
 // const weathersColl = database.collection<OptionalId<Weather>>("weathers");
 
+type WeatherDisplayFields = Partial<Record<keyof Weather, 0 | 1>>;
+const weatherDisplayFields: WeatherDisplayFields = {
+  _id: 0,
+  createdAt: 1,
+  deviceName: 1,
+  precipitation: 1,
+  temperature: 1,
+  atmosphericPressure: 1,
+  maxWindSpeed: 1,
+  solarRadiation: 1,
+  vaporPressure: 1,
+  humidity: 1,
+  windDirection: 1,
+};
+
 export const getAllWeathers = async (
   query: Record<string, any>,
   limit: number = 10,
@@ -19,8 +34,34 @@ export const getAllWeathers = async (
       query,
       limit,
       page,
-      sort
+      sort,
+      undefined,
+      weatherDisplayFields
     );
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+export const getWeathersByDevice = async (
+  query: Record<string, any>,
+  limit: number = 10,
+  page: number = 1,
+  sort: Record<string, any> = { createdAt: -1 }
+) => {
+  try {
+    const result = await getPaginatedData(
+      weathersColl,
+      query,
+      limit,
+      page,
+      sort,
+      undefined,
+      weatherDisplayFields
+    );
+
     return result;
   } catch (error) {
     console.log(error);

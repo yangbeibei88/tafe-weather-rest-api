@@ -18,12 +18,14 @@ export async function getPaginatedData<T extends Document>(
   const sortCriteria = AggregationBuilder.parseSort(query) || undefined;
 
   const pipeline = aggregationBuilder
-    .sort({ ...sortCriteria, ...sort })
     .match()
-    .group(group)
+    .sort({ ...sortCriteria, ...sort })
     .project(project)
+    .group(group)
     .paginate(limit, page)
     .build();
+
+  console.log(pipeline);
 
   const result = await collection.aggregate(pipeline).toArray();
 
