@@ -2,6 +2,27 @@ const database = "tafe-weather-api";
 use(database);
 db; // "tafe-weather-api"
 
+db.runCommand({
+  createIndexes: "weathers",
+  indexes: [
+    {
+      key: {
+        deviceName: 1,
+        createdAt: -1,
+        "$**": -1,
+      },
+      name: "deviceName_1_wildcard_-1_createdAt_-1",
+      wildcardProjection: {
+        atmosphericPressure: 1,
+        maxWindSpeed: 1,
+        solarRadiation: 1,
+        vaporPressure: 1,
+        windDirection: 1,
+      },
+    },
+  ],
+});
+
 const coordinateSchema = {
   bsonType: "array",
   minItems: 2,
