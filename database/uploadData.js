@@ -37,7 +37,7 @@ const dataArr = data
   .map((item) => {
     let obj = {};
 
-    obj.deviceName = item["Device Name"];
+    obj.deviceName = item["Device Name"].trim().toLowerCase();
     obj.precipitation = item["Precipitation mm/h"] || 0;
     obj.temperature = item["Temperature (°C)"] || 0;
     obj.atmosphericPressure = item["Atmospheric Pressure (kPa)"] || 0;

@@ -148,7 +148,7 @@ export const listDeviceStatsAction = asyncHandlerT(
 
 export const listStationStatsAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const { operation, aggField, createdAt, recentMonths } = req.query;
+    const { aggField, createdAt, recentMonths } = req.query;
     console.log(req.query);
 
     const result = await aggregateWeatherByLocationOrDevice(

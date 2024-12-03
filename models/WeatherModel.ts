@@ -176,14 +176,16 @@ async function buildMatchParams(
   const matchParams: Record<string, any> = {};
 
   if ("longitude" in params && "latitude" in params) {
-    matchParams.geoLocation = {
-      $geoIntersects: {
-        $geometry: {
-          type: "Point",
-          coordinates: [params.longitude, params.latitude],
-        },
-      },
-    };
+    // matchParams.geoLocation = {
+    //   $geoIntersects: {
+    //     $geometry: {
+    //       type: "Point",
+    //       coordinates: [params.longitude, params.latitude],
+    //     },
+    //   },
+    // };
+    matchParams.longitude = params.longitude;
+    matchParams.latitude = params.latitude;
   } else if ("deviceName" in params) {
     matchParams.deviceName = params.deviceName;
   }
@@ -255,42 +257,22 @@ export async function aggregateWeatherByLocationOrDevice(
     recentMonths,
   });
 
-  // const pipeline = aggBuilder
-  //   .match(matchParams)
-  //   .project({ deviceName: 1, createdAt: 1, [aggField]: 1 })
-  //   .group2(operation, aggField, groupBy, {
-  //     docs: {
-  //       $push: {
-  //         deviceName: "$deviceName",
-  //         createdAt: "$createdAt",
-  //         [`${aggField}`]: `$${aggField}`,
-  //       },
-  //     },
-  //   })
-  //   .aggFilter({
-  //     input: "$docs",
-  //     as: "doc",
-  //     cond: { $eq: [`$$doc.${aggField}`, `$${operation}_${aggField}`] },
-  //   })
-  //   .unwind("$docs")
-  //   .replaceRoot({ newRoot: "$docs" })
-  //   .sort({ createdAt: -1 })
-  //   .limit(5)
-  //   .build();
-
   const pipeline = aggBuilder
     .match(matchParams)
     .sort({ [aggField]: -1, createdAt: -1 })
-    .customGroup([aggField], groupBy, ["createdAt"])
-    .customProject([aggField], groupBy, ["createdAt"])
+    .project({
+      deviceName: 1,
+      createdAt: 1,
+      [aggField]: 1,
+      _id: 0,
+    })
+    .customGroup([aggField], groupBy, ["createdAt", "deviceName"])
+    .customProject([aggField], groupBy, ["createdAt", "deviceName"])
     .build();
 
   console.log("Aggregation Pipeline:", JSON.stringify(pipeline, null, 2));
   try {
-    const result = await weathersColl
-      .aggregate(pipeline, { collation: { locale: "en", strength: 2 } })
-      .toArray();
-
+    const result = await weathersColl.aggregate(pipeline).toArray();
     const explain = await weathersColl
       .aggregate(pipeline)
       .explain("executionStats");

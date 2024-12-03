@@ -21,6 +21,8 @@ export interface Weather {
   lastModifiedAt?: Date;
   lastModifiedBy?: ObjectId;
   geoLocation: GeoLocation<GeoJSONGeometryType>;
+  longitude: number;
+  latitude: number;
 }
 
 type WeatherWithoutId = Omit<Weather, "_id">;

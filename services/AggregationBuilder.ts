@@ -135,27 +135,6 @@ export class AggregationBuilder extends QueryBuilder {
       this.pipeline.push({ $group: group });
     }
 
-    // if (operation === "median") {
-    //   this.pipeline.push({
-    //     $addFields: {
-    //       [`median${aggField}`]: {
-    //         $let: {
-    //           vars: {
-    //             sorted: {
-    //               $sortArray: { input: `$median_${aggField}`, sortBy: 1 },
-    //             },
-    //           },
-    //           in: {
-    //             $arrayElemAt: [
-    //               "$$sorted",
-    //               { $floor: { $divide: [{ $size: "$$sorted" }, 2] } },
-    //             ],
-    //           },
-    //         },
-    //       },
-    //     },
-    //   });
-    // }
     return this;
   }
 
