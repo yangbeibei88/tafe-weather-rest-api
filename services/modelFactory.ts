@@ -25,12 +25,14 @@ export async function getPaginatedData<T extends Document>(
     .paginate(limit, page)
     .build();
 
-  console.log(pipeline);
+  console.log("Aggregation Pipeline:", JSON.stringify(pipeline, null, 2));
 
   const result = await collection.aggregate(pipeline).toArray();
 
-  const explain = await collection.aggregate(pipeline).explain();
-  console.log(explain);
+  const explain = await collection
+    .aggregate(pipeline)
+    .explain("executionStats");
+  console.log(JSON.stringify(explain, null, 2));
 
   const data: T[] = result[0]?.data || [];
   const totalCount: number = result[0]?.totalCount[0]?.totalCount || 0;
