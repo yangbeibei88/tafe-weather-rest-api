@@ -194,33 +194,52 @@ export const updateUserAction = asyncHandlerT(
 
 export const updateUsersRoleAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const filterBuilder = new QueryBuilder(req.query);
-    const filter = filterBuilder.filterBuild();
-    const payload: Pick<OptionalId<User>, "role" | "updatedAt"> = {
-      role: req.body.role,
-      updatedAt: new Date(),
-    };
+    const { role, createdAt } = req.query;
 
     // Prevent update all documents if no filter provided
-    if (!Object.keys(filter).length) {
+    // Both role and createdAt are needed, throw error if:
+    // 1) either role or createdAt or both are missing in query params
+    // 2) role's length is 0
+    // 3) when createdAt is a equal string, but isNaN when parse date
+    // 4) when createdAt is a range object, but not all values parsed into date are number
+    if (
+      Object.keys(req.query).length < 2 ||
+      !role?.length ||
+      (createdAt &&
+        typeof createdAt === "string" &&
+        isNaN(Date.parse(createdAt))) ||
+      (createdAt &&
+        typeof createdAt === "object" &&
+        !Object.values(createdAt).every(
+          (v) => typeof v === "string" && !isNaN(Date.parse(v))
+        ))
+    ) {
       return next(
         new ClientError({
           code: 400,
           message:
-            "Batch update users' role operation cannot have empty filters.",
+            "Role and createdAt filters cannot be empty when batch update users' role.",
         })
       );
     }
 
-    const result = await updateUsersRole(filter, payload);
+    const payload: Pick<OptionalId<User>, "role" | "updatedAt"> = {
+      // role has been validated in last middleware, safe to add to payload
+      role: req.body.role,
+      updatedAt: new Date(),
+    };
 
-    if (!result?.matchedCount) {
-      return next(new ClientError({ code: 404, message: "Users not found." }));
-    }
+    const result = await updateUsersRole({ role, createdAt }, payload);
+
+    // if (!result?.matchedCount) {
+    //   return next(new ClientError({ code: 404, message: "Users not found." }));
+    // }
 
     res.status(200).json({
-      success: true,
-      result,
+      result: {
+        matchedCount: result?.matchedCount,
+        modifiedCount: result?.modifiedCount,
+      },
     });
   }
 );

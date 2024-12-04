@@ -1,6 +1,7 @@
 import { Filter, ObjectId, OptionalId } from "mongodb";
 import { usersColl } from "../config/db.ts";
 import { User } from "./UserSchema.ts";
+import { QueryBuilder } from "../services/QueryBuilder.ts";
 
 // const usersColl = database.collection<OptionalId<User>>("users");
 export const getAllUsers = async () => {
@@ -86,10 +87,12 @@ export const updateUserById = async (
 
 export const updateUsersRole = async (
   filter: Filter<OptionalId<User>>,
-  data: Pick<OptionalId<User>, "role" | "updatedAt">
+  payload: Pick<OptionalId<User>, "role" | "updatedAt">
 ) => {
   try {
-    const result = await usersColl.updateMany(filter, { $set: data });
+    const filterBuilder = new QueryBuilder(filter);
+    const filterParam = filterBuilder.filterBuild();
+    const result = await usersColl.updateMany(filterParam, { $set: payload });
     return result;
   } catch (error) {
     console.log(error);

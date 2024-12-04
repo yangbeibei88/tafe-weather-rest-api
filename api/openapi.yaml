@@ -344,6 +344,24 @@ paths:
       responses:
         "204":
           description: Users are deleted.
+  /api/v1/users/roles:
+    patch:
+      tags:
+        - users
+      summary: Update roles for multiple users.
+      operationId: updateUserRoles
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/roleQueryParam"
+        - $ref: "#/components/parameters/createdAtQueryParam"
+      requestBody:
+        $ref: "#/components/requestBodies/updateUserRolesInput"
+      responses:
+        "200":
+          description: Roles updated successfully.
+        "400":
+          $ref: "#/components/responses/400BadRequest"
   /api/v1/logs:
     get:
       tags:
@@ -481,12 +499,8 @@ components:
       x-internal: true
     RoleString:
       type: string
-      description: 'Select one of the user roles from "teacher", "student", "admin", "sensor"'
-      enum:
-        - teacher
-        - student
-        - admin
-        - sensor
+      description: 'A string containing any combination of the roles "teacher", "student", "admin", and "sensor", separated by commas.'
+      pattern: "^((teacher|student|admin|sensor)(,(teacher|student|admin|sensor))*)?$"
       x-internal: true
     User:
       type: object
@@ -621,6 +635,16 @@ components:
         path:
           type: string
   requestBodies:
+    updateUserRolesInput:
+      description: Update user roles
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Role"
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/Role"
     updatePasswordInput:
       description: Update user password
       required: true
@@ -770,7 +794,6 @@ components:
     recentMonthsQueryParam:
       name: recentMonths
       in: query
-      required: false
       style: form
       explode: true
       description: The number of recent months
