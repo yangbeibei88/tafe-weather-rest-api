@@ -30,7 +30,6 @@ import {
 import { signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
 import { objectOmit } from "../utils/helpers.ts";
-import { QueryBuilder } from "../services/QueryBuilder.ts";
 
 // Define the validation rules for user-related fields
 const userValidations: Record<keyof UserInput, ContextRunner> = {
@@ -267,32 +266,44 @@ export const deleteUserAction = asyncHandlerT(
 
 export const deleteUsersAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const filterBuilder = new QueryBuilder(req.query);
-    const filter = filterBuilder.filterBuild();
+    const { role, lastLoggedInAt } = req.query;
 
     // Prevent deleting all documents if no filter provided
-    if (!Object.keys(filter).length) {
+    if (
+      Object.keys(req.query).length < 2 ||
+      role !== "student" ||
+      (lastLoggedInAt &&
+        typeof lastLoggedInAt === "string" &&
+        isNaN(Date.parse(lastLoggedInAt))) ||
+      (lastLoggedInAt &&
+        typeof lastLoggedInAt === "object" &&
+        !Object.values(lastLoggedInAt).every(
+          (v) => typeof v === "string" && !isNaN(Date.parse(v))
+        ))
+    ) {
       return next(
         new ClientError({
           code: 400,
-          message: "Batch delete operation cannot have empty filters",
+          message: "Only student role can be deleted within two dates.",
         })
       );
     }
 
-    const result = await deleteUsers(filter);
+    const result = await deleteUsers({ role, lastLoggedInAt });
 
     if (!result?.deletedCount) {
       return next(
         new ClientError({
           code: 404,
-          message: "The user not found.",
+          message: "Users not found in this date range.",
         })
       );
     }
 
     res.status(204).json({
-      result,
+      result: {
+        deletedCount: result.deletedCount,
+      },
     });
   }
 );

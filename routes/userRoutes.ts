@@ -46,7 +46,11 @@ userRouter.put(
 userRouter.delete("/:id", validatePathParams(), deleteUserAction);
 
 // Delete many users
-userRouter.delete("/batch", validateQueryParams(), deleteUsersAction);
+userRouter.delete(
+  "/batch",
+  validateQueryParams(["role", "lastLoggedInAt"]),
+  deleteUsersAction
+);
 
 // Update many users role
 userRouter.patch(

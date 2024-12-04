@@ -264,20 +264,6 @@ paths:
           description: OK
         "404":
           $ref: "#/components/responses/404NotFound"
-    put:
-      tags:
-        - users
-      summary: Update a specific user information by user ID
-      operationId: updateUserById
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/userIdParam"
-      responses:
-        "200":
-          description: OK
-        "400":
-          $ref: "#/components/responses/400BadRequest"
     delete:
       tags:
         - users
@@ -308,29 +294,6 @@ paths:
         "200":
           description: Password updated successfully.
   /api/v1/users/batch:
-    put:
-      tags:
-        - users
-      summary: Update many users
-      operationId: updateMultipleUsers
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/roleQueryParam"
-        - $ref: "#/components/parameters/createdAtQueryParam"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                role:
-                  $ref: "#/components/schemas/RoleString"
-      responses:
-        "200":
-          description: Batch update successfully.
-
     delete:
       tags:
         - users

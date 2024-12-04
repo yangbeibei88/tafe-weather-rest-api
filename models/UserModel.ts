@@ -120,9 +120,11 @@ export const deleteUserById = async (id: string) => {
   }
 };
 
-export const deleteUsers = async (filter: object) => {
+export const deleteUsers = async (filter: Filter<OptionalId<User>>) => {
   try {
-    const result = await usersColl.deleteMany(filter);
+    const filterBuilder = new QueryBuilder(filter);
+    const filterParam = filterBuilder.filterBuild();
+    const result = await usersColl.deleteMany(filterParam);
     return result;
   } catch (error) {
     console.log(error);
