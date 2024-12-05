@@ -30,11 +30,16 @@ export const findUserByEmail = async (email: string) => {
   }
 };
 
-export const findUserById = async (id: string) => {
+export const findUserById = async (
+  id: string,
+  showPassword: boolean = false
+) => {
   try {
+    const options =
+      showPassword === false ? { projection: { password: 0 } } : {};
     const result = await usersColl.findOne<User>(
       { _id: new ObjectId(id) },
-      { projection: { password: 0 } }
+      options
     );
     return result;
   } catch (error) {
@@ -99,11 +104,32 @@ export const updateUsersRole = async (
   }
 };
 
+/**
+ * Only used in `protect` middleware
+ *
+ * @param id - user id passed in ObjectId
+ * @returns
+ */
 export const updateUserLastLoggedInAt = async (id: string) => {
   try {
     const result = await usersColl.updateOne(
       { _id: new ObjectId(id) },
       { $set: { lastLoggedInAt: new Date() } }
+    );
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateUserPassword = async (
+  id: string,
+  payload: Pick<User, "password" | "passwordChangedAt">
+) => {
+  try {
+    const result = await usersColl.updateOne(
+      { _id: ObjectId(id) },
+      { $set: payload }
     );
     return result;
   } catch (error) {

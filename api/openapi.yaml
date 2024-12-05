@@ -10,6 +10,8 @@ tags:
     description: users information
   - name: logs
     description: deleted weather readings
+  - name: account
+    description: logged-in user account
 paths:
   /api/v1/login:
     post:
@@ -278,7 +280,7 @@ paths:
           description: The user is deleted successfully.
         "404":
           $ref: "#/components/responses/404NotFound"
-  /api/v1/users/{id}/updatePassword:
+  /api/v1/account/updatePassword:
     patch:
       tags:
         - users
@@ -555,7 +557,7 @@ components:
           $ref: "#/components/schemas/Password"
         newPassword:
           $ref: "#/components/schemas/Password"
-        confirmPassword:
+        confirmNewPassword:
           $ref: "#/components/schemas/Password"
       # x-internal: true
     Longitude:

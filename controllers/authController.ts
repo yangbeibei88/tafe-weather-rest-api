@@ -1,5 +1,10 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
-import { Request, Response, NextFunction } from "express-serve-static-core";
+import {
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express-serve-static-core";
 import { ContextRunner } from "express-validator";
 // @deno-types="@types/bcryptjs"
 import bcrypt from "bcryptjs";
@@ -21,7 +26,6 @@ import { ClientError } from "../errors/ClientError.ts";
 import { decodeJwt, signToken } from "../middlewares/jwtHandler.ts";
 import { JwtPayloadT } from "../utils/utilTypes.ts";
 import { isSubset } from "../utils/helpers.ts";
-import { RequestHandler } from "express-serve-static-core";
 
 const loginValidations: Record<
   keyof Pick<User, "emailAddress" | "password">,
@@ -31,7 +35,7 @@ const loginValidations: Record<
   password: validatePassword("password", 8, 50),
 };
 
-export const validateLoginInputs = () =>
+export const validateLoginInput = () =>
   validateBodyFactory<Pick<User, "emailAddress" | "password">>(
     loginValidations
   )(["emailAddress", "password"]);

@@ -21,6 +21,7 @@ import { logRouter } from "./routes/logRoutes.ts";
 import { errorHandler } from "./middlewares/errorHandler.ts";
 import { ClientError } from "./errors/ClientError.ts";
 import { preprocessOpenAPIDoc } from "./utils/helpers.ts";
+import { accountRouter } from "./routes/accountRoutes.ts";
 
 export const app: Express = express();
 
@@ -37,6 +38,7 @@ app.use(express.urlencoded({ extended: false }) as unknown as RequestHandler);
 app.use("/api/v1", authRouter);
 app.use("/api/v1/weathers", weatherRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/account", accountRouter);
 app.use("/api/v1/logs", logRouter);
 
 // error handling middleware
@@ -47,7 +49,11 @@ const swaggerDoc = parse(fs.readFileSync(apiDocPath, "utf-8")) as JsonObject;
 
 const adjustedSwaggerDoc = preprocessOpenAPIDoc(swaggerDoc);
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(adjustedSwaggerDoc));
+app.use(
+  "/api-docs",
+  swaggerUi.serve as RequestHandler[],
+  swaggerUi.setup(adjustedSwaggerDoc)
+);
 
 // HANDLE UNHANDLED ROUTES
 app.all("*", ((_req: Request, _res: Response, next: NextFunction) =>

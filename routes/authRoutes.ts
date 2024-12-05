@@ -2,12 +2,11 @@
 import { Router } from "express";
 import {
   greetingAction,
-  validateLoginInputs,
+  validateLoginInput,
   authLoginAction,
 } from "../controllers/authController.ts";
 
 export const authRouter = Router();
 
 authRouter.get("/", greetingAction);
-authRouter.get("/login", greetingAction);
-authRouter.post("/login", validateLoginInputs(), authLoginAction);
+authRouter.post("/login", validateLoginInput(), authLoginAction);
