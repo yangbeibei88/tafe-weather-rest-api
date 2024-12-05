@@ -210,6 +210,16 @@ export const updateUsersRoleAction = asyncHandlerT(
           })
         );
       }
+    } else if (currentUserRole.includes("admin")) {
+      // If the current user is an admin, then he cannot update a user with admin role
+      if (role === "admin") {
+        return next(
+          new ClientError({
+            code: 403,
+            message: "You are not authorised to perform this action.",
+          })
+        );
+      }
     }
 
     const payload: Pick<OptionalId<User>, "role" | "updatedAt"> = {
@@ -231,6 +241,37 @@ export const updateUsersRoleAction = asyncHandlerT(
 
 export const deleteUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const currentUserRole = req.user.role;
+
+    const deletingUser = await findUserById(req.params.id);
+
+    // if the current user is a teacher but not admin,
+    // then he cannot delete a user with teacher or admin role
+    if (
+      currentUserRole.includes("teacher") &&
+      !currentUserRole.includes("admin")
+    ) {
+      if (
+        deletingUser?.role.some((item) => ["teacher", "admin"].includes(item))
+      ) {
+        return next(
+          new ClientError({
+            code: 403,
+            message: "You are not authorised to perform this action.",
+          })
+        );
+      }
+    } else if (currentUserRole.includes("admin")) {
+      // if the current user is an admin, he cannot delete user with admin role
+      if (deletingUser?.role.includes("admin")) {
+        return next(
+          new ClientError({
+            code: 403,
+            message: "You are not authorised to perform this action.",
+          })
+        );
+      }
+    }
     const result = await deleteUserById(req.params.id);
 
     if (!result?.deletedCount) {
