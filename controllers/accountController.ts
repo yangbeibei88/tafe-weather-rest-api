@@ -33,13 +33,32 @@ export const validateUpdatePasswordInput = () =>
     "confirmNewPassword",
   ]);
 
+export const showAccountAction = asyncHandlerT(
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const userId: string = req.user._id.toString();
+
+    const result = (await findUserById(userId, ["_id", "password"])) as Omit<
+      User,
+      "_id" | "password"
+    >;
+
+    res.status(200).json({
+      result,
+    });
+  }
+);
+
+export const updateAccountAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {}
+);
+
 export const updatePasswordAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { currentPassword, newPassword } = req.body;
 
     // Last middleware `protect` already checked the user still exists
     const userId: string = req.user._id.toString();
-    const user = (await findUserById(userId, true)) as User;
+    const user = (await findUserById(userId)) as User;
 
     // Check if entered password matches database password
     const hashedPassword = user.password;

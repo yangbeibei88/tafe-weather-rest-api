@@ -1,4 +1,4 @@
-import { Filter, ObjectId, OptionalId } from "mongodb";
+import { Filter, FindOptions, ObjectId, OptionalId } from "mongodb";
 import { usersColl } from "../config/db.ts";
 import { User } from "./UserSchema.ts";
 import { QueryBuilder } from "../services/QueryBuilder.ts";
@@ -32,11 +32,34 @@ export const findUserByEmail = async (email: string) => {
 
 export const findUserById = async (
   id: string,
-  showPassword: boolean = false
+  hideFields?: (keyof User)[],
+  showFields?: (keyof User)[]
 ) => {
   try {
-    const options =
-      showPassword === false ? { projection: { password: 0 } } : {};
+    const options: FindOptions = {};
+
+    if (hideFields?.length) {
+      const hideProjection = hideFields.reduce((acc, key) => {
+        acc[key] = 0;
+        return acc;
+      }, {} as Record<keyof User, 0>);
+
+      if (Object.keys(hideProjection).length > 0) {
+        options.projection = { ...options.projection, ...hideProjection };
+      }
+    }
+
+    if (showFields?.length) {
+      const showProjection = showFields.reduce((acc, key) => {
+        acc[key] = 1;
+        return acc;
+      }, {} as Record<keyof User, 1>);
+
+      if (Object.keys(showProjection).length > 0) {
+        options.projection = { ...options.projection, ...showProjection };
+      }
+    }
+
     const result = await usersColl.findOne<User>(
       { _id: new ObjectId(id) },
       options

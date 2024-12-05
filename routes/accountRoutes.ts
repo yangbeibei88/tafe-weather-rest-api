@@ -4,6 +4,8 @@ import { authorisedTo, protect } from "../controllers/authController.ts";
 import {
   validateUpdatePasswordInput,
   updatePasswordAction,
+  showAccountAction,
+  updateAccountAction,
 } from "../controllers/accountController.ts";
 
 export const accountRouter = Router();
@@ -12,6 +14,10 @@ accountRouter.use(
   protect,
   authorisedTo("admin", "teacher", "student", "sensor")
 );
+
+accountRouter.get("/", showAccountAction);
+
+accountRouter.put("/", updateAccountAction);
 
 accountRouter.patch(
   "/updatePassword",
