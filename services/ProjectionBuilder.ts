@@ -1,6 +1,8 @@
 // deno-lint-ignore-file ban-types
 /**
  * For non-cursor query projection option
+ *
+ * @typeParam T - Type of the object to project
  */
 export class ProjectionBuilder<T> {
   private projection: {} | Record<keyof T, 0 | 1> = {};

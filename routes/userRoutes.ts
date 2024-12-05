@@ -6,11 +6,9 @@ import {
   deleteUsersAction,
   listUsersAction,
   showUserAction,
-  updateUserAction,
   updateUsersRoleAction,
   validateBatchUpdateUsersRoleInput,
   validateNewUserInput,
-  validateUpdateUserInput,
 } from "../controllers/userController.ts";
 import {
   validatePathParams,
@@ -31,16 +29,6 @@ userRouter.post("/", validateNewUserInput(), createUserAction);
 
 // Get one user
 userRouter.get("/:id", validatePathParams(), showUserAction);
-
-// Create many users
-
-// Update one user
-userRouter.put(
-  "/:id",
-  validatePathParams(),
-  validateUpdateUserInput(),
-  updateUserAction
-);
 
 // Delete one user
 userRouter.delete("/:id", validatePathParams(), deleteUserAction);

@@ -10,14 +10,19 @@ import {
   validatePassword,
   compareStrings,
 } from "../middlewares/validation.ts";
-import { User } from "../models/UserSchema.ts";
-import { findUserById, updateUserPassword } from "../models/UserModel.ts";
+import { UpdatePasswordInput, User, UserInput } from "../models/UserSchema.ts";
+import {
+  findUserById,
+  updateAccountById,
+  updateUserPassword,
+} from "../models/UserModel.ts";
+import { userValidations } from "./userController.ts";
 
 const updatePasswordValidations: Record<
-  "password" | "newPassword" | "confirmNewPassword",
+  keyof UpdatePasswordInput,
   ContextRunner
 > = {
-  password: validatePassword("password", 8, 50),
+  currentPassword: validatePassword("password", 8, 50),
   newPassword: validatePassword("newPassword", 8, 50),
   confirmNewPassword: compareStrings(
     "passwords",
@@ -26,9 +31,15 @@ const updatePasswordValidations: Record<
   ),
 };
 
+export const validateUpdateAccountInput = () =>
+  validateBodyFactory<UserInput>(userValidations)([
+    "firstName",
+    "lastName",
+    "phone",
+  ]);
 export const validateUpdatePasswordInput = () =>
-  validateBodyFactory(updatePasswordValidations)([
-    "password",
+  validateBodyFactory<UpdatePasswordInput>(updatePasswordValidations)([
+    "currentPassword",
     "newPassword",
     "confirmNewPassword",
   ]);
@@ -49,7 +60,30 @@ export const showAccountAction = asyncHandlerT(
 );
 
 export const updateAccountAction = asyncHandlerT(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {}
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const userId: string = req.user._id.toString();
+
+    const { firstName, lastName, phone } = req.body;
+
+    const payload: Pick<
+      User,
+      "firstName" | "lastName" | "phone" | "updatedAt"
+    > = {
+      firstName,
+      lastName,
+      phone,
+      updatedAt: new Date(),
+    };
+
+    const result = await updateAccountById(userId, payload);
+
+    res.status(200).json({
+      result: {
+        matchedCount: result?.matchedCount,
+        modifiedCount: result?.modifiedCount,
+      },
+    });
+  }
 );
 
 export const updatePasswordAction = asyncHandlerT(
@@ -76,10 +110,12 @@ export const updatePasswordAction = asyncHandlerT(
     // Last middleware has validated newPassword and confirmNewPassword
     const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
-    const payload: Pick<User, "password" | "passwordChangedAt"> = {
-      password: hashedNewPassword,
-      passwordChangedAt: new Date(),
-    };
+    const payload: Pick<User, "password" | "passwordChangedAt" | "updatedAt"> =
+      {
+        password: hashedNewPassword,
+        passwordChangedAt: new Date(),
+        updatedAt: new Date(),
+      };
 
     const result = await updateUserPassword(userId, payload);
 

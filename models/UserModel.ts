@@ -87,14 +87,14 @@ export const insertUser = async (
   }
 };
 
-export const updateUserById = async (
+export const updateAccountById = async (
   id: string,
-  user: Omit<OptionalId<User>, "password">
+  payload: Pick<User, "firstName" | "lastName" | "phone" | "updatedAt">
 ) => {
   try {
     const result = await usersColl.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { ...user } }
+      { $set: payload }
     );
     return result;
   } catch (error) {
@@ -136,7 +136,7 @@ export const updateUserLastLoggedInAt = async (id: string) => {
 
 export const updateUserPassword = async (
   id: string,
-  payload: Pick<User, "password" | "passwordChangedAt">
+  payload: Pick<User, "password" | "passwordChangedAt" | "updatedAt">
 ) => {
   try {
     const result = await usersColl.updateOne(

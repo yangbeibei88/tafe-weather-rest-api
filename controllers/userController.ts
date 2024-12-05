@@ -23,7 +23,6 @@ import {
   getAllUsers,
   findUserById,
   insertUser,
-  updateUserById,
   deleteUsers,
   updateUsersRole,
 } from "../models/UserModel.ts";
@@ -32,7 +31,7 @@ import { JwtPayloadT } from "../utils/utilTypes.ts";
 import { objectOmit } from "../utils/helpers.ts";
 
 // Define the validation rules for user-related fields
-const userValidations: Record<keyof UserInput, ContextRunner> = {
+export const userValidations: Record<keyof UserInput, ContextRunner> = {
   _id: validateText("_id", 2, 50, false),
   firstName: validateText("firstName", 2, 50),
   lastName: validateText("lastName", 2, 50),
@@ -155,38 +154,6 @@ export const createUserAction = asyncHandlerT(
       success: true,
       token,
       data: newUser,
-    });
-  }
-);
-
-export const updateUserAction = asyncHandlerT(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    // Check if the if new email address doesn't exist excluding the old one.
-    const user = await findUserByEmail(req.body.emailAddress);
-    if (user?.[0]?.emailAddress !== req.body.emailAddress) {
-      return next(
-        new ClientError({ code: 400, message: "The email already exists." })
-      );
-    }
-
-    const payload: Omit<OptionalId<User>, "password"> = {
-      ...(objectOmit(getValidatedUserInput(req.body), ["password"]) as Omit<
-        OptionalId<User>,
-        "password"
-      >),
-      createdAt: req.body.createdAt ?? new Date(),
-    };
-
-    const result = await updateUserById(req.params.id, payload);
-
-    if (!result?.matchedCount) {
-      next(new ClientError({ code: 404, message: "The user not found." }));
-      return;
-    }
-
-    res.status(200).json({
-      success: true,
-      result,
     });
   }
 );

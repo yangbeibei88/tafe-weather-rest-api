@@ -3,6 +3,7 @@ import { Router } from "express";
 import { authorisedTo, protect } from "../controllers/authController.ts";
 import {
   validateUpdatePasswordInput,
+  validateUpdateAccountInput,
   updatePasswordAction,
   showAccountAction,
   updateAccountAction,
@@ -17,7 +18,7 @@ accountRouter.use(
 
 accountRouter.get("/", showAccountAction);
 
-accountRouter.put("/", updateAccountAction);
+accountRouter.put("/", validateUpdateAccountInput(), updateAccountAction);
 
 accountRouter.patch(
   "/updatePassword",

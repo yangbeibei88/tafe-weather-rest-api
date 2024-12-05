@@ -33,6 +33,12 @@ export type UserInput = Omit<User, "_id"> & {
   confirmPassword?: string;
 };
 
+export type UpdatePasswordInput = {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
+
 export const userSchema: MongoJSONSchema = {
   bsonType: "object",
   title: "user object validation",
