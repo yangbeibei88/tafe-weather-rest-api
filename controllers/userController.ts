@@ -75,10 +75,10 @@ export const validateBatchUpdateUsersRoleInput = () =>
 const getValidatedUserInput = (validInputData: UserInput | UserInput[]) => {
   if (Array.isArray(validInputData)) {
     return validInputData.map((obj: UserInput) => {
-      return objectOmit(obj, ["confirmPassword"]);
+      return objectOmit(obj, ["password", "confirmPassword"]);
     });
   } else {
-    return objectOmit(validInputData, ["confirmPassword"]);
+    return objectOmit(validInputData, ["password", "confirmPassword"]);
   }
 };
 
@@ -97,7 +97,7 @@ export const listUsersAction = asyncHandlerT(
 
 export const showUserAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const user = await findUserById(req.params.id);
+    const user = await findUserById(req.params.id, ["password"]);
 
     if (!user) {
       next(new ClientError({ code: 404 }));
@@ -128,7 +128,9 @@ export const createUserAction = asyncHandlerT(
     const payload: OptionalId<User> = {
       ...getValidatedUserInput(req.body),
       password: hashedPassword,
-      createdAt: req.body.createdAt ?? new Date(),
+      createdAt: new Date(),
+      // Because remove student 30 days TTL index is based on lastLoggedIn date, this field cannot be undefined, set lastLoggedInAt initial value to now
+      lastLoggedInAt: new Date(),
     } as OptionalId<User>;
 
     console.log(payload);
@@ -138,7 +140,7 @@ export const createUserAction = asyncHandlerT(
     if (!newUser._id) {
       return next(new ClientError({ code: 400 }));
     }
-    console.log(typeof newUser._id);
+    console.log(typeof newUser._id); // object
 
     // To compare if each field in decoded payload is deeply equal to stringified fields in the database, so when signing the token, stringify each field.
     const token = signToken<
@@ -151,9 +153,8 @@ export const createUserAction = asyncHandlerT(
     });
 
     res.status(201).json({
-      success: true,
       token,
-      data: newUser,
+      result: newUser,
     });
   }
 );
@@ -189,6 +190,28 @@ export const updateUsersRoleAction = asyncHandlerT(
       );
     }
 
+    const currentUserRole = req.user.role;
+
+    if (
+      currentUserRole.includes("teacher") &&
+      !currentUserRole.includes("admin")
+    ) {
+      // if the current user is a teacher but not admin, he cannot update users with admin/teacher role; he cannot update users to admin/teacher role
+      if (
+        ["admin", "teacher"].includes(role) ||
+        !req.body.role.every((item: string) =>
+          ["student", "sensor"].includes(item)
+        )
+      ) {
+        return next(
+          new ClientError({
+            code: 403,
+            message: "You are not authorised to perform this action.",
+          })
+        );
+      }
+    }
+
     const payload: Pick<OptionalId<User>, "role" | "updatedAt"> = {
       // role has been validated in last middleware, safe to add to payload
       role: req.body.role,
@@ -196,10 +219,6 @@ export const updateUsersRoleAction = asyncHandlerT(
     };
 
     const result = await updateUsersRole({ role, createdAt }, payload);
-
-    // if (!result?.matchedCount) {
-    //   return next(new ClientError({ code: 404, message: "Users not found." }));
-    // }
 
     res.status(200).json({
       result: {

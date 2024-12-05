@@ -25,7 +25,10 @@ export function objectPick(obj: object, keys: string[]) {
   return Object.entries(obj).filter(([key]) => keys.includes(key));
 }
 
-export function objectOmit(obj: object, keys: string[]) {
+export function objectOmit<T extends Record<string, any>>(
+  obj: T,
+  keys: (keyof T)[]
+) {
   return Object.fromEntries(
     Object.entries(obj).filter(([key]) => !keys.includes(key))
   );
