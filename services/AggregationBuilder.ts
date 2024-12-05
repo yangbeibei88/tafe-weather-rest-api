@@ -85,31 +85,7 @@ export class AggregationBuilder extends QueryBuilder {
         }
       }
     }
-    // for (const field of aggField) {
-    //   if (otherMinMaxFields.length > 0) {
-    //     for (const minMaxField of otherMinMaxFields) {
-    //       project[field] = {
-    //         max: {
-    //           value: `$max_${field}`,
-    //           [minMaxField]: `$max_${minMaxField}`,
-    //         },
-    //         min: {
-    //           value: `$min_${field}`,
-    //           [minMaxField]: `$min_${minMaxField}`,
-    //         },
-    //         avg: `$avg_${field}`,
-    //         median: `$median_${field}`,
-    //       };
-    //     }
-    //   } else {
-    //     project[field] = {
-    //       max: `$max_${field}`,
-    //       min: `$min_${field}`,
-    //       avg: `$avg_${field}`,
-    //       median: `$median_${field}`,
-    //     };
-    //   }
-    // }
+
     if (Object.keys(project).length > 1) {
       this.pipeline.push({ $project: project });
     }

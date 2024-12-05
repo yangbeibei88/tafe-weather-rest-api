@@ -2,6 +2,7 @@ import { Filter, FindOptions, ObjectId, OptionalId } from "mongodb";
 import { usersColl } from "../config/db.ts";
 import { User } from "./UserSchema.ts";
 import { QueryBuilder } from "../services/QueryBuilder.ts";
+import { ProjectionBuilder } from "../services/ProjectionBuilder.ts";
 
 // const usersColl = database.collection<OptionalId<User>>("users");
 export const getAllUsers = async () => {
@@ -38,26 +39,14 @@ export const findUserById = async (
   try {
     const options: FindOptions = {};
 
-    if (hideFields?.length) {
-      const hideProjection = hideFields.reduce((acc, key) => {
-        acc[key] = 0;
-        return acc;
-      }, {} as Record<keyof User, 0>);
+    const projectionBuilder = new ProjectionBuilder<User>();
+    const projection = projectionBuilder
+      .hide(hideFields)
+      .show(showFields)
+      .build();
 
-      if (Object.keys(hideProjection).length > 0) {
-        options.projection = { ...options.projection, ...hideProjection };
-      }
-    }
-
-    if (showFields?.length) {
-      const showProjection = showFields.reduce((acc, key) => {
-        acc[key] = 1;
-        return acc;
-      }, {} as Record<keyof User, 1>);
-
-      if (Object.keys(showProjection).length > 0) {
-        options.projection = { ...options.projection, ...showProjection };
-      }
+    if (Object.keys(projection).length > 0) {
+      options.projection = projection;
     }
 
     const result = await usersColl.findOne<User>(
