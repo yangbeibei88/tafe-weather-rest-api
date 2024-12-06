@@ -122,6 +122,26 @@ export const createUserAction = asyncHandlerT(
       );
     }
 
+    const currentUserRole = req.user.role;
+
+    if (
+      currentUserRole.includes("teacher") &&
+      !currentUserRole.includes("admin")
+    ) {
+      if (
+        req.body.role.some((item: string) =>
+          ["admin", "teacher"].includes(item)
+        )
+      ) {
+        return next(
+          new ClientError({
+            code: 403,
+            message: "You are not authorised to perform this action.",
+          })
+        );
+      }
+    }
+
     // hash password
     const hashedPassword = await bcrypt.hash(req.body.password, 12);
 
@@ -171,10 +191,12 @@ export const updateUsersRoleAction = asyncHandlerT(
     // 4) when createdAt is a range object, but not all values parsed into date are number
     if (
       Object.keys(req.query).length < 2 ||
-      !role?.length ||
-      (createdAt &&
-        typeof createdAt === "string" &&
-        isNaN(Date.parse(createdAt))) ||
+      !role ||
+      !createdAt(
+        createdAt &&
+          typeof createdAt === "string" &&
+          isNaN(Date.parse(createdAt))
+      ) ||
       (createdAt &&
         typeof createdAt === "object" &&
         !Object.values(createdAt).every(
@@ -284,9 +306,9 @@ export const deleteUserAction = asyncHandlerT(
     }
 
     res.status(204).json({
-      success: true,
-      message: "Successfully deleted one document.",
-      result,
+      result: {
+        deletedCount: result.deletedCount,
+      },
     });
   }
 );
@@ -298,10 +320,12 @@ export const deleteUsersAction = asyncHandlerT(
     // Prevent deleting all documents if no filter provided
     if (
       Object.keys(req.query).length < 2 ||
-      role !== "student" ||
-      (lastLoggedInAt &&
-        typeof lastLoggedInAt === "string" &&
-        isNaN(Date.parse(lastLoggedInAt))) ||
+      !role ||
+      !lastLoggedInAt(
+        lastLoggedInAt &&
+          typeof lastLoggedInAt === "string" &&
+          isNaN(Date.parse(lastLoggedInAt))
+      ) ||
       (lastLoggedInAt &&
         typeof lastLoggedInAt === "object" &&
         !Object.values(lastLoggedInAt).every(
@@ -311,9 +335,35 @@ export const deleteUsersAction = asyncHandlerT(
       return next(
         new ClientError({
           code: 400,
-          message: "Only student role can be deleted within two dates.",
+          message:
+            "Role and createdAt filters cannot be empty when batch update users' role.",
         })
       );
+    }
+
+    const currentUserRole = req.user.role;
+
+    if (
+      currentUserRole.includes("teacher") &&
+      !currentUserRole.includes("admin")
+    ) {
+      if (["admin", "teacher"].includes(role)) {
+        return next(
+          new ClientError({
+            code: 403,
+            message: "You are not authorised to perform this action.",
+          })
+        );
+      }
+    } else if (currentUserRole.includes("admin")) {
+      if (role === "admin") {
+        return next(
+          new ClientError({
+            code: 403,
+            message: "You are not authorised to perform this action.",
+          })
+        );
+      }
     }
 
     const result = await deleteUsers({ role, lastLoggedInAt });
