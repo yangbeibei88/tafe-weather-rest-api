@@ -149,7 +149,7 @@ export const createUserAction = asyncHandlerT(
       ...getValidatedUserInput(req.body),
       password: hashedPassword,
       createdAt: new Date(),
-      // Because remove student 30 days TTL index is based on lastLoggedIn date, this field cannot be undefined, set lastLoggedInAt initial value to now
+      // As removing student 30 days TTL index is based on lastLoggedIn date, this field cannot be undefined, set lastLoggedInAt initial value to now
       lastLoggedInAt: new Date(),
     } as OptionalId<User>;
 
@@ -190,24 +190,22 @@ export const updateUsersRoleAction = asyncHandlerT(
     // 3) when createdAt is a equal string, but isNaN when parse date
     // 4) when createdAt is a range object, but not all values parsed into date are number
     if (
-      Object.keys(req.query).length < 2 ||
       !role ||
-      !createdAt(
-        createdAt &&
-          typeof createdAt === "string" &&
-          isNaN(Date.parse(createdAt))
-      ) ||
+      !createdAt ||
+      (createdAt &&
+        typeof createdAt === "string" &&
+        isNaN(Date.parse(createdAt))) ||
       (createdAt &&
         typeof createdAt === "object" &&
-        !Object.values(createdAt).every(
-          (v) => typeof v === "string" && !isNaN(Date.parse(v))
+        Object.values(createdAt).some(
+          (v) => typeof v === "string" && isNaN(Date.parse(v))
         ))
     ) {
       return next(
         new ClientError({
           code: 400,
           message:
-            "Role and createdAt filters cannot be empty when batch update users' role.",
+            "Role or createdAt are invalid when batch update users' role.",
         })
       );
     }
@@ -319,24 +317,22 @@ export const deleteUsersAction = asyncHandlerT(
 
     // Prevent deleting all documents if no filter provided
     if (
-      Object.keys(req.query).length < 2 ||
       !role ||
-      !lastLoggedInAt(
-        lastLoggedInAt &&
-          typeof lastLoggedInAt === "string" &&
-          isNaN(Date.parse(lastLoggedInAt))
-      ) ||
+      !lastLoggedInAt ||
+      (lastLoggedInAt &&
+        typeof lastLoggedInAt === "string" &&
+        isNaN(Date.parse(lastLoggedInAt))) ||
       (lastLoggedInAt &&
         typeof lastLoggedInAt === "object" &&
-        !Object.values(lastLoggedInAt).every(
-          (v) => typeof v === "string" && !isNaN(Date.parse(v))
+        Object.values(lastLoggedInAt).some(
+          (v) => typeof v === "string" && isNaN(Date.parse(v))
         ))
     ) {
       return next(
         new ClientError({
           code: 400,
           message:
-            "Role and createdAt filters cannot be empty when batch update users' role.",
+            "Role or lastLoggedInAr are invalid when batch update users' role.",
         })
       );
     }

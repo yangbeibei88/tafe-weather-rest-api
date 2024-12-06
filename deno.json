@@ -24,5 +24,8 @@
   },
   "compilerOptions": {
     "types": ["./types.d.ts"]
+  },
+  "scarfSetting": {
+    "enabled": false
   }
 }

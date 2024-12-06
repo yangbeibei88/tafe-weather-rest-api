@@ -20,7 +20,7 @@ export interface Weather {
   createdBy?: ObjectId;
   lastModifiedAt?: Date;
   lastModifiedBy?: ObjectId;
-  geoLocation: GeoLocation<GeoJSONGeometryType>;
+  geoLocation?: GeoLocation<GeoJSONGeometryType>;
   longitude: number;
   latitude: number;
 }
