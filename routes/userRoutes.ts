@@ -2,12 +2,13 @@
 import { Router } from "express";
 import {
   createUserAction,
-  deleteUserAction,
-  deleteUsersAction,
+  deleteUserByIdAction,
+  deleteUsersByRoleAction,
   listUsersAction,
   showUserAction,
   updateUsersRoleAction,
   validateBatchUpdateUsersRoleInput,
+  validateBatchUsersRoleQueryParams,
   validateNewUserInput,
 } from "../controllers/userController.ts";
 import {
@@ -31,20 +32,23 @@ userRouter.post("/", validateNewUserInput(), createUserAction);
 userRouter.get("/:id", validatePathParams(), showUserAction);
 
 // Delete one user
-userRouter.delete("/:id", validatePathParams(), deleteUserAction);
-
-// Delete many users
-userRouter.delete(
-  "/batch",
-  validateQueryParams(["role", "lastLoggedInAt"]),
-  deleteUsersAction
-);
+userRouter.delete("/:id", validatePathParams(), deleteUserByIdAction);
 
 // Update many users role
 userRouter.patch(
   "/roles/:role",
   validatePathParams(),
-  validateQueryParams(["createdAt"]),
+  validateQueryParams(["createdAt", "lastLoggedInAt"]),
+  validateBatchUsersRoleQueryParams(),
   validateBatchUpdateUsersRoleInput(),
   updateUsersRoleAction
+);
+
+// Delete many users
+userRouter.delete(
+  "/roles/:role",
+  validatePathParams(),
+  validateQueryParams(["lastLoggedInAt", "createdAt"]),
+  validateBatchUsersRoleQueryParams(),
+  deleteUsersByRoleAction
 );

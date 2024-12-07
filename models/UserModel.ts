@@ -1,4 +1,4 @@
-import { Filter, FindOptions, ObjectId, OptionalId } from "mongodb";
+import { FindOptions, ObjectId, OptionalId } from "mongodb";
 import { usersColl } from "../config/db.ts";
 import { User } from "./UserSchema.ts";
 import { QueryBuilder } from "../services/QueryBuilder.ts";
@@ -104,7 +104,8 @@ export const updateUsersRole = async (
   // filter: Filter<OptionalId<User>>,
   filter: {
     role: Role;
-    createdAt: string | Record<string, string>;
+    createdAt?: string | Record<string, string>;
+    lastLoggedInAt?: string | Record<string, string>;
   },
   payload: Pick<OptionalId<User>, "role" | "updatedAt">
 ) => {
@@ -160,7 +161,11 @@ export const deleteUserById = async (id: string) => {
   }
 };
 
-export const deleteUsers = async (filter: Filter<OptionalId<User>>) => {
+export const deleteUsers = async (filter: {
+  role: Role;
+  lastLoggedInAt?: string | Record<string, string>;
+  createdAt?: string | Record<string, string>;
+}) => {
   try {
     const filterBuilder = new QueryBuilder(filter);
     const filterParam = filterBuilder.filterBuild();

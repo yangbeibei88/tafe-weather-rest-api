@@ -1,5 +1,10 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
-import { Request, Response, NextFunction } from "express-serve-static-core";
+import {
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express-serve-static-core";
 import { OptionalId } from "mongodb";
 import { ContextRunner } from "express-validator";
 // @deno-types="@types/bcryptjs"
@@ -182,14 +187,17 @@ export const createUserAction = asyncHandlerT(
   }
 );
 
-export const updateUsersRoleAction = asyncHandlerT(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const validateBatchUsersRoleQueryParams = (): RequestHandler => {
+  return ((req: Request, _res: Response, next: NextFunction) => {
     const role: Role = req.params.role;
-    const createdAt: string | Record<string, string> = req.query.createdAt;
+    const createdAt: string | Record<string, string> | undefined =
+      req.query.createdAt;
+    const lastLoggedInAt: string | Record<string, string> | undefined =
+      req.query.lastLoggedInAt;
 
     if (!roles.includes(role)) {
       return next(
-        new ClientError({ code: 404, message: "The role is not found." })
+        new ClientError({ code: 404, message: "This role is not found." })
       );
     }
 
@@ -200,7 +208,7 @@ export const updateUsersRoleAction = asyncHandlerT(
     // 3) when createdAt is a equal string, but isNaN when parse date
     // 4) when createdAt is a range object, but not all values parsed into date are number
     if (
-      !createdAt ||
+      (!createdAt && !lastLoggedInAt) ||
       (createdAt &&
         typeof createdAt === "string" &&
         isNaN(Date.parse(createdAt))) ||
@@ -208,12 +216,20 @@ export const updateUsersRoleAction = asyncHandlerT(
         typeof createdAt === "object" &&
         Object.values(createdAt).some(
           (v) => typeof v === "string" && isNaN(Date.parse(v))
+        )) ||
+      (lastLoggedInAt &&
+        typeof lastLoggedInAt === "string" &&
+        isNaN(Date.parse(lastLoggedInAt))) ||
+      (lastLoggedInAt &&
+        typeof lastLoggedInAt === "object" &&
+        Object.values(lastLoggedInAt).some(
+          (v) => typeof v === "string" && isNaN(Date.parse(v))
         ))
     ) {
       return next(
         new ClientError({
           code: 400,
-          message: "createdAt date range is invalid.",
+          message: "Invalid date",
         })
       );
     }
@@ -224,13 +240,8 @@ export const updateUsersRoleAction = asyncHandlerT(
       currentUserRole.includes("teacher") &&
       !currentUserRole.includes("admin")
     ) {
-      // if the current user is a teacher but not admin, he cannot update users with admin/teacher role; he cannot update users to admin/teacher role
-      if (
-        ["admin", "teacher"].includes(role) ||
-        req.body.role.some((item: string) =>
-          ["admin", "teacher"].includes(item)
-        )
-      ) {
+      // if the current user is a teacher but not admin, he cannot update users with admin/teacher role; he cannot update users to admin/teacher role (he can only update users to student/sensor)
+      if (["admin", "teacher"].includes(role)) {
         return next(
           new ClientError({
             code: 403,
@@ -239,8 +250,29 @@ export const updateUsersRoleAction = asyncHandlerT(
         );
       }
     } else if (currentUserRole.includes("admin")) {
-      // If the current user is an admin, then he cannot update a user with admin role
+      // If the current user is an admin, then he cannot update an admin user
       if (role === "admin") {
+        return next(
+          new ClientError({
+            code: 403,
+            message: "You are not authorised to perform this action.",
+          })
+        );
+      }
+    }
+
+    next();
+  }) as RequestHandler;
+};
+
+export const updateUsersRoleAction = asyncHandlerT(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (req.user.role.includes("teacher") && !req.user.role.includes("admin")) {
+      if (
+        req.body.role.some((item: string) =>
+          ["teacher", "admin"].includes(item)
+        )
+      ) {
         return next(
           new ClientError({
             code: 403,
@@ -256,7 +288,14 @@ export const updateUsersRoleAction = asyncHandlerT(
       updatedAt: new Date(),
     };
 
-    const result = await updateUsersRole({ role, createdAt }, payload);
+    const result = await updateUsersRole(
+      {
+        role: req.query.role,
+        createdAt: req.query.createdAt,
+        lastLoggedInAt: req.query.lastLoggedInAt,
+      },
+      payload
+    );
 
     res.status(200).json({
       result: {
@@ -267,14 +306,14 @@ export const updateUsersRoleAction = asyncHandlerT(
   }
 );
 
-export const deleteUserAction = asyncHandlerT(
+export const deleteUserByIdAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const currentUserRole = req.user.role;
 
     const deletingUser = await findUserById(req.params.id);
 
     // if the current user is a teacher but not admin,
-    // then he cannot delete a user with teacher or admin role
+    // then he cannot delete a teacher/admin users
     if (
       currentUserRole.includes("teacher") &&
       !currentUserRole.includes("admin")
@@ -290,7 +329,7 @@ export const deleteUserAction = asyncHandlerT(
         );
       }
     } else if (currentUserRole.includes("admin")) {
-      // if the current user is an admin, he cannot delete user with admin role
+      // if the current user is an admin, he cannot delete admin users
       if (deletingUser?.role.includes("admin")) {
         return next(
           new ClientError({
@@ -319,58 +358,13 @@ export const deleteUserAction = asyncHandlerT(
   }
 );
 
-export const deleteUsersAction = asyncHandlerT(
+export const deleteUsersByRoleAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { role, lastLoggedInAt } = req.query;
-
-    // Prevent deleting all documents if no filter provided
-    if (
-      !role ||
-      !lastLoggedInAt ||
-      (lastLoggedInAt &&
-        typeof lastLoggedInAt === "string" &&
-        isNaN(Date.parse(lastLoggedInAt))) ||
-      (lastLoggedInAt &&
-        typeof lastLoggedInAt === "object" &&
-        Object.values(lastLoggedInAt).some(
-          (v) => typeof v === "string" && isNaN(Date.parse(v))
-        ))
-    ) {
-      return next(
-        new ClientError({
-          code: 400,
-          message:
-            "Role or lastLoggedInAr are invalid when batch update users' role.",
-        })
-      );
-    }
-
-    const currentUserRole = req.user.role;
-
-    if (
-      currentUserRole.includes("teacher") &&
-      !currentUserRole.includes("admin")
-    ) {
-      if (["admin", "teacher"].includes(role)) {
-        return next(
-          new ClientError({
-            code: 403,
-            message: "You are not authorised to perform this action.",
-          })
-        );
-      }
-    } else if (currentUserRole.includes("admin")) {
-      if (role === "admin") {
-        return next(
-          new ClientError({
-            code: 403,
-            message: "You are not authorised to perform this action.",
-          })
-        );
-      }
-    }
-
-    const result = await deleteUsers({ role, lastLoggedInAt });
+    const result = await deleteUsers({
+      role: req.query.role,
+      lastLoggedInAt: req.query.lastLoggedInAt,
+      createdAt: req.query.createdAt,
+    });
 
     if (!result?.deletedCount) {
       return next(
