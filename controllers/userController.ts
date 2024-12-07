@@ -5,7 +5,13 @@ import { ContextRunner } from "express-validator";
 // @deno-types="@types/bcryptjs"
 import bcrypt from "bcryptjs";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
-import { User, UserInput, roles, userStatus } from "../models/UserSchema.ts";
+import {
+  Role,
+  User,
+  UserInput,
+  roles,
+  userStatus,
+} from "../models/UserSchema.ts";
 import {
   compareStrings,
   validateBodyFactory,
@@ -89,8 +95,7 @@ export const listUsersAction = asyncHandlerT(
     console.log(req.query);
 
     res.status(200).json({
-      success: true,
-      data: users,
+      result: users,
     });
   }
 );
@@ -100,13 +105,11 @@ export const showUserAction = asyncHandlerT(
     const user = await findUserById(req.params.id, ["password"]);
 
     if (!user) {
-      next(new ClientError({ code: 404 }));
-      return;
+      return next(new ClientError({ code: 404 }));
     }
 
     res.status(200).json({
-      success: true,
-      data: user,
+      result: user,
     });
   }
 );
@@ -181,7 +184,14 @@ export const createUserAction = asyncHandlerT(
 
 export const updateUsersRoleAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { role, createdAt } = req.query;
+    const role: Role = req.params.role;
+    const createdAt: string | Record<string, string> = req.query.createdAt;
+
+    if (!roles.includes(role)) {
+      return next(
+        new ClientError({ code: 404, message: "The role is not found." })
+      );
+    }
 
     // Prevent update all documents if no filter provided
     // Both role and createdAt are needed, throw error if:
@@ -190,7 +200,6 @@ export const updateUsersRoleAction = asyncHandlerT(
     // 3) when createdAt is a equal string, but isNaN when parse date
     // 4) when createdAt is a range object, but not all values parsed into date are number
     if (
-      !role ||
       !createdAt ||
       (createdAt &&
         typeof createdAt === "string" &&
@@ -204,8 +213,7 @@ export const updateUsersRoleAction = asyncHandlerT(
       return next(
         new ClientError({
           code: 400,
-          message:
-            "Role or createdAt are invalid when batch update users' role.",
+          message: "createdAt date range is invalid.",
         })
       );
     }
@@ -219,8 +227,8 @@ export const updateUsersRoleAction = asyncHandlerT(
       // if the current user is a teacher but not admin, he cannot update users with admin/teacher role; he cannot update users to admin/teacher role
       if (
         ["admin", "teacher"].includes(role) ||
-        !req.body.role.every((item: string) =>
-          ["student", "sensor"].includes(item)
+        req.body.role.some((item: string) =>
+          ["admin", "teacher"].includes(item)
         )
       ) {
         return next(
@@ -242,7 +250,7 @@ export const updateUsersRoleAction = asyncHandlerT(
       }
     }
 
-    const payload: Pick<OptionalId<User>, "role" | "updatedAt"> = {
+    const payload: Pick<User, "role" | "updatedAt"> = {
       // role has been validated in last middleware, safe to add to payload
       role: req.body.role,
       updatedAt: new Date(),

@@ -3,6 +3,7 @@ import { usersColl } from "../config/db.ts";
 import { User } from "./UserSchema.ts";
 import { QueryBuilder } from "../services/QueryBuilder.ts";
 import { ProjectionBuilder } from "../services/ProjectionBuilder.ts";
+import { Role } from "./UserSchema.ts";
 
 // const usersColl = database.collection<OptionalId<User>>("users");
 export const getAllUsers = async () => {
@@ -100,7 +101,11 @@ export const updateAccountById = async (
 };
 
 export const updateUsersRole = async (
-  filter: Filter<OptionalId<User>>,
+  // filter: Filter<OptionalId<User>>,
+  filter: {
+    role: Role;
+    createdAt: string | Record<string, string>;
+  },
   payload: Pick<OptionalId<User>, "role" | "updatedAt">
 ) => {
   try {
@@ -137,7 +142,7 @@ export const updateUserPassword = async (
 ) => {
   try {
     const result = await usersColl.updateOne(
-      { _id: ObjectId(id) },
+      { _id: new ObjectId(id) },
       { $set: payload }
     );
     return result;

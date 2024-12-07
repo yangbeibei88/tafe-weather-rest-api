@@ -5,6 +5,7 @@ import {
   Response,
   NextFunction,
   RequestHandler,
+  RequestHandlerParams,
 } from "express-serve-static-core";
 // @deno-types="npm:@types/express@4.17.21"
 import express from "express";
@@ -52,7 +53,7 @@ const adjustedSwaggerDoc = preprocessOpenAPIDoc(swaggerDoc);
 app.use(
   "/api-docs",
   swaggerUi.serve as RequestHandler[],
-  swaggerUi.setup(adjustedSwaggerDoc)
+  swaggerUi.setup(adjustedSwaggerDoc) as RequestHandlerParams
 );
 
 // HANDLE UNHANDLED ROUTES

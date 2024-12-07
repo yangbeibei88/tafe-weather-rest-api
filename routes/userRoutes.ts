@@ -42,8 +42,9 @@ userRouter.delete(
 
 // Update many users role
 userRouter.patch(
-  "/roles",
-  validateQueryParams(["role", "createdAt"]),
+  "/roles/:role",
+  validatePathParams(),
+  validateQueryParams(["createdAt"]),
   validateBatchUpdateUsersRoleInput(),
   updateUsersRoleAction
 );

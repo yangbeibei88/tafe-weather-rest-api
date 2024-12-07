@@ -49,6 +49,14 @@ weatherRouter.post(
   createWeathersAction
 );
 
+// Aggregation all devices - P
+weatherRouter.get(
+  "/devices/aggregate",
+  authorisedTo("admin", "teacher", "student"),
+  validateQueryParams(["aggField", "createdAt", "recentMonths"]),
+  listDeviceStatsAction
+);
+
 // Get weather reading by device - P
 weatherRouter.get(
   "/devices/:deviceName",
@@ -56,14 +64,6 @@ weatherRouter.get(
   validatePathParams(),
   validateQueryParams(["limit", "page", "createdAt"]),
   listWeathersByDeviceAction
-);
-
-// Aggregation all devices - P
-weatherRouter.get(
-  "/devices/aggregate",
-  authorisedTo("admin", "teacher", "student"),
-  validateQueryParams(["aggField", "createdAt", "recentMonths"]),
-  listDeviceStatsAction
 );
 
 // Aggregation by single device - P

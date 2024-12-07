@@ -359,14 +359,12 @@ export const deleteWeatherAction = asyncHandlerT(
     const result = await deleteWeather(req.params.id);
 
     if (!result?.deletedCount) {
-      next(
+      return next(
         new ClientError({
           code: 404,
           message: "No documents matched the query. Deleted 0 documents.",
         })
       );
-
-      return;
     }
 
     res.status(204).json({
