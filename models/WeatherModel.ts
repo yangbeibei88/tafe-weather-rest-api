@@ -9,7 +9,7 @@ import { AggregationBuilder } from "../services/AggregationBuilder.ts";
 
 type WeatherDisplayFields = Partial<Record<keyof Weather, 0 | 1>>;
 const weatherDisplayFields: WeatherDisplayFields = {
-  _id: 0,
+  // _id: 0,
   createdAt: 1,
   deviceName: 1,
   precipitation: 1,

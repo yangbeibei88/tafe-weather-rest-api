@@ -110,7 +110,7 @@ export const listWeathersAction = asyncHandlerT(
     const defaultSort: Record<string, -1 | 1> = { createdAt: -1 };
 
     const result = await getAllWeathers(
-      { ...req.query, ...defaultDateRange },
+      { ...defaultDateRange, ...req.query },
       limit,
       page,
       defaultSort
@@ -294,8 +294,7 @@ export const createWeatherAction = asyncHandlerT(
     const newWeather = await insertWeather(inputData);
 
     res.status(201).json({
-      success: true,
-      data: newWeather,
+      result: newWeather,
     });
   }
 );
@@ -317,8 +316,10 @@ export const createWeathersAction = asyncHandlerT(
     const result = await insertWeathers(payload);
 
     res.status(201).json({
-      count: result?.insertedCount,
-      data: result?.insertedIds,
+      result: {
+        insertedCount: result?.insertedCount,
+        result: result?.insertedIds,
+      },
     });
   }
 );
@@ -345,8 +346,10 @@ export const updateWeatherAction = asyncHandlerT(
     }
 
     res.status(200).json({
-      success: true,
-      data: result,
+      result: {
+        machedCount: result.matchedCount,
+        modifiedCount: result.modifiedCount,
+      },
     });
   }
 );
@@ -367,7 +370,9 @@ export const deleteWeatherAction = asyncHandlerT(
     }
 
     res.status(204).json({
-      result,
+      result: {
+        deletedCount: result.deletedCount,
+      },
     });
   }
 );

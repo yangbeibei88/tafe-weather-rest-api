@@ -29,7 +29,7 @@ weatherRouter.use(protect);
 weatherRouter.get(
   "/",
   authorisedTo("admin", "teacher", "student"),
-  validateQueryParams(["limit", "page"]),
+  validateQueryParams(["limit", "page", "createdAt"]),
   listWeathersAction
 );
 

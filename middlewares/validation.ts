@@ -85,6 +85,21 @@ export const validateQueryParams = (
   return (async (req: Request, _res: Response, next: NextFunction) => {
     const queryKeys = Object.keys(req.query);
 
+    const invalidParams = queryKeys.filter(
+      (key) => !allowedParams?.includes(key)
+    );
+
+    if (invalidParams.length > 0) {
+      return next(
+        new ClientError({
+          code: 400,
+          message: `Invalid query parameters: ${invalidParams.join(
+            ", "
+          )}. Allowed parameters are: ${allowedParams?.join(", ")}.`,
+        })
+      );
+    }
+
     const validParams = queryKeys.filter((key) => allowedParams?.includes(key));
 
     for (const queryKey of validParams) {

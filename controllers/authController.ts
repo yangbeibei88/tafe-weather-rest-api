@@ -84,9 +84,7 @@ export const authLoginAction = asyncHandlerT(
     });
 
     res.status(200).json({
-      success: true,
       token,
-      message: "You have successfully logged in!",
     });
   }
 );
