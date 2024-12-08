@@ -2,6 +2,28 @@ const database = "tafe-weather-api";
 use(database);
 db; // "tafe-weather-api"
 
+const coordinateSchema = {
+  bsonType: "array",
+  minItems: 2,
+  maxItems: 2,
+  items: [
+    {
+      bsonType: ["double", "int"],
+      minimum: -180,
+      maximum: 180,
+      description: "Longitude must be between -180 and 180 degrees",
+    },
+    {
+      bsonType: ["double", "int"],
+      minimum: -90,
+      maximum: 90,
+      description: "Latitude must be between -90 and 90 degrees",
+    },
+  ],
+  additionalItems: false,
+  description: "An array of two numbers representing [longitude, latitude]",
+};
+
 // Create weathers collections with validator
 // db.createCollection("weathers", {
 db.runCommand({
@@ -95,26 +117,79 @@ db.runCommand({
           bsonType: ["objectId", "null"],
           description: "User objectId refer to who last modified the document",
         },
+        geoLocation: {
+          bsonType: "object",
+          description: "Must be an object if the field exists",
+          required: ["type", "coordinates"],
+          anyOf: [
+            // Point
+            {
+              properties: {
+                type: { enum: ["Point"], type: "string" },
+                coordinates: coordinateSchema,
+              },
+              additionalItems: false,
+            },
+            // LineString or MultiPoint
+            {
+              properties: {
+                type: { enum: ["LineString", "MultiPoint"], type: "string" },
+                coordinates: {
+                  bsonType: "array",
+                  minItems: 1,
+                  items: coordinateSchema,
+                  description:
+                    "An array of [longitude, latitude] points representing the geometry",
+                },
+              },
+              additionalProperties: false,
+            },
+            // Polygon or MultiLineString
+            {
+              properties: {
+                type: { enum: ["Polygon", "MultiLineString"], type: "string" },
+                coordinates: {
+                  bsonType: "array",
+                  minItems: 1,
+                  items: {
+                    bsonType: "array",
+                    minItems: 4,
+                    items: coordinateSchema,
+                  },
+                  description:
+                    "Any array of linear rings representing the geometry",
+                },
+              },
+              additionalProperties: false,
+            },
+            // MultiPolygon
+            {
+              properties: {
+                type: { enum: ["MultiPolygon"], type: "string" },
+                coordinates: {
+                  bsonType: "array",
+                  minItems: 1,
+                  items: {
+                    bsonType: "array",
+                    minItems: 1,
+                    items: {
+                      bsonType: "array",
+                      minItems: 4,
+                      items: coordinateSchema,
+                    },
+                  },
+                  description:
+                    "Any array of polygons representing the geometry",
+                },
+              },
+              additionalProperties: false,
+            },
+          ],
+        },
       },
       additionalProperties: false,
     },
   },
   validationLevel: "strict",
   validationAction: "error",
-});
-
-db.weathers.insertOne({
-  deviceName: "Woodford_Sensor",
-  precipitation: 0.085,
-  temperature: 22.74,
-  atmosphericPressure: 128.02,
-  maxWindSpeed: 4.49,
-  solarRadiation: 113.21,
-  vaporPressure: 1.73,
-  humidity: 73.84,
-  windDirection: 155.6,
-  geoLocation: {
-    type: "Point",
-    coordinates: [152.77891, -26.95064],
-  },
 });

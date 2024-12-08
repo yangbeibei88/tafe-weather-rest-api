@@ -89,14 +89,14 @@ export const authLoginAction = asyncHandlerT(
   }
 );
 
-const logoutAction = (_req: Request, res: Response, _next: NextFunction) => {
-  res.cookie("jwt", "loggedout", {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
+// const logoutAction = (_req: Request, res: Response, _next: NextFunction) => {
+//   res.cookie("jwt", "loggedout", {
+//     expires: new Date(Date.now() + 10 * 1000),
+//     httpOnly: true,
+//   });
 
-  res.status(200).json({ message: "Loggedout successfully." });
-};
+//   res.status(200).json({ message: "Loggedout successfully." });
+// };
 
 export const protect = asyncHandlerT(
   async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
@@ -114,23 +114,55 @@ export const protect = asyncHandlerT(
       );
     }
 
-    const decoded = await decodeJwt(
+    const decoded = (await decodeJwt(
       token,
       Deno.env.get("JWT_SECRET") as jwt.Secret
-    );
+    )) as JwtPayloadT<
+      Pick<User, "_id" | "emailAddress" | "role" | "status">
+    > & { iat: number; exp: number };
 
     console.log(decoded);
 
     // 3) check if user still exists
     const currentUser = await findUserById(decoded._id);
-    if (!currentUser || currentUser.status === "inactive") {
+    if (!currentUser) {
       return next(
         new ClientError({ code: 401, message: "The user no longer exists." })
       );
+    } else if (currentUser.status !== "active") {
+      return next(
+        new ClientError({ code: 401, message: "The user is inactive." })
+      );
+    } else if (currentUser.emailAddress !== decoded.emailAddress) {
+      return next(
+        new ClientError({
+          code: 401,
+          message: "The user's email address changed, please login again.",
+        })
+      );
+    } else if (currentUser.role.toString() !== decoded.role) {
+      return next(
+        new ClientError({
+          code: 401,
+          message: "The user's role changed, please login again.",
+        })
+      );
     }
 
-    // 3) TODO: check if user's email, status, role are changed after issued (change stream)
-    // 4) TODO: check if user changed password after the token was issued
+    // 4) check if user changed password after the token was issued
+    if (currentUser.passwordChangedAt) {
+      const changedTimeStamp =
+        Date.parse(currentUser.passwordChangedAt.toString()) / 1000;
+
+      if (changedTimeStamp > decoded.iat) {
+        return next(
+          new ClientError({
+            code: 401,
+            message: "The user's password changed, please login again.",
+          })
+        );
+      }
+    }
 
     req.user = currentUser;
 

@@ -113,8 +113,8 @@ export const updatePasswordAction = asyncHandlerT(
     const payload: Pick<User, "password" | "passwordChangedAt" | "updatedAt"> =
       {
         password: hashedNewPassword,
-        passwordChangedAt: new Date(),
-        updatedAt: new Date(),
+        passwordChangedAt: new Date(Date.now() - 1000),
+        updatedAt: new Date(Date.now() - 1000),
       };
 
     const result = await updateUserPassword(userId, payload);
