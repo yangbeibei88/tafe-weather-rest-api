@@ -4,16 +4,31 @@ import { User } from "./UserSchema.ts";
 import { QueryBuilder } from "../services/QueryBuilder.ts";
 import { ProjectionBuilder } from "../services/ProjectionBuilder.ts";
 import { Role } from "./UserSchema.ts";
+import { getPaginatedData } from "../services/modelFactory.ts";
 
 // const usersColl = database.collection<OptionalId<User>>("users");
-export const getAllUsers = async () => {
+export const getAllUsers = async (
+  query: Record<string, any>,
+  limit: number = 10,
+  page: number = 1,
+  sort: Record<string, -1 | 1> = { createdAt: -1 }
+) => {
   try {
-    const cursor = usersColl.find<User>(
-      {},
-      { projection: { password: 0 }, sort: { createdAt: -1 }, limit: 10 }
+    // const cursor = usersColl.find<User>(
+    //   {},
+    //   { projection: { password: 0 }, sort: { createdAt: -1 }, limit: 10 }
+    // );
+    // const results = await cursor.toArray();
+    const result = await getPaginatedData(
+      usersColl,
+      query,
+      limit,
+      page,
+      sort,
+      undefined,
+      { password: 0 }
     );
-    const results = await cursor.toArray();
-    return results;
+    return result;
   } catch (error) {
     console.log(error);
     throw error;

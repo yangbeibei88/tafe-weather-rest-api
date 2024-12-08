@@ -23,7 +23,7 @@ export const userRouter = Router();
 userRouter.use(protect, authorisedTo("admin", "teacher"));
 
 // Get all users
-userRouter.get("/", listUsersAction);
+userRouter.get("/", validateQueryParams(["page", "limit"]), listUsersAction);
 
 // Create one new user
 userRouter.post("/", validateNewUserInput(), createUserAction);

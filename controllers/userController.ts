@@ -95,12 +95,21 @@ const getValidatedUserInput = (validInputData: UserInput | UserInput[]) => {
 
 export const listUsersAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const users = await getAllUsers();
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 1) || 1;
+    const defaultSort: Record<string, -1 | 1> = { createdAt: -1 };
+    const result = await getAllUsers(req.query, limit, page, defaultSort);
 
     console.log(req.query);
 
     res.status(200).json({
-      result: users,
+      paging: {
+        totalCount: result.totalCount,
+        totalPages: result.totalPages,
+        currentPage: result.currentPage,
+        limit,
+      },
+      result: result.data,
     });
   }
 );
