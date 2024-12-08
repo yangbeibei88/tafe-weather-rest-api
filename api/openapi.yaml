@@ -42,31 +42,38 @@ paths:
           content:
             application/json:
               schema:
+                allOf:
+                  - $ref: "#/components/schemas/Pagination"
                 type: object
-                required:
-                  - paging
-                  - result
                 properties:
-                  paging:
-                    type: object
-                    properties:
-                      totalCount:
-                        type: integer
-                        description: Total count of returned items
-                      totalPages:
-                        type: integer
-                        description: Total pages of returned items
-                      limit:
-                        type: integer
-                      currentPage:
-                        type: integer
                   result:
                     type: array
                     items:
                       $ref: "#/components/schemas/Weather"
         "401":
-          $ref: "#/components/responses/401Unauthorized"
-
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                statusCode: 401
+                errors:
+                  - message: "Please login to get access."
+                    context: {}
+                path: "/api/v1/weathers"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                statusCode: 403
+                errors:
+                  - message: "You are not authorised for this resource"
+                    context: {}
+                path: "/api/v1/weathers"
     post:
       tags:
         - weathers
@@ -94,7 +101,17 @@ paths:
         "200":
           $ref: "#/components/responses/WeatherDoc"
         "404":
-          $ref: "#/components/responses/404NotFound"
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                statusCode: 404
+                errors:
+                  - message: "This document is not found."
+                    context: {}
+                path: "/api/v1/weathers/123"
     put:
       tags:
         - weathers
@@ -413,6 +430,7 @@ components:
           minLength: 1
           maxLength: 50
           description: "Must be a string and is required, 1-50 characters"
+          example: woodford_sensor
         longitude:
           $ref: "#/components/schemas/Longitude"
         latitude:
@@ -421,34 +439,42 @@ components:
           type: number
           format: double
           description: "Must be a number, unit: mm/h"
+          example: 0.085
         temperature:
           type: number
           format: double
           description: "Must be a number, unit: celsius degree"
+          example: 24.05
         atmosphericPressure:
           type: number
           format: double
           description: "Must be a number, unit: kpa"
+          example: 128.01
         maxWindSpeed:
           type: number
           format: double
           description: "Must be a number, unit: m/s"
+          example: 3.82
         solarRadiation:
           type: number
           format: double
           description: "Must be a number, unit: w/m2"
+          example: 380.56
         vaporPressure:
           type: number
           format: double
           description: "Must be a number, unit: kpa"
+          example: 1.88
         humidity:
           type: number
           format: double
           description: "Must be a number, unit: %"
+          example: 73.22
         windDirection:
           type: number
           format: double
           description: "Must be a number, unit: degree"
+          example: 162.82
         createdAt:
           type: string
           format: date-time
@@ -497,6 +523,27 @@ components:
       type: string
       description: 'A string containing any combination of the roles "teacher", "student", "admin", and "sensor", separated by commas.'
       pattern: "^((teacher|student|admin|sensor)(,(teacher|student|admin|sensor))*)?$"
+      x-internal: true
+    Pagination:
+      type: object
+      properties:
+        paging:
+          type: object
+          properties:
+            totalCount:
+              type: integer
+              description: Total count of returned items
+              example: 1000
+            totalPages:
+              type: integer
+              description: Total pages of returned items
+              example: 100
+            limit:
+              type: integer
+              example: 10
+            currentPage:
+              type: integer
+              example: 1
       x-internal: true
     Account:
       type: object
@@ -730,6 +777,7 @@ components:
       name: id
       in: path
       description: The id of a weather reading to retrive
+      example: 67422e388471694b9f359d25
       required: true
       schema:
         type: string
@@ -838,25 +886,7 @@ components:
       content:
         application/json:
           schema:
-            # $ref: "#/components/schemas/Error"
-            type: object
-            properties:
-              statusCode:
-                type: integer
-                enum:
-                  - 401
-              errors:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                    context:
-                      type: object
-                      additionalProperties: true
-              path:
-                type: string
+            $ref: "#/components/schemas/Error"
     # 403
     403Forbidden:
       description: Forbidden
