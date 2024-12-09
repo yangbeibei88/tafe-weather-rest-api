@@ -5,6 +5,7 @@
     "jsr:@std/internal@^1.0.5": "1.0.5",
     "jsr:@std/yaml@^1.0.5": "1.0.5",
     "npm:@types/bcryptjs@^2.4.6": "2.4.6",
+    "npm:@types/cors@^2.8.17": "2.8.17",
     "npm:@types/express-serve-static-core@4.19.5": "4.19.5",
     "npm:@types/express@4.17.21": "4.17.21",
     "npm:@types/jsonwebtoken@^9.0.7": "9.0.7",
@@ -58,6 +59,12 @@
     },
     "@types/connect@3.4.38": {
       "integrity": "sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==",
+      "dependencies": [
+        "@types/node@22.5.4"
+      ]
+    },
+    "@types/cors@2.8.17": {
+      "integrity": "sha512-8CGDvrBj1zgo2qE+oS3pOCyYNqCPryMWY2bGfwA0dcfopWGgxs+78df0Rs3rc9THP4JkOhLsAa+15VdpAqkcUA==",
       "dependencies": [
         "@types/node@22.5.4"
       ]
@@ -670,6 +677,7 @@
       "jsr:@std/assert@1",
       "jsr:@std/yaml@^1.0.5",
       "npm:@types/bcryptjs@^2.4.6",
+      "npm:@types/cors@^2.8.17",
       "npm:@types/express-serve-static-core@4.19.5",
       "npm:@types/express@4.17.21",
       "npm:@types/jsonwebtoken@^9.0.7",

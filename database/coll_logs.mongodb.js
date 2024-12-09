@@ -31,6 +31,8 @@ const logSchema = {
   required: [
     "_id",
     "deviceName",
+    "longitude",
+    "latitude",
     "precipitation",
     "temperature",
     "atmosphericPressure",
@@ -39,9 +41,7 @@ const logSchema = {
     "vaporPressure",
     "humidity",
     "windDirection",
-    "geoLocation",
     "createdAt",
-    "deletedAt",
   ],
   properties: {
     _id: {
@@ -52,6 +52,18 @@ const logSchema = {
       minLength: 1,
       maxLength: 50,
       description: "Must be a string and is required, 1-50 characters",
+    },
+    longitude: {
+      bsonType: ["double", "int"],
+      minimum: -180,
+      maximum: 180,
+      description: "Longitude must be between -180 and 180 degrees",
+    },
+    latitude: {
+      bsonType: ["double", "int"],
+      minimum: -90,
+      maximum: 90,
+      description: "Latitude must be between -90 and 90 degrees",
     },
     precipitation: {
       bsonType: ["double", "int"],

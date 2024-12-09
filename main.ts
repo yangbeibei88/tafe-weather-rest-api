@@ -9,6 +9,8 @@ import {
 } from "express-serve-static-core";
 // @deno-types="npm:@types/express@4.17.21"
 import express from "express";
+// @deno-types="@types/cors"
+import cors, { CorsOptions } from "cors";
 import fs from "node:fs";
 import { URL } from "node:url";
 import { parse } from "@std/yaml";
@@ -25,6 +27,13 @@ import { preprocessOpenAPIDoc } from "./utils/helpers.ts";
 import { accountRouter } from "./routes/accountRoutes.ts";
 
 export const app: Express = express();
+
+const corsOptions: CorsOptions = {
+  origin: "https://www.test-cors.org",
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions) as unknown as RequestHandler);
 
 app.use(logger as RequestHandler);
 
