@@ -1,4 +1,4 @@
-openapi: "3.0.3"
+openapi: "3.1.0"
 info:
   title: TAFE Weather API
   version: "1.0.0"
@@ -51,29 +51,31 @@ paths:
                     items:
                       $ref: "#/components/schemas/Weather"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                statusCode: 401
-                errors:
-                  - message: "Please login to get access."
-                    context: {}
-                path: "/api/v1/weathers"
+          $ref: "#/components/responses/401Unauthorized"
+          # description: Unauthorized
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: "#/components/schemas/Error"
+          #     example:
+          #       statusCode: 401
+          #       errors:
+          #         - message: "Please login to get access."
+          #           context: {}
+          #       path: "/api/v1/weathers"
         "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                statusCode: 403
-                errors:
-                  - message: "You are not authorised for this resource"
-                    context: {}
-                path: "/api/v1/weathers"
+          $ref: "#/components/responses/403Forbidden"
+          # description: Forbidden
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: "#/components/schemas/Error"
+          #     example:
+          #       statusCode: 403
+          #       errors:
+          #         - message: "You are not authorised for this resource"
+          #           context: {}
+          #       path: "/api/v1/weathers"
     post:
       tags:
         - weathers
@@ -85,8 +87,18 @@ paths:
         $ref: "#/components/requestBodies/WeatherInput"
       responses:
         "201":
-          description: A new weather reading is created successfully.
-          $ref: "#/components/responses/WeatherDoc"
+          description: A new weather reading is created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    $ref: "#/components/schemas/Weather"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
   /api/v1/weathers/{id}:
     get:
       tags:
@@ -99,19 +111,17 @@ paths:
         - $ref: "#/components/parameters/weatherIdParam"
       responses:
         "200":
-          $ref: "#/components/responses/WeatherDoc"
-        "404":
-          description: Not found
+          description: A weather reading document
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                statusCode: 404
-                errors:
-                  - message: "This document is not found."
-                    context: {}
-                path: "/api/v1/weathers/123"
+                type: object
+                properties:
+                  result:
+                    $ref: "#/components/schemas/Weather"
+
+        "404":
+          $ref: "#/components/responses/404NotFound"
     put:
       tags:
         - weathers
@@ -125,8 +135,11 @@ paths:
         $ref: "#/components/requestBodies/WeatherInput"
       responses:
         "200":
-          description: The weather reading is updated successfully.
-          $ref: "#/components/responses/WeatherDoc"
+          $ref: "#/components/responses/UpdatedResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/404NotFound"
     delete:
       tags:
         - weathers
@@ -142,7 +155,9 @@ paths:
             type: string
       responses:
         "204":
-          description: No Content
+          description: Deleted successfully
+        "404":
+          $ref: "#/components/responses/404NotFound"
   /api/v1/weathers/batch:
     post:
       tags:
@@ -155,8 +170,13 @@ paths:
         $ref: "#/components/requestBodies/WeatherBatchInput"
       responses:
         "201":
-          description: Multiple weather readings are created successfully.
-          $ref: "#/components/responses/BatchIds"
+          $ref: "#/components/responses/InsertedManyResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
   /api/v1/weathers/devices/aggregate:
     get:
       tags:
@@ -674,8 +694,6 @@ components:
           type: array
           items:
             type: object
-            required:
-              - message
             properties:
               message:
                 type: string
@@ -750,6 +768,9 @@ components:
             type: array
             items:
               $ref: "#/components/schemas/Weather"
+          examples:
+            batchWeatherInput:
+              $ref: "#/components/examples/batchWeatherInput"
   parameters:
     limitQueryParam:
       name: limit
@@ -873,6 +894,18 @@ components:
       schema:
         $ref: "#/components/schemas/RoleString"
   responses:
+    # Validation Error
+    ValidationError:
+      description: Validation Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 400
+            errors:
+              - message: "Validation Error"
+                context: {}
     # 400
     400BadRequest:
       description: Bad request
@@ -880,6 +913,11 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 400
+            errors:
+              - message: "Bad request."
+                context: {}
     # 401
     401Unauthorized:
       description: Unauthorized
@@ -887,6 +925,11 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 401
+            errors:
+              - message: "Please login to get access."
+                context: {}
     # 403
     403Forbidden:
       description: Forbidden
@@ -894,6 +937,11 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 403
+            errors:
+              - message: "You are not authorised to perform this action."
+                context: {}
     # 404
     404NotFound:
       description: Not found
@@ -901,26 +949,59 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 404
+            errors:
+              - message: "This document is not found."
+                context: {}
     WeatherDoc:
       description: A weather reading document.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Weather"
-
-    BatchIds:
-      description: Multiple documents have been inserted or updated.
+    UpdatedResponse:
+      description: Updated successfully
       content:
         application/json:
           schema:
             type: object
             properties:
-              count:
-                type: integer
-                description: Total count of documents inserted or updated.
-              data:
+              result:
                 type: object
-                description: Ids of documents inserted or updated.
+                properties:
+                  matchedCount:
+                    type: integer
+                    example: 1
+                  modifiedCount:
+                    type: integer
+                    example: 1
+
+    InsertedManyResponse:
+      description: Multiple documents inserted
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              result:
+                type: object
+                properties:
+                  insertedCount:
+                    type: integer
+                    example: 2
+                  insertedIds:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      ["67422e388471694b9f359d3b", "67422e388471694b9f359d43"]
+  examples:
+    batchWeatherInput:
+      summary: An array of multiple weather readings input
+      value:
+        - { "deviceName": "woodford_sensor" }
+        - { "deviceName": "woodford_sensor" }
   securitySchemes:
     bearerAuth:
       type: http

@@ -217,6 +217,7 @@ export const insertWeathers = async (weathers: OptionalId<Weather>[]) => {
     return result;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 

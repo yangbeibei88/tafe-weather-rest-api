@@ -5,7 +5,7 @@ import {
   NextFunction,
   RequestHandler,
 } from "express-serve-static-core";
-import { OptionalId } from "mongodb";
+import { OptionalId, InsertManyResult, ObjectId } from "mongodb";
 import { ContextRunner } from "express-validator";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import {
@@ -313,12 +313,15 @@ export const createWeathersAction = asyncHandlerT(
       };
     });
 
-    const result = await insertWeathers(payload);
+    const result = (await insertWeathers(payload)) as InsertManyResult<Weather>;
+    const insertedIds: string[] = Object.values<ObjectId>(
+      result.insertedIds
+    ).map((item) => item.toString());
 
     res.status(201).json({
       result: {
-        insertedCount: result?.insertedCount,
-        result: result?.insertedIds,
+        insertedCount: result.insertedCount,
+        insertedIds,
       },
     });
   }
@@ -347,7 +350,7 @@ export const updateWeatherAction = asyncHandlerT(
 
     res.status(200).json({
       result: {
-        machedCount: result.matchedCount,
+        matchedCount: result.matchedCount,
         modifiedCount: result.modifiedCount,
       },
     });
