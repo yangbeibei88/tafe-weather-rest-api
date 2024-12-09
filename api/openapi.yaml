@@ -23,6 +23,15 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        "401":
+          $ref: "#/components/responses/IncorrectCredentials"
   /api/v1/weathers/:
     get:
       tags:
@@ -324,6 +333,12 @@ paths:
       responses:
         "201":
           description: Created
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
   /api/v1/users/{id}:
     get:
       tags:
@@ -351,6 +366,10 @@ paths:
       responses:
         "204":
           description: The user is deleted successfully.
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
         "404":
           $ref: "#/components/responses/404NotFound"
   /api/v1/account/:
@@ -389,7 +408,7 @@ paths:
       responses:
         "200":
           description: Password updated successfully.
-  /api/v1/users/roles:
+  /api/v1/users/roles/{role}:
     patch:
       tags:
         - users
@@ -398,7 +417,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/roleQueryParam"
+        - $ref: "#/components/parameters/roleParam"
         - $ref: "#/components/parameters/createdAtQueryParam"
       requestBody:
         $ref: "#/components/requestBodies/updateUserRolesInput"
@@ -406,9 +425,13 @@ paths:
         "200":
           description: Roles updated successfully.
         "400":
-          $ref: "#/components/responses/400BadRequest"
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
         "403":
           $ref: "#/components/responses/403Forbidden"
+        "404":
+          $ref: "#/components/responses/404NotFound"
     delete:
       tags:
         - users
@@ -417,11 +440,17 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/roleQueryParam"
+        - $ref: "#/components/parameters/roleParam"
         - $ref: "#/components/parameters/lastLoggedInAtQueryParam"
       responses:
         "204":
           description: Users are deleted.
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
+        "404":
+          $ref: "#/components/responses/404NotFound"
   /api/v1/logs:
     get:
       tags:
@@ -558,7 +587,7 @@ components:
       oneOf:
         - $ref: "#/components/schemas/RoleString"
         - $ref: "#/components/schemas/RoleArray"
-      x-internal: true
+      # x-internal: true
     RoleArray:
       type: array
       minItems: 1
@@ -567,10 +596,10 @@ components:
       items:
         type: string
         enum:
-          - teacher
           - student
-          - admin
           - sensor
+          - teacher
+          - admin
       x-internal: true
     RoleString:
       type: string
@@ -796,10 +825,18 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Role"
+            type: object
+            required:
+              - role
+            properties:
+              role:
+                $ref: "#/components/schemas/RoleArray"
         application/x-www-form-urlencoded:
           schema:
-            $ref: "#/components/schemas/Role"
+            type: object
+            properties:
+              role:
+                $ref: "#/components/schemas/RoleArray"
     updatePasswordInput:
       description: Update user password
       required: true
@@ -867,7 +904,8 @@ components:
     userIdParam:
       name: id
       in: path
-      description: The id of a user to retrive
+      description: User ID
+      example: 67375be3cc06399e890dc717
       required: true
       schema:
         type: string
@@ -887,6 +925,19 @@ components:
       schema:
         type: string
         example: woodford_sensor
+    roleParam:
+      name: role
+      in: path
+      description: Role name of a user
+      required: true
+      schema:
+        type: string
+        enum:
+          - student
+          - sensor
+          - teacher
+          - admin
+        example: student
     longitudeParam:
       name: longitude
       in: path
@@ -959,8 +1010,10 @@ components:
         properties:
           gte:
             type: string
+            example: "2024-11-01"
           lte:
             type: string
+            example: "2024-12-31"
     roleQueryParam:
       name: role
       in: query
@@ -1010,6 +1063,18 @@ components:
             statusCode: 400
             errors:
               - message: "Bad request."
+                context: {}
+
+    IncorrectCredentials:
+      description: Incorrect Credentials
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 401
+            errors:
+              - message: "Incorrect Credentials"
                 context: {}
     # 401
     401Unauthorized:
