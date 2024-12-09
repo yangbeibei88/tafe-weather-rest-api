@@ -1,4 +1,4 @@
-openapi: "3.1.0"
+openapi: "3.0.3"
 info:
   title: TAFE Weather API
   version: "1.0.0"
@@ -52,30 +52,8 @@ paths:
                       $ref: "#/components/schemas/Weather"
         "401":
           $ref: "#/components/responses/401Unauthorized"
-          # description: Unauthorized
-          # content:
-          #   application/json:
-          #     schema:
-          #       $ref: "#/components/schemas/Error"
-          #     example:
-          #       statusCode: 401
-          #       errors:
-          #         - message: "Please login to get access."
-          #           context: {}
-          #       path: "/api/v1/weathers"
         "403":
           $ref: "#/components/responses/403Forbidden"
-          # description: Forbidden
-          # content:
-          #   application/json:
-          #     schema:
-          #       $ref: "#/components/schemas/Error"
-          #     example:
-          #       statusCode: 403
-          #       errors:
-          #         - message: "You are not authorised for this resource"
-          #           context: {}
-          #       path: "/api/v1/weathers"
     post:
       tags:
         - weathers
@@ -97,6 +75,8 @@ paths:
                     $ref: "#/components/schemas/Weather"
         "400":
           $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
         "403":
           $ref: "#/components/responses/403Forbidden"
   /api/v1/weathers/{id}:
@@ -119,7 +99,10 @@ paths:
                 properties:
                   result:
                     $ref: "#/components/schemas/Weather"
-
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
         "404":
           $ref: "#/components/responses/404NotFound"
     put:
@@ -138,6 +121,10 @@ paths:
           $ref: "#/components/responses/UpdatedResponse"
         "400":
           $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
         "404":
           $ref: "#/components/responses/404NotFound"
     delete:
@@ -148,14 +135,14 @@ paths:
         - bearerAuth: []
       operationId: deleteWeatherById
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/weatherIdParam"
       responses:
         "204":
           description: Deleted successfully
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
         "404":
           $ref: "#/components/responses/404NotFound"
   /api/v1/weathers/batch:
@@ -211,34 +198,38 @@ paths:
         - $ref: "#/components/parameters/deviceNameParam"
         - $ref: "#/components/parameters/limitQueryParam"
         - $ref: "#/components/parameters/pageQueryParam"
+        - $ref: "#/components/parameters/createdAtQueryParam"
       responses:
         "200":
-          description: OK
+          description: A list of weather readings by device
           content:
             application/json:
               schema:
+                allOf:
+                  - $ref: "#/components/schemas/Pagination"
                 type: object
-                required:
-                  - paging
-                  - result
                 properties:
-                  paging:
-                    type: object
-                    properties:
-                      totalCount:
-                        type: integer
-                        description: Total count of returned items
-                      totalPages:
-                        type: integer
-                        description: Total pages of returned items
-                      limit:
-                        type: integer
-                      currentPage:
-                        type: integer
                   result:
                     type: array
                     items:
                       $ref: "#/components/schemas/Weather"
+        "400":
+          description: Invalid query params
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                limitPageCreatedAt:
+                  $ref: "#/components/examples/limitPageCreatedAt"
+
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
+        "404":
+          description: Device not found
+          $ref: "#/components/responses/404NotFound"
   /api/v1/weathers/devices/{deviceName}/aggregate:
     get:
       tags:
@@ -249,6 +240,7 @@ paths:
       operationId: showWeatherAggregationByDevice
       parameters:
         - $ref: "#/components/parameters/deviceNameParam"
+
         - $ref: "#/components/parameters/aggFieldQueryParam"
         - $ref: "#/components/parameters/recentMonthsQueryParam"
         - $ref: "#/components/parameters/createdAtQueryParam"
@@ -842,7 +834,7 @@ components:
           - vaporPressure
           - humidity
           - windDirection
-        example: humidity
+        example: precipitation
     recentMonthsQueryParam:
       name: recentMonths
       in: query
@@ -906,6 +898,22 @@ components:
             errors:
               - message: "Validation Error"
                 context: {}
+    # Invalid Query Params
+    InvalidQueryParams:
+      description: Invalid Query Params
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 400
+            errors:
+              - message: "Invalid query params"
+                context:
+                  {
+                    "invalidParams": ["firstName", "lastName"],
+                    "allowedParams": ["createdAt"],
+                  }
     # 400
     400BadRequest:
       description: Bad request
@@ -997,11 +1005,44 @@ components:
                     example:
                       ["67422e388471694b9f359d3b", "67422e388471694b9f359d43"]
   examples:
+    limitPageCreatedAt:
+      summary: "allowedParams: limit_page_createdAt"
+      value:
+        statusCode: 400
+        errors:
+          - message: Invalid query params
+            context:
+              invalidParams: ["firstName", "lastName"]
+              allowedParams: ["limit", "page", "createdAt"]
     batchWeatherInput:
       summary: An array of multiple weather readings input
       value:
-        - { "deviceName": "woodford_sensor" }
-        - { "deviceName": "woodford_sensor" }
+        - {
+            "deviceName": "woodford_sensor",
+            "longitude": 152.77891,
+            "latitude": -26.95064,
+            "precipitation": 0.084,
+            "temperature": 23.66,
+            "atmosphericPressure": 280.54,
+            "maxWindSpeed": 3.86,
+            "solarRadiation": 280.12,
+            "vaporPressure": 1.78,
+            "humidity": 75.26,
+            "windDirection": 163.23,
+          }
+        - {
+            "deviceName": "noosa_sensor",
+            "longitude": 153.08919,
+            "latitude": -26.39676,
+            "precipitation": 0.076,
+            "temperature": 21.04,
+            "atmosphericPressure": 131.55,
+            "maxWindSpeed": 5.23,
+            "solarRadiation": 128.12,
+            "vaporPressure": 1.54,
+            "humidity": 62.66,
+            "windDirection": 171.86,
+          }
   securitySchemes:
     bearerAuth:
       type: http

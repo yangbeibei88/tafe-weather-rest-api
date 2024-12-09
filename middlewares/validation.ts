@@ -96,6 +96,10 @@ export const validateQueryParams = (
           message: `Invalid query parameters: ${invalidParams.join(
             ", "
           )}. Allowed parameters are: ${allowedParams?.join(", ")}.`,
+          context: {
+            invalidParams,
+            allowedParams,
+          },
         })
       );
     }
