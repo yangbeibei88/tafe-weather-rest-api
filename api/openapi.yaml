@@ -168,17 +168,19 @@ paths:
     get:
       tags:
         - weathers
-      summary: List weather aggregation by device.
+      summary: List weather aggregation of all devices.
       security:
         - bearerAuth: []
       operationId: listWeatherAggregationByDevice
       parameters:
         - $ref: "#/components/parameters/aggFieldQueryParam"
+          example: temperature
         - $ref: "#/components/parameters/recentMonthsQueryParam"
         - $ref: "#/components/parameters/createdAtQueryParam"
+
       responses:
         "200":
-          description: OK
+          description: Aggregated successfully
           content:
             application/json:
               schema:
@@ -186,6 +188,24 @@ paths:
                 properties:
                   result:
                     type: array
+                    items:
+                      $ref: "#/components/schemas/AggregationResult"
+              examples:
+                aggregationExample:
+                  $ref: "#/components/examples/aggregateResultAllDevices"
+        "400":
+          description: Invalid query params
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                limitPageCreatedAt:
+                  $ref: "#/components/examples/aggFieldCreatedAtRecentMonths"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
   /api/v1/weathers/devices/{deviceName}:
     get:
       tags:
@@ -240,13 +260,13 @@ paths:
       operationId: showWeatherAggregationByDevice
       parameters:
         - $ref: "#/components/parameters/deviceNameParam"
-
         - $ref: "#/components/parameters/aggFieldQueryParam"
+          example: precipitation
         - $ref: "#/components/parameters/recentMonthsQueryParam"
         - $ref: "#/components/parameters/createdAtQueryParam"
       responses:
         "200":
-          description: OK
+          description: Aggregated successfully
           content:
             application/json:
               schema:
@@ -254,6 +274,27 @@ paths:
                 properties:
                   result:
                     type: array
+                    items:
+                      $ref: "#/components/schemas/AggregationResult"
+              examples:
+                aggregationExample:
+                  $ref: "#/components/examples/aggregateResultByDevice"
+        "400":
+          description: Invalid query params
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                limitPageCreatedAt:
+                  $ref: "#/components/examples/aggFieldCreatedAtRecentMonths"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
+        "404":
+          description: Device not found
+          $ref: "#/components/responses/404NotFound"
   /api/v1/users:
     get:
       tags:
@@ -557,6 +598,50 @@ components:
               type: integer
               example: 1
       x-internal: true
+    AggregationResult:
+      type: object
+      description: Aggregation Result
+      properties:
+        deviceName:
+          type: string
+      additionalProperties:
+        type: object
+        properties:
+          max:
+            type: object
+            properties:
+              value:
+                type: number
+                format: double
+              createdAt:
+                type: string
+                format: date-time
+              deviceName:
+                type: string
+          min:
+            type: object
+            properties:
+              value:
+                type: number
+                format: double
+              createdAt:
+                type: string
+                format: date-time
+              deviceName:
+                type: string
+          avg:
+            type: object
+            properties:
+              value:
+                type: number
+                format: double
+          median:
+            type: object
+            properties:
+              value:
+                type: number
+                format: double
+      x-internal: true
     Account:
       type: object
       description: User account updatable fields
@@ -834,7 +919,7 @@ components:
           - vaporPressure
           - humidity
           - windDirection
-        example: precipitation
+        # example: precipitation
     recentMonthsQueryParam:
       name: recentMonths
       in: query
@@ -1014,6 +1099,80 @@ components:
             context:
               invalidParams: ["firstName", "lastName"]
               allowedParams: ["limit", "page", "createdAt"]
+    aggFieldCreatedAtRecentMonths:
+      summary: "allowedParams: aggField_createdAt_recentMonths"
+      value:
+        statusCode: 400
+        errors:
+          - message: Invalid query params
+            context:
+              invalidParams: ["firstName", "lastName"]
+              allowedParams: ["aggField", "createdAt", "recentMonths"]
+    aggregateResultByDevice:
+      summary: Aggregation result by device
+      value:
+        result:
+          - deviceName: "woodford_sensor"
+            precipitation:
+              max:
+                value: 8.126
+                createdAt: "2021-01-14T08:46:49.000Z"
+                deviceName: "woodford_sensor"
+              min:
+                value: 0
+                createdAt: "2020-12-07T03:47:42.000Z"
+                deviceName: "woodford_sensor"
+              avg:
+                value: 0.025269191017570233
+              median:
+                value: 0
+    aggregateResultAllDevices:
+      summary: Aggregation result of all devices
+      value:
+        result:
+          - deviceName: "woodford_sensor"
+            temperature:
+              max:
+                value: 40.19
+                createdAt: "2021-01-26T04:06:31.000Z"
+                deviceName: "woodford_sensor"
+              min:
+                value: 10.05
+                createdAt: "2021-04-11T19:34:36.000Z"
+                deviceName: "woodford_sensor"
+              avg:
+                value: 22.68977120037585
+              median:
+                value: 22.52
+          - deviceName: "noosa_sensor"
+            temperature:
+              max:
+                value: 33.49
+                createdAt: "2021-01-26T04:06:31.000Z"
+                deviceName: "noosa_sensor"
+              min:
+                value: 8.37
+                createdAt: "2021-04-11T19:34:36.000Z"
+                deviceName: "noosa_sensor"
+              avg:
+                value: 18.90806812309138
+              median:
+                value: 18.77
+          - deviceName: "yandina_sensor"
+            temperature:
+              max:
+                value: 36.4
+                createdAt: "2021-01-26T04:06:31.000Z"
+                deviceName: "yandina_sensor"
+              min:
+                value: 9.1
+                createdAt: "2021-04-11T19:34:36.000Z"
+                deviceName: "yandina_sensor"
+              avg:
+                value: 20.55228564716937
+              median:
+                value: 20.4
+
     batchWeatherInput:
       summary: An array of multiple weather readings input
       value:
