@@ -3,6 +3,8 @@ info:
   title: TAFE Weather API
   version: "1.0.0"
   description: "RESTful API to read, write, update and delete weather data."
+servers:
+  - url: "http://localhost:3085"
 tags:
   - name: weathers
     description: weather readings
@@ -13,6 +15,20 @@ tags:
   - name: account
     description: logged-in user account
 paths:
+  /api/v1:
+    get:
+      summary: Welcome to the API!
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Welcome to TAFE Weather REST API v1! Please login to continue.
   /api/v1/login:
     post:
       summary: User login

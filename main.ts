@@ -28,14 +28,17 @@ import { preprocessOpenAPIDoc } from "./utils/helpers.ts";
 import { accountRouter } from "./routes/accountRoutes.ts";
 
 export const app: Express = express();
-
+export const swaggerApp: Express = express();
+// Deno.env.get("CORS_ORIGIN")?.split(",") ||
 // enable cors for all endpoints
 const corsOptions: CorsOptions = {
-  origin: "https://www.test-cors.org",
+  origin: "http://localhost:3086",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions) as unknown as RequestHandler);
+app.options("*", cors(corsOptions) as unknown as RequestHandler);
 
 app.use(helmet() as unknown as RequestHandler);
 
@@ -58,17 +61,17 @@ app.use("/api/v1/logs", logRouter);
 // error handling middleware
 app.use(errorHandler);
 
+// HANDLE UNHANDLED ROUTES
+app.all("*", ((_req: Request, _res: Response, next: NextFunction) =>
+  next(new ClientError({ code: 400 }))) as RequestHandler);
+
 const apiDocPath = new URL("./api/openapi.yaml", import.meta.url).pathname;
 const swaggerDoc = parse(fs.readFileSync(apiDocPath, "utf-8")) as JsonObject;
 
 const adjustedSwaggerDoc = preprocessOpenAPIDoc(swaggerDoc);
 
-app.use(
+swaggerApp.use(
   "/api-docs",
   swaggerUi.serve as RequestHandler[],
   swaggerUi.setup(adjustedSwaggerDoc) as RequestHandlerParams
 );
-
-// HANDLE UNHANDLED ROUTES
-app.all("*", ((_req: Request, _res: Response, next: NextFunction) =>
-  next(new ClientError({ code: 400 }))) as RequestHandler);
