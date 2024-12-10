@@ -148,6 +148,7 @@ export const validateText = (
     .isString()
     .trim()
     .isLength({ min, max })
+    .toLowerCase()
     .escape()
     .withMessage(`${name} must be a string, ${min} - ${max} characters.`);
 

@@ -29,6 +29,7 @@ import {
 } from "../middlewares/validation.ts";
 import { ClientError } from "../errors/ClientError.ts";
 import { objectOmit } from "../utils/helpers.ts";
+import { it } from "node:test";
 
 // Define the validation rules for weather-related fields
 const weatherValidations: Record<keyof WeatherInput, ContextRunner> = {
@@ -287,10 +288,13 @@ export const showWeatherAction: RequestHandler = asyncHandlerT(
 export const createWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction) => {
     const inputData: OptionalId<Weather> = {
-      ...getValidatedWeatherInput(req.body),
+      // ...getValidatedWeatherInput(req.body),
+      ...req.body,
       createdAt: req.body.createdAt ?? new Date(),
       createdBy: req.body.createdBy ?? req.user._id,
     } as OptionalId<Weather>;
+
+    console.log(inputData);
     const newWeather = await insertWeather(inputData);
 
     res.status(201).json({
@@ -301,15 +305,16 @@ export const createWeatherAction = asyncHandlerT(
 
 export const createWeathersAction = asyncHandlerT(
   async (req: Request, res: Response, _next: NextFunction) => {
-    const inputData: OptionalId<Weather>[] = getValidatedWeatherInput(
-      req.body
-    ) as OptionalId<Weather>[];
+    // const inputData: OptionalId<Weather>[] = getValidatedWeatherInput(
+    //   req.body
+    // ) as OptionalId<Weather>[];
+    const inputData: OptionalId<Weather>[] = req.body as OptionalId<Weather>[];
 
     const payload: OptionalId<Weather>[] = inputData.map((item) => {
       return {
         ...item,
-        createdAt: req.body.createdAt ?? new Date(),
-        createdBy: req.body.createdBy ?? req.user._id,
+        createdAt: item.createdAt ?? new Date(),
+        createdBy: item.createdBy ?? req.user._id,
       };
     });
 
