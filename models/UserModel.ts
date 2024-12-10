@@ -127,6 +127,7 @@ export const updateUsersRole = async (
   try {
     const filterBuilder = new QueryBuilder(filter);
     const filterParam = filterBuilder.filterBuild();
+    console.log(filterParam);
     const result = await usersColl.updateMany(filterParam, { $set: payload });
     return result;
   } catch (error) {

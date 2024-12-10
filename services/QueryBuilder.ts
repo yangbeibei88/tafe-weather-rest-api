@@ -38,7 +38,7 @@ export class QueryBuilder {
         if (match) {
           const [, field, operator] = match; // ["humidity[gt]", "humidity", "gt"]
           this.addOperator(field, operator as Operator, value);
-        } else {
+        } else if (this.filter[key]) {
           this.filter[key] = value;
         }
       }

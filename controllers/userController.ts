@@ -291,15 +291,19 @@ export const updateUsersRoleAction = asyncHandlerT(
       }
     }
 
+    console.log(req.body);
+
     const payload: Pick<User, "role" | "updatedAt"> = {
       // role has been validated in last middleware, safe to add to payload
       role: req.body.role,
       updatedAt: new Date(),
     };
 
+    console.log(payload);
+
     const result = await updateUsersRole(
       {
-        role: req.query.role,
+        role: req.params.role,
         createdAt: req.query.createdAt,
         lastLoggedInAt: req.query.lastLoggedInAt,
       },
