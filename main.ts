@@ -11,6 +11,7 @@ import {
 import express from "express";
 // @deno-types="@types/cors"
 import cors, { CorsOptions } from "cors";
+import helmet from "helmet";
 import fs from "node:fs";
 import { URL } from "node:url";
 import { parse } from "@std/yaml";
@@ -28,12 +29,15 @@ import { accountRouter } from "./routes/accountRoutes.ts";
 
 export const app: Express = express();
 
+// enable cors for all endpoints
 const corsOptions: CorsOptions = {
   origin: "https://www.test-cors.org",
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions) as unknown as RequestHandler);
+
+app.use(helmet() as unknown as RequestHandler);
 
 app.use(logger as RequestHandler);
 
