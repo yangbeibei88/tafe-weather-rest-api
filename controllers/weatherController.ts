@@ -23,7 +23,6 @@ import {
 import { Weather, WeatherInput } from "../models/WeatherSchema.ts";
 import {
   validateBodyFactory,
-  validateDate,
   validateNumber,
   validateText,
 } from "../middlewares/validation.ts";
@@ -33,7 +32,6 @@ import { it } from "node:test";
 
 // Define the validation rules for weather-related fields
 const weatherValidations: Record<keyof WeatherInput, ContextRunner> = {
-  _id: validateText("_id", 1, 50, false),
   deviceName: validateText("deviceName", 1, 50),
   precipitation: validateNumber("precipitation", "float", -100, 100),
   temperature: validateNumber("temperature", "float"),
@@ -45,15 +43,10 @@ const weatherValidations: Record<keyof WeatherInput, ContextRunner> = {
   windDirection: validateNumber("windDirection", "float"),
   longitude: validateNumber("longitude", "float", -180, 180),
   latitude: validateNumber("latitude", "float", -90, 90),
-  createdAt: validateDate("createdAt", false),
-  lastModifiedAt: validateDate("lastModifiedAt", false),
-  createdBy: validateText("createdBy", 1, 50, false),
-  lastModifiedBy: validateText("lastModifiedBy", 1, 50, false),
 };
 
 export const validateWeatherInput = () =>
   validateBodyFactory<WeatherInput>(weatherValidations)([
-    "_id",
     "deviceName",
     "precipitation",
     "temperature",
@@ -64,10 +57,6 @@ export const validateWeatherInput = () =>
     "windDirection",
     "longitude",
     "latitude",
-    "createdAt",
-    "lastModifiedAt",
-    "createdBy",
-    "lastModifiedBy",
   ]);
 
 // const createIndicators = () => {};
@@ -335,9 +324,10 @@ export const createWeathersAction = asyncHandlerT(
 export const updateWeatherAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const payload: OptionalId<Weather> = {
-      ...getValidatedWeatherInput(req.body),
-      lastModifiedAt: req.body.lastModifiedAt ?? new Date(),
-      lastModifiedBy: req.body.lastModifiedBy ?? req.user._id,
+      // ...getValidatedWeatherInput(req.body),
+      ...req.body,
+      lastModifiedAt: new Date(),
+      lastModifiedBy: req.user._id,
     } as OptionalId<Weather>;
 
     console.log(payload);

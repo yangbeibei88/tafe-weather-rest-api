@@ -33,13 +33,15 @@ type WeatherWithoutId = Omit<Weather, "_id">;
 // };
 export type WeatherInput = Omit<
   Weather,
-  "geoLocation" | "_id" | "createdBy" | "lastModifiedBy"
+  | "geoLocation"
+  | "_id"
+  | "createdBy"
+  | "lastModifiedBy"
+  | "createdAt"
+  | "lastModifiedAt"
 > & {
-  _id?: string;
   longitude: number;
   latitude: number;
-  createdBy?: string;
-  lastModifiedBy?: string;
 };
 
 export const coordinateSchema: MongoJSONSchema = {
