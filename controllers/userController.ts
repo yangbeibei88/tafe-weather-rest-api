@@ -43,7 +43,6 @@ import { objectOmit } from "../utils/helpers.ts";
 
 // Define the validation rules for user-related fields
 export const userValidations: Record<keyof UserInput, ContextRunner> = {
-  _id: validateText("_id", 2, 50, false),
   firstName: validateText("firstName", 2, 50),
   lastName: validateText("lastName", 2, 50),
   emailAddress: validateEmail("emailAddress"),
