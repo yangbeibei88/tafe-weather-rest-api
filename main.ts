@@ -12,6 +12,9 @@ import express from "express";
 // @deno-types="@types/cors"
 import cors, { CorsOptions } from "cors";
 import helmet from "helmet";
+import { rateLimit } from "express-rate-limit";
+// @deno-types="@types/compression"
+import compression from "compression";
 import fs from "node:fs";
 import { URL } from "node:url";
 import { parse } from "@std/yaml";
@@ -37,20 +40,27 @@ const corsOptions: CorsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-app.use(cors(corsOptions) as unknown as RequestHandler);
-app.options("*", cors(corsOptions) as unknown as RequestHandler);
+app.use(cors(corsOptions) as RequestHandler);
+app.options("*", cors(corsOptions) as RequestHandler);
 
 app.use(helmet() as unknown as RequestHandler);
+
+app.use(compression() as RequestHandler);
 
 app.use(logger as RequestHandler);
 
 app.use(express.json() as unknown as RequestHandler);
 app.use(express.urlencoded({ extended: false }) as unknown as RequestHandler);
 
-// ROUTES
-// app.get("/api/v1", (_req: Request, res: Response) => {
-//   res.status(200).json({ msg: "Welcome to TAFE Weather REST API v1" });
-// });
+// RATE LIMITER
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: "Too many requests from this IP, please try again later.",
+});
+app.use(limiter as unknown as RequestHandler);
 
 app.use("/api/v1", authRouter);
 app.use("/api/v1/weathers", weatherRouter);
