@@ -22,7 +22,7 @@ const updatePasswordValidations: Record<
   keyof UpdatePasswordInput,
   ContextRunner
 > = {
-  currentPassword: validatePassword("password", 8, 50),
+  currentPassword: validatePassword("currentPassword", 8, 50),
   newPassword: validatePassword("newPassword", 8, 50),
   confirmNewPassword: compareStrings(
     "passwords",
@@ -90,6 +90,8 @@ export const updatePasswordAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { currentPassword, newPassword } = req.body;
 
+    console.log(req.body);
+
     // Last middleware `protect` already checked the user still exists
     const userId: string = req.user._id.toString();
     const user = (await findUserById(userId)) as User;
@@ -116,6 +118,8 @@ export const updatePasswordAction = asyncHandlerT(
         passwordChangedAt: new Date(Date.now() - 1000),
         updatedAt: new Date(Date.now() - 1000),
       };
+
+    console.log(payload);
 
     const result = await updateUserPassword(userId, payload);
 

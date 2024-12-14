@@ -373,7 +373,7 @@ export const deleteUserByIdAction = asyncHandlerT(
 export const deleteUsersByRoleAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const result = await deleteUsers({
-      role: req.query.role,
+      role: req.params.role,
       lastLoggedInAt: req.query.lastLoggedInAt,
       createdAt: req.query.createdAt,
     });
