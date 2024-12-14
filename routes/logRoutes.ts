@@ -22,12 +22,12 @@ logRouter.get(
   listLogsAction
 );
 
-logRouter.get("/:id", validatePathParams(), showLogAction);
-
-logRouter.delete("/:id", validatePathParams(), deleteLogByIdAction);
-
 logRouter.delete(
   "/batch",
   validateQueryParams(["deletedAt"]),
   deleteLogsAction
 );
+
+logRouter.get("/:id", validatePathParams(), showLogAction);
+
+logRouter.delete("/:id", validatePathParams(), deleteLogByIdAction);

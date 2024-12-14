@@ -37,9 +37,9 @@ export const errorHandler: ErrorRequestHandler = (
     });
   }
 
-  // // unhandled errors
-  // console.error(JSON.stringify(err, null, 2));
-  // return res.status(400).send({
-  //   errors: [{ message: "Something went wrong." }],
-  // });
+  // unhandled errors
+  console.error(JSON.stringify(err, null, 2));
+  return res.status(400).send({
+    errors: [{ message: "Something went wrong." }],
+  });
 };

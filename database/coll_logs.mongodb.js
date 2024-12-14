@@ -2,6 +2,7 @@ const database = "tafe-weather-api";
 use(database);
 db; // "tafe-weather-api"
 // db.runCommand({ connectionStatus: 1 });
+db.logs.createIndex({ deletedAt: -1 });
 
 const coordinateSchema = {
   bsonType: "array",

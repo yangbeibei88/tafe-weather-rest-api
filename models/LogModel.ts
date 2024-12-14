@@ -33,7 +33,7 @@ export const getLog = async (id: string) => {
   }
 };
 
-export const deleteLog = async (id: string) => {
+export const deleteLogById = async (id: string) => {
   try {
     const result = await logsColl.deleteOne({
       _id: new ObjectId(id),

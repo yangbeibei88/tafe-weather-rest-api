@@ -48,7 +48,7 @@ paths:
                     type: string
         "401":
           $ref: "#/components/responses/IncorrectCredentials"
-  /api/v1/weathers/:
+  /api/v1/weathers:
     get:
       tags:
         - weathers
@@ -75,6 +75,8 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Weather"
+        "400":
+          $ref: "#/components/responses/InvalidQueryParams"
         "401":
           $ref: "#/components/responses/401Unauthorized"
         "403":
@@ -104,6 +106,8 @@ paths:
           $ref: "#/components/responses/401Unauthorized"
         "403":
           $ref: "#/components/responses/403Forbidden"
+        "500":
+          $ref: "#/components/responses/500ServerError"
   /api/v1/weathers/{id}:
     get:
       tags:
@@ -130,6 +134,8 @@ paths:
           $ref: "#/components/responses/403Forbidden"
         "404":
           $ref: "#/components/responses/404NotFound"
+        "500":
+          $ref: "#/components/responses/500ServerError"
     put:
       tags:
         - weathers
@@ -460,7 +466,7 @@ paths:
         - $ref: "#/components/parameters/lastLoggedInAtQueryParam"
       responses:
         "204":
-          description: Users are deleted.
+          description: Deleted successfully
         "401":
           $ref: "#/components/responses/401Unauthorized"
         "403":
@@ -475,12 +481,18 @@ paths:
       security:
         - bearerAuth: []
       operationId: listDeletedWeathers
+      parameters:
+        - $ref: "#/components/parameters/limitQueryParam"
+        - $ref: "#/components/parameters/pageQueryParam"
+        - $ref: "#/components/parameters/deletedAtQueryParam"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
+                allOf:
+                  - $ref: "#/components/schemas/Pagination"
                 type: object
                 properties:
                   result:
@@ -493,6 +505,82 @@ paths:
                             deletedAt:
                               type: string
                               format: date-time
+        "400":
+          $ref: "#/components/responses/InvalidQueryParams"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
+  /api/v1/logs/{id}:
+    get:
+      tags:
+        - logs
+      summary: Show a specific log by ID
+      operationId: showLogById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/logIdParam"
+      responses:
+        "200":
+          description: A deleted weather document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    allOf:
+                      - $ref: "#/components/schemas/Weather"
+                      - type: object
+                        properties:
+                          deletedAt:
+                            type: string
+                            format: date-time
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
+        "404":
+          $ref: "#/components/responses/404NotFound"
+    delete:
+      tags:
+        - logs
+      summary: Delete a log by ID
+      operationId: deleteLogById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/logIdParam"
+      responses:
+        "204":
+          description: Deleted successfully
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
+        "404":
+          $ref: "#/components/responses/404NotFound"
+  /api/v1/logs/batch:
+    delete:
+      tags:
+        - logs
+      summary: Delete multiple logs
+      operationId: deleteMultipleLogs
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/deletedAtQueryParam"
+      responses:
+        "204":
+          description: Deleted successfully
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+        "403":
+          $ref: "#/components/responses/403Forbidden"
+        "404":
+          $ref: "#/components/responses/404NotFound"
+
 components:
   schemas:
     UniqueId:
@@ -502,9 +590,12 @@ components:
       x-internal: true
     Password:
       type: string
+      format: password
+      writeOnly: true
       minLength: 8
       maxLength: 50
-      description: User password Input
+      description: "Password must be 8 - 50 characters, containing uppercase(s),lowercase(s), number(s), and special character(s)."
+      example: Asgard2388!
       x-internal: true
     Weather:
       type: object
@@ -700,11 +791,13 @@ components:
           minLength: 2
           maxLength: 50
           description: "Must be a string and required, 2-50 characters"
+          example: "John"
         lastName:
           type: string
           minLength: 2
           maxLength: 50
           description: "Must be a string and required, 2-50 characters"
+          example: "Doe"
         phone:
           type: string
           pattern: "^0[2-478]\\d{8}$"
@@ -811,7 +904,7 @@ components:
       properties:
         statusCode:
           type: integer
-          enum: [400, 401, 403, 404]
+          enum: [400, 401, 403, 404, 500]
         errors:
           type: array
           items:
@@ -933,6 +1026,14 @@ components:
       required: true
       schema:
         type: string
+    logIdParam:
+      name: id
+      in: path
+      description: The id of a log to retrive
+      example: 67574734d5d090c580891c81
+      required: true
+      schema:
+        type: string
     deviceNameParam:
       name: deviceName
       in: path
@@ -1014,6 +1115,22 @@ components:
           lte:
             type: string
             example: "2021-05-07"
+    deletedAtQueryParam:
+      name: deletedAt
+      in: query
+      required: false
+      style: deepObject
+      explode: true
+      description: Date range based on deletedAt
+      schema:
+        type: object
+        properties:
+          gte:
+            type: string
+            example: "2024-12-01"
+          lte:
+            type: string
+            example: "2024-12-31"
     lastLoggedInAtQueryParam:
       name: lastLoggedInAt
       in: query
@@ -1127,6 +1244,18 @@ components:
             statusCode: 404
             errors:
               - message: "This document is not found."
+                context: {}
+    # 500
+    500ServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 500
+            errors:
+              - message: "Internal Server Error"
                 context: {}
     WeatherDoc:
       description: A weather reading document.

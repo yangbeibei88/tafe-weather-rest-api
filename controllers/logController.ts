@@ -1,13 +1,8 @@
 // @deno-types="npm:@types/express-serve-static-core@4.19.5"
-import {
-  Request,
-  Response,
-  NextFunction,
-  RequestHandler,
-} from "express-serve-static-core";
+import { Request, Response, NextFunction } from "express-serve-static-core";
 import { asyncHandlerT } from "../middlewares/asyncHandler.ts";
 import {
-  deleteLog,
+  deleteLogById,
   deleteLogs,
   getAllLogs,
   getLog,
@@ -58,7 +53,7 @@ export const showLogAction = asyncHandlerT(
 
 export const deleteLogByIdAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const result = await deleteLog(req.params.id);
+    const result = await deleteLogById(req.params.id);
 
     if (!result?.deletedCount) {
       return next(
@@ -79,9 +74,8 @@ export const deleteLogByIdAction = asyncHandlerT(
 
 export const deleteLogsAction = asyncHandlerT(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const result = await deleteLogs({
-      deletedAt: req.query.deletedAt || "2020-01-01",
-    });
+    console.log(req.query);
+    const result = await deleteLogs({ deletedAt: req.query.deletedAt });
 
     if (!result?.deletedCount) {
       return next(

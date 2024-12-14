@@ -1,3 +1,4 @@
+// https://medium.com/@xiaominghu19922/proper-error-handling-in-express-server-with-typescript-8cd4ffb67188
 export type BaseErrorContent = {
   message: string;
   // deno-lint-ignore no-explicit-any
