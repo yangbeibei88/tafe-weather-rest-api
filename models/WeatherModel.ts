@@ -331,7 +331,7 @@ export async function aggregateWeatherByLocationOrDevice(
   const matchParams = await buildMatchParams(params, recentMonths, createdAt);
   // groupBy = "deviceName" in params ? "$deviceName" : "$geoLocaiton";
 
-  console.log(matchParams);
+  console.log("matchParams: ", matchParams);
 
   const aggBuilder = new AggregationBuilder({
     aggField,

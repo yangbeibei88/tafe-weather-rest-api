@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-type Operator = "gte" | "gt" | "lte" | "lt" | "in" | "all";
+type Operator = "gte" | "gt" | "lte" | "lt" | "in" | "eq" | "all";
 
 export class QueryBuilder {
   private filter: Record<string, any> = {};
@@ -15,6 +15,7 @@ export class QueryBuilder {
     // for (const [key, value] of Object.entries(this.param)) {
     //   this.filter[key] = value;
     // }
+    // console.log(Object.entries(this.query));
     for (const [key, value] of Object.entries(this.query)) {
       // skip pagination and sort-related keys
       if (
@@ -34,15 +35,31 @@ export class QueryBuilder {
       } else {
         // check if key contains an operator e.g. humidity[gt]
         const match = key.match(/(.+)\[(.+)\]/);
+        // console.log(match);
 
         if (match) {
           const [, field, operator] = match; // ["humidity[gt]", "humidity", "gt"]
           this.addOperator(field, operator as Operator, value);
-        } else if (this.filter[key]) {
+        } else if (this.isISODate(value)) {
+          if (!value.includes("T")) {
+            this.filter[key] = {
+              $gte: new Date(value),
+              $lte: new Date(
+                Date.parse(value) + (23 * 3600 + 59 * 60 + 59) * 1000
+              ),
+            };
+            // console.log(this.filter[key]);
+          } else {
+            this.filter[key] = new Date(value);
+          }
+        } else if (value) {
           this.filter[key] = value;
         }
       }
     }
+    // console.log("filter: ", this.filter);
+    // console.log("customeFilter: ", customFilter);
+    // console.log({ ...this.filter, ...customFilter });
     return { ...this.filter, ...customFilter };
   }
 
@@ -68,6 +85,17 @@ export class QueryBuilder {
       case "all":
         this.filter[field]["$all"] = this.parseArray(value);
         break;
+      case "eq":
+        // if passed in value is a date but without time
+        if (!isNaN(Date.parse(value)) && !value.includes("T")) {
+          this.filter[field]["$gte"] = new Date(value);
+          this.filter[field]["$lte"] = new Date(
+            Date.parse(value) + (23 * 3600 + 59 * 60 + 59) * 1000
+          );
+        } else {
+          this.filter[field]["$eq"] = this.parseValue(value);
+        }
+        break;
       case "gte":
         this.filter[field]["$gte"] = this.parseValue(value);
         break;
@@ -75,7 +103,13 @@ export class QueryBuilder {
         this.filter[field]["$gt"] = this.parseValue(value);
         break;
       case "lte":
-        this.filter[field]["$lte"] = this.parseValue(value);
+        if (!isNaN(Date.parse(value)) && !value.includes("T")) {
+          this.filter[field]["$lte"] = new Date(
+            Date.parse(value) + (23 * 3600 + 59 * 60 + 59) * 1000
+          );
+        } else {
+          this.filter[field]["$lte"] = this.parseValue(value);
+        }
         break;
       case "lt":
         this.filter[field]["$lt"] = this.parseValue(value);
