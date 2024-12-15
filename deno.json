@@ -1,8 +1,7 @@
 {
   "tasks": {
     "dev": "deno run --allow-read --allow-net --allow-env --watch --env-file server.ts",
-    "start": "deno run --allow-read --allow-net --allow-env --env-file server.ts",
-    "import": "deno run --allow-read --allow-net --allow-env --env-file database/uploadData.js"
+    "start": "deno run --allow-read --allow-net --allow-env --env-file server.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
@@ -30,6 +29,7 @@
   "compilerOptions": {
     "types": ["./types.d.ts"]
   },
+  "vendor": true,
   "scarfSetting": {
     "enabled": false
   }

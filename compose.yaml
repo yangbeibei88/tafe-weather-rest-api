@@ -1,0 +1,8 @@
+services:
+  tafe-weather-api:
+    build: .
+    ports:
+      - "3085:3085"
+      - "3086:3086"
+    env_file:
+      - .env
