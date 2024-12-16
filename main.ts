@@ -71,10 +71,6 @@ app.use("/api/v1/logs", logRouter);
 // error handling middleware
 app.use(errorHandler);
 
-// HANDLE UNHANDLED ROUTES
-app.all("*", ((_req: Request, _res: Response, next: NextFunction) =>
-  next(new ClientError({ code: 400 }))) as RequestHandler);
-
 const apiDocPath = new URL("./api/openapi.yaml", import.meta.url).pathname;
 const swaggerDoc = parse(fs.readFileSync(apiDocPath, "utf-8")) as JsonObject;
 
@@ -85,3 +81,7 @@ swaggerApp.use(
   swaggerUi.serve as RequestHandler[],
   swaggerUi.setup(adjustedSwaggerDoc) as RequestHandlerParams
 );
+
+// HANDLE UNHANDLED ROUTES
+app.all("*", ((_req: Request, _res: Response, next: NextFunction) =>
+  next(new ClientError({ code: 400 }))) as RequestHandler);
