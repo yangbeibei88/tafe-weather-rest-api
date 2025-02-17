@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import { MongoJSONSchema } from "../utils/utilTypes.ts";
 import { RequiredKeys } from "../utils/helpers.ts";
 
-export const roles = ["teacher", "student", "admin", "sensor"] as const;
+export const roles = ["teacher", "student", "admin", "sensor", "test"] as const;
 
 export const userStatus = ["active", "inactive"] as const;
 

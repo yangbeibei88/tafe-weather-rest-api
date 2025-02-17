@@ -699,7 +699,7 @@ components:
       type: array
       minItems: 1
       uniqueItems: true
-      description: 'Array of user roles ["teacher", "student", "admin", "sensor"]'
+      description: 'Array of user roles ["teacher", "student", "admin", "sensor", "test"]'
       items:
         type: string
         enum:
@@ -707,11 +707,12 @@ components:
           - sensor
           - teacher
           - admin
+          - test
       x-internal: true
     RoleString:
       type: string
-      description: 'A string containing any combination of the roles "teacher", "student", "admin", and "sensor", separated by commas.'
-      pattern: "^((teacher|student|admin|sensor)(,(teacher|student|admin|sensor))*)?$"
+      description: 'A string containing any combination of the roles "teacher", "student", "admin", and "sensor", "test" separated by commas.'
+      pattern: "^((teacher|student|admin|sensor|test)(,(teacher|student|admin|sensor|test))*)?$"
       x-internal: true
     Pagination:
       type: object
@@ -819,7 +820,7 @@ components:
               type: array
               minItems: 1
               uniqueItems: true
-              description: 'Exaustive combination of array of user roles ["teacher", "student", "admin", "sensor"]'
+              description: 'Exaustive combination of array of user roles ["teacher", "student", "admin", "sensor", "test"]'
               items:
                 type: string
                 enum:
@@ -827,7 +828,8 @@ components:
                   - student
                   - admin
                   - sensor
-                description: 'Each role must be one of "teacher", "student", "admin", or "sensor".'
+                  - test
+                description: 'Each role must be one of "teacher", "student", "admin", or "sensor" or "test".'
             status:
               type: string
               enum:
@@ -974,7 +976,8 @@ components:
           examples:
             loginExample:
               summary: User login example
-              value: { "emailAddress": "test@test.io", "password": "Test#123" }
+              value:
+                { "emailAddress": "test@test.io", "password": "GoodFriday123!" }
     WeatherInput:
       required: true
       content:
@@ -1055,6 +1058,7 @@ components:
           - sensor
           - teacher
           - admin
+          - test
         example: student
     longitudeParam:
       name: longitude

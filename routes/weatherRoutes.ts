@@ -28,7 +28,7 @@ weatherRouter.use(protect);
 // Get all weather readings - P
 weatherRouter.get(
   "/",
-  authorisedTo("admin", "teacher", "student"),
+  authorisedTo("admin", "teacher", "student", "test"),
   validateQueryParams(["limit", "page", "createdAt"]),
   listWeathersAction
 );
@@ -52,7 +52,7 @@ weatherRouter.post(
 // Aggregation all devices - P
 weatherRouter.get(
   "/devices/aggregate",
-  authorisedTo("admin", "teacher", "student"),
+  authorisedTo("admin", "teacher", "student", "test"),
   validateQueryParams(["aggField", "createdAt", "recentMonths"]),
   listDeviceStatsAction
 );
@@ -60,7 +60,7 @@ weatherRouter.get(
 // Get weather reading by device - P
 weatherRouter.get(
   "/devices/:deviceName",
-  authorisedTo("admin", "teacher", "sensor"),
+  authorisedTo("admin", "teacher", "sensor", "test"),
   validatePathParams(),
   validateQueryParams(["limit", "page", "createdAt"]),
   listWeathersByDeviceAction
@@ -69,7 +69,7 @@ weatherRouter.get(
 // Aggregation by single device - P
 weatherRouter.get(
   "/devices/:deviceName/aggregate",
-  authorisedTo("admin", "teacher", "student"),
+  authorisedTo("admin", "teacher", "student", "test"),
   validatePathParams(),
   validateQueryParams(["aggField", "createdAt", "recentMonths"]),
   showDeviceStatsAction
@@ -78,7 +78,7 @@ weatherRouter.get(
 // Get one weather reading - P
 weatherRouter.get(
   "/:id",
-  authorisedTo("admin", "teacher", "student"),
+  authorisedTo("admin", "teacher", "student", "test"),
   validatePathParams(),
   showWeatherAction
 );
@@ -103,7 +103,7 @@ weatherRouter.delete(
 // Aggregation all locations
 weatherRouter.get(
   "/stations/aggregate",
-  authorisedTo("admin", "teacher", "student"),
+  authorisedTo("admin", "teacher", "student", "test"),
   validateQueryParams(["aggField", "createdAt", "recentMonths"]),
   listStationStatsAction
 );
@@ -111,7 +111,7 @@ weatherRouter.get(
 // Aggregation by single location
 weatherRouter.get(
   "/stations/@:longitude,:latitude/aggregate",
-  authorisedTo("admin", "teacher", "student"),
+  authorisedTo("admin", "teacher", "student", "test"),
   validatePathParams(),
   validateQueryParams(["aggField", "createdAt", "recentMonths"]),
   showStationStatsAction

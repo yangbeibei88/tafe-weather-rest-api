@@ -59,13 +59,13 @@ db.runCommand({
           uniqueItems: true,
           items: {
             type: "string",
-            enum: ["teacher", "student", "admin", "sensor"],
+            enum: ["teacher", "student", "admin", "sensor", "test"],
             description:
-              'Each role must be one of "teacher", "student", "admin", or "sensor".',
+              'Each role must be one of "teacher", "student", "admin", or "sensor", or "test".',
           },
           additionalItems: false,
           description:
-            'Exaustive combination of array of user roles ["teacher", "student", "admin", "sensor"]',
+            'Exaustive combination of array of user roles ["teacher", "student", "admin", "sensor", "test"]',
         },
         status: {
           bsonType: "string",

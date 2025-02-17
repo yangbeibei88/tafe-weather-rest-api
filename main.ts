@@ -76,6 +76,11 @@ const swaggerDoc = parse(fs.readFileSync(apiDocPath, "utf-8")) as JsonObject;
 
 const adjustedSwaggerDoc = preprocessOpenAPIDoc(swaggerDoc);
 
+swaggerApp.get("/", (_req: Request, res: Response) => {
+  res.status(200).json({
+    message: "Welcome to TAFE Weather REST API v1! Go to /api-docs",
+  });
+});
 swaggerApp.use(
   "/api-docs",
   swaggerUi.serve as RequestHandler[],
